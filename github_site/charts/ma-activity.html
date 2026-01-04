@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M&A Activity in Defense - Defense Capital Dashboard</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <nav>
+        <div class="container">
+            <a href="../index.html" class="logo">Defense Capital Dashboard</a>
+            <button class="mobile-menu-toggle">☰</button>
+            <ul>
+                <li><a href="../index.html">Home</a></li>
+                <li><a href="../deals/index.html">Deal Tracker</a></li>
+                <li><a href="../charts/defense-investment.html" class="active">Defense Investment Trends</a></li>
+                <li><a href="../charts/defense-industrial.html" >Defense Industrial Health</a></li>
+                <li><a href="../charts/us-industrial.html" >Overall US Industrial Health</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>M&A Activity in Defense</h1>
+            <p>Annual merger and acquisition activity in aerospace and defense</p>
+        </div>
+
+        <div class="card">
+            <div class="chart-container" style="height: 500px;">
+                <canvas id="mainChart"></canvas>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>About This Metric</h2>
+            <p>
+            <strong>M&A Activity in Defense</strong> tracks the dollar value of mergers and acquisitions in the U.S. aerospace and
+            defense sector. This includes private equity buyouts, strategic acquisitions by defense primes, and consolidation activity
+            across the defense industrial base.
+        </p>
+            <p>
+            M&A activity reflects consolidation trends, capital deployment by private equity and strategic buyers, and the overall
+            health of the defense sector. High M&A volumes can indicate strong valuations, buyer confidence, and strategic positioning
+            for future defense programs. Tracking M&A helps identify which segments of the defense industrial base are seeing the most
+            investment interest and consolidation.
+        </p>
+            <p><strong>Units:</strong> Billions of Dollars</p>
+            <p><strong>Source:</strong> Federal Reserve Economic Data (FRED)</p>
+        </div>
+
+        <div class="card">
+            <h2>Related Charts</h2>
+            <div class="grid grid-3">
+                <a href="defense-goods-orders.html" class="btn btn-secondary">Defense Capital Goods Orders</a>
+                <a href="vc-investment.html" class="btn btn-secondary">Venture Capital Investment in Defense</a>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Defense Capital Dashboard</p>
+        <p>Data source: Federal Reserve Economic Data (FRED)</p>
+    </footer>
+
+    <script src="../js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            await ChartUtils.loadAndRenderChart(
+                '../data/ma_defense.json',
+                'mainChart',
+                {
+                    fill: true,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Value: ${context.parsed.y.toFixed(2)}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            );
+        });
+    </script>
+</body>
+</html>

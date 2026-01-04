@@ -1,0 +1,137 @@
+Defense Capital Dashboard - Directory Structure
+================================================
+
+~/Documents/Claude - Defense PC Dashboard/
+│
+├── 📁 github_site/                    ⭐ DEPLOY THIS TO GITHUB
+│   ├── index.html                     Homepage with preview charts
+│   ├── README.md                      Site README
+│   │
+│   ├── 📁 deals/
+│   │   └── index.html                Deal tracker (searchable table)
+│   │
+│   ├── 📁 charts/                     15 chart pages
+│   │   ├── defense-spending.html
+│   │   ├── lending-standards.html
+│   │   ├── defense-goods-orders.html
+│   │   ├── industrial-production.html
+│   │   ├── investment-trends.html
+│   │   ├── aircraft-orders.html
+│   │   ├── aircraft-parts-orders.html
+│   │   ├── gdp-investment.html
+│   │   ├── manufacturing-construction.html
+│   │   ├── manufacturing-production.html
+│   │   ├── ita.html                  ITA ETF
+│   │   ├── xli.html                  XLI ETF
+│   │   ├── pld.html                  Prologis
+│   │   ├── dgs10.html                Treasury yield
+│   │   └── market-overview.html      Market comparison
+│   │
+│   ├── 📁 css/
+│   │   └── style.css                 Teal theme (#226E93)
+│   │
+│   ├── 📁 js/
+│   │   └── main.js                   Chart utilities & interactivity
+│   │
+│   ├── 📁 data/                       JSON data files
+│   │   ├── ita.json                  ✓ Already fetched (1,256 points)
+│   │   ├── xli.json                  ✓ Already fetched (1,256 points)
+│   │   ├── pld.json                  ✓ Already fetched (1,256 points)
+│   │   ├── finance_summary.json      ✓ Summary
+│   │   └── ... (FRED files after running publish.py)
+│   │
+│   └── 📁 images/                     (empty, for future use)
+│
+├── 📁 src/                            Python backend
+│   ├── 📁 data_fetchers/             ⭐ NEW
+│   │   ├── __init__.py
+│   │   ├── fred_fetcher.py           Fetch FRED economic data
+│   │   └── finance_fetcher.py        Fetch stocks/ETFs
+│   │
+│   ├── 📁 export/
+│   │   ├── __init__.py
+│   │   ├── export_to_csv.py          (Phase 1 - existing)
+│   │   ├── export_to_html.py         ⭐ NEW - Deal tracker HTML
+│   │   └── generate_chart_pages.py   ⭐ NEW - Chart page generator
+│   │
+│   ├── 📁 database/                   (Phase 1 - existing)
+│   │   ├── models.py
+│   │   └── __init__.py
+│   │
+│   ├── 📁 ingest/                     (Phase 1 - existing)
+│   │   ├── rss_fetcher.py
+│   │   └── __init__.py
+│   │
+│   ├── 📁 scraper/                    (Phase 1 - existing)
+│   │   ├── article_scraper.py
+│   │   └── __init__.py
+│   │
+│   ├── 📁 web/                        (Phase 1 - existing)
+│   │   ├── app.py
+│   │   ├── templates/
+│   │   └── __init__.py
+│   │
+│   └── 📁 utils/                      (Phase 1 - existing)
+│       ├── view_data.py
+│       ├── view_rejected.py
+│       └── inspect_article.py
+│
+├── 📁 config/                         (Phase 1 - existing)
+│   └── feeds.json
+│
+├── 📁 data/                           (Phase 1 - existing)
+│   └── tracker.db                    SQLite database with deals
+│
+├── 📁 exports/                        (Phase 1 - existing)
+│   └── master_list.csv
+│
+├── publish.py                         ⭐ NEW - Unified publish script
+├── run.sh                            (Phase 1 - existing)
+├── requirements.txt                  (Phase 1 - existing)
+│
+└── 📄 Documentation
+    ├── NIGHT_BUILD_SUMMARY.md        ⭐ What was built tonight
+    ├── GITHUB_PAGES_SETUP.md         ⭐ Deployment instructions
+    ├── QUICK_REFERENCE.md            ⭐ Command cheat sheet
+    ├── BUILD_STATS.md                ⭐ Build statistics
+    ├── DIRECTORY_STRUCTURE.txt       ⭐ This file
+    ├── PROJECT_HANDOFF.md            Original project spec
+    └── ... (other Phase 1 docs)
+
+
+Legend:
+━━━━━━
+⭐ NEW     = Created tonight
+✓         = Data already fetched
+📁        = Directory
+📄        = Documentation file
+
+
+Key Commands:
+━━━━━━━━━━━━━
+1. Publish:     cd ~/Documents/"Claude - Defense PC Dashboard" && python3 publish.py
+2. Test local:  cd github_site && python3 -m http.server 8080
+3. Update data: python3 src/data_fetchers/fred_fetcher.py
+4. Deploy:      cd github_site && git add . && git commit -m "Update" && git push
+
+
+Next Steps:
+━━━━━━━━━━━
+1. Get FRED API key: https://fred.stlouisfed.org/docs/api/api_key.html
+2. Set it: export FRED_API_KEY='your_key'
+3. Run: python3 publish.py
+4. Test: cd github_site && python3 -m http.server 8080
+5. Deploy to GitHub (see GITHUB_PAGES_SETUP.md)
+
+
+File Counts:
+━━━━━━━━━━━━
+Python scripts:     7 new + existing
+HTML pages:        17
+CSS files:          1
+JavaScript files:   1
+JSON data files:    4 (3 more with FRED key)
+Documentation:      5 new guides
+
+
+Ready to deploy! 🚀

@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Master List - Defense Capital Tracker{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <h2 style="margin: 0;">Master List ({{ items | length }} items)</h2>
+    {% if items | length > 0 %}
+    <a href="/export/csv" class="btn btn-primary" download>📥 Export to CSV</a>
+    {% endif %}
+</div>
+
+{% if items | length == 0 %}
+<div class="card">
+    <p style="text-align: center; color: #666;">
+        No items in master list yet. Review and accept items from the triage queue.
+    </p>
+</div>
+{% else %}
+<div class="card" style="overflow-x: auto;">
+    <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="border-bottom: 2px solid #ddd;">
+                <th style="text-align: left; padding: 12px;">Company</th>
+                <th style="text-align: left; padding: 12px;">Investment</th>
+                <th style="text-align: left; padding: 12px;">Type</th>
+                <th style="text-align: left; padding: 12px;">Sector</th>
+                <th style="text-align: left; padding: 12px;">Location</th>
+                <th style="text-align: left; padding: 12px;">Summary</th>
+                <th style="text-align: left; padding: 12px;">Source</th>
+                <th style="text-align: left; padding: 12px;">Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 12px;">{{ item.company or '-' }}</td>
+                <td style="padding: 12px;">{{ item.investment_amount or '-' }}</td>
+                <td style="padding: 12px;">
+                    {% if item.capital_type %}
+                    <span class="badge badge-info">{{ item.capital_type }}</span>
+                    {% else %}-{% endif %}
+                </td>
+                <td style="padding: 12px;">{{ item.sector or '-' }}</td>
+                <td style="padding: 12px;">{{ item.location or '-' }}</td>
+                <td style="padding: 12px; max-width: 300px;">
+                    {{ item.summary | truncate(150) if item.summary else '-' }}
+                </td>
+                <td style="padding: 12px;">
+                    <a href="{{ item.raw_item.url }}" target="_blank" class="btn-link" style="font-size: 12px;">View</a>
+                </td>
+                <td style="padding: 12px; white-space: nowrap;">
+                    {{ item.curated_at.strftime('%Y-%m-%d') }}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+{% endblock %}

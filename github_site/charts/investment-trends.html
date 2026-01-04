@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Investment Trends - Defense Capital Dashboard</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <nav>
+        <div class="container">
+            <a href="../index.html" class="logo">Defense Capital Dashboard</a>
+            <button class="mobile-menu-toggle">☰</button>
+            <ul>
+                <li><a href="../index.html">Home</a></li>
+                <li><a href="../deals/index.html">Deal Tracker</a></li>
+                <li><a href="../charts/defense-investment.html" >Defense Investment Trends</a></li>
+                <li><a href="../charts/defense-industrial.html" >Defense Industrial Health</a></li>
+                <li><a href="../charts/us-industrial.html" class="active">Overall US Industrial Health</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>Business Investment Trends</h1>
+            <p>Private nonresidential fixed investment in structures and equipment</p>
+        </div>
+
+        <div class="card">
+            <div class="chart-container" style="height: 500px;">
+                <canvas id="mainChart"></canvas>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>About This Metric</h2>
+            <p>
+            <strong>Private Nonresidential Fixed Investment (PNFI)</strong> measures business investment in structures, equipment,
+            and intellectual property. This excludes residential construction and focuses on productive capital investments
+            by businesses.
+        </p>
+            <p>
+            Business investment is a key driver of economic growth and defense industrial capacity. Higher investment
+            indicates businesses are expanding production capabilities, modernizing facilities, and investing in new
+            technologies. These investments build the foundation for future defense manufacturing capacity.
+        </p>
+            <p><strong>Units:</strong> Billions of Dollars</p>
+            <p><strong>Source:</strong> Federal Reserve Economic Data (FRED)</p>
+        </div>
+
+        <div class="card">
+            <h2>Related Charts</h2>
+            <div class="grid grid-3">
+                <a href="industrial-production.html" class="btn btn-secondary">Industrial Production Index</a>
+                <a href="gdp-investment.html" class="btn btn-secondary">GDP Investment Component</a>
+                <a href="lending-standards.html" class="btn btn-secondary">Bank Lending Standards</a>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Defense Capital Dashboard</p>
+        <p>Data source: Federal Reserve Economic Data (FRED)</p>
+    </footer>
+
+    <script src="../js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            await ChartUtils.loadAndRenderChart(
+                '../data/pnfi.json',
+                'mainChart',
+                {
+                    fill: true,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Value: ${context.parsed.y.toFixed(2)}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            );
+        });
+    </script>
+</body>
+</html>

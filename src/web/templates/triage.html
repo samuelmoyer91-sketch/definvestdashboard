@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Triage Queue - Defense Capital Tracker{% endblock %}
+
+{% block content %}
+<div class="stats">
+    <div class="stat-card">
+        <div class="stat-number">{{ total_items }}</div>
+        <div class="stat-label">Items to Review</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number">{{ master_count }}</div>
+        <div class="stat-label">Items in Master List</div>
+    </div>
+</div>
+
+<h2 style="margin-bottom: 20px;">Triage Queue</h2>
+
+{% if total_items == 0 %}
+<div class="card">
+    <p style="text-align: center; color: #666;">
+        No items to review. Run the RSS ingestion and scraper to fetch new items.
+    </p>
+    <p style="text-align: center; margin-top: 10px;">
+        <code>python src/ingest/rss_fetcher.py</code><br>
+        <code>python src/scraper/article_scraper.py</code>
+    </p>
+</div>
+{% else %}
+{% for item in items %}
+<div class="card item-card">
+    <div class="item-header">
+        <div class="item-title">{{ item.title | safe }}</div>
+    </div>
+    <div class="item-meta">
+        <span class="badge badge-info">{{ item.feed_source }}</span>
+        {% if item.published_date %}
+        <span style="margin-left: 10px;">Published: {{ item.published_date.strftime('%Y-%m-%d %H:%M') }}</span>
+        {% endif %}
+    </div>
+    <div class="item-summary">
+        {{ item.rss_summary | safe | truncate(300) }}
+    </div>
+    {% if item.article_content and item.article_content.clean_text %}
+    <div class="item-meta" style="margin-top: 10px;">
+        <span class="badge badge-success">Scraped</span>
+        <span style="margin-left: 10px;">{{ "{:,}".format(item.article_content.clean_text | length) }} chars</span>
+    </div>
+    {% endif %}
+    <div class="item-actions">
+        <a href="/item/{{ item.id }}" class="btn btn-primary">Review & Accept</a>
+        <form method="post" action="/reject/{{ item.id }}">
+            <button type="submit" class="btn btn-danger">Reject</button>
+        </form>
+        <a href="{{ item.url }}" target="_blank" class="btn btn-link">View Original</a>
+    </div>
+</div>
+{% endfor %}
+{% endif %}
+{% endblock %}

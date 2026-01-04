@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Statistics - Defense Capital Tracker{% endblock %}
+
+{% block content %}
+<h2 style="margin-bottom: 20px;">Statistics</h2>
+
+<div class="stats">
+    <div class="stat-card">
+        <div class="stat-number">{{ total_raw }}</div>
+        <div class="stat-label">Total RSS Items</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number">{{ total_scraped }}</div>
+        <div class="stat-label">Successfully Scraped</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number">{{ total_master }}</div>
+        <div class="stat-label">In Master List</div>
+    </div>
+</div>
+
+<div class="card">
+    <h3 style="margin-bottom: 15px;">Items by Feed Source</h3>
+    <table style="width: 100%;">
+        <thead>
+            <tr style="border-bottom: 2px solid #ddd;">
+                <th style="text-align: left; padding: 12px;">Feed Source</th>
+                <th style="text-align: right; padding: 12px;">Count</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for feed, count in feed_counts %}
+            <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 12px;">{{ feed }}</td>
+                <td style="padding: 12px; text-align: right; font-weight: 600;">{{ count }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

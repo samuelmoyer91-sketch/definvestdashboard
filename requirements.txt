@@ -1,0 +1,20 @@
+# Core dependencies
+feedparser==6.0.11
+requests==2.31.0
+beautifulsoup4==4.12.3
+lxml==5.1.0
+
+# Web framework
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+jinja2==3.1.3
+
+# Database
+sqlalchemy==2.0.25
+
+# Utilities
+python-dateutil==2.8.2
+pytz==2024.1
+
+# Future: AI extraction (uncomment when ready)
+# anthropic==0.18.1

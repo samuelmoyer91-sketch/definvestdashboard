@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market Overview - Defense Capital Dashboard</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <nav>
+        <div class="container">
+            <a href="../index.html" class="logo">Defense Capital Dashboard</a>
+            <button class="mobile-menu-toggle">☰</button>
+            <ul>
+                <li><a href="../index.html">Home</a></li>
+                <li><a href="../deals/index.html">Deal Tracker</a></li>
+                <li><a href="defense-spending.html" class="active">Charts</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>Market Overview</h1>
+            <p>Defense and industrial sector market performance</p>
+        </div>
+
+        <div class="card">
+            <h2>Sector Comparison</h2>
+            <div class="chart-container" style="height: 500px;">
+                <canvas id="comparisonChart"></canvas>
+            </div>
+        </div>
+
+        <div class="grid grid-2">
+            <div class="card">
+                <h3>Aerospace & Defense ETF (ITA)</h3>
+                <div class="chart-container" style="height: 300px;">
+                    <canvas id="itaChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Industrial Sector ETF (XLI)</h3>
+                <div class="chart-container" style="height: 300px;">
+                    <canvas id="xliChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Prologis Inc. (PLD)</h3>
+                <div class="chart-container" style="height: 300px;">
+                    <canvas id="pldChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>10-Year Treasury Yield</h3>
+                <div class="chart-container" style="height: 300px;">
+                    <canvas id="dgs10Chart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>About These Metrics</h2>
+            <p>
+                This page provides a comprehensive view of market performance across defense, industrial, and related sectors.
+                Tracking these instruments together helps identify broader trends and correlations.
+            </p>
+        </div>
+    </div>
+
+    <footer>
+        <p>Defense Capital Dashboard</p>
+        <p>Data sources: Yahoo Finance, Federal Reserve Economic Data (FRED)</p>
+    </footer>
+
+    <script src="../js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Load individual charts
+            ChartUtils.loadAndRenderChart('../data/ita.json', 'itaChart', { fill: true });
+            ChartUtils.loadAndRenderChart('../data/xli.json', 'xliChart', { fill: true });
+            ChartUtils.loadAndRenderChart('../data/pld.json', 'pldChart', { fill: true });
+            ChartUtils.loadAndRenderChart('../data/dgs10.json', 'dgs10Chart', { fill: true });
+
+            // Load comparison chart
+            ChartUtils.loadAndRenderMultiChart(
+                ['../data/ita.json', '../data/xli.json', '../data/pld.json'],
+                'comparisonChart'
+            );
+        });
+    </script>
+</body>
+</html>

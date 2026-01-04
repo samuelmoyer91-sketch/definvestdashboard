@@ -1,0 +1,45 @@
+{
+  "rss_feeds": [
+    {
+      "name": "Defense Manufacturing",
+      "url": "https://www.google.com/alerts/feeds/09025431128020683164/4830815519505009728",
+      "enabled": true
+    },
+    {
+      "name": "Private Equity Defense",
+      "url": "https://www.google.com/alerts/feeds/09025431128020683164/3776232429289321661",
+      "enabled": true
+    },
+    {
+      "name": "Dual-Use Tech Investments",
+      "url": "https://www.google.com/alerts/feeds/09025431128020683164/2552550775473449917",
+      "enabled": true
+    }
+  ],
+  "keywords": {
+    "high_priority": [
+      "private equity",
+      "venture capital",
+      "investment",
+      "funding",
+      "factory",
+      "manufacturing",
+      "facility",
+      "plant",
+      "defense",
+      "dual-use",
+      "pentagon",
+      "dod",
+      "national security"
+    ],
+    "exclude": [
+      "obituary",
+      "wedding",
+      "sports"
+    ]
+  },
+  "scraping": {
+    "timeout_seconds": 10,
+    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
+  }
+}

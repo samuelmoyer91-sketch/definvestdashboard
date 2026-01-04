@@ -1,0 +1,141 @@
+"""Database models for the Defense Capital Tracker."""
+
+from datetime import datetime
+from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, Boolean, Float, ForeignKey
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker, relationship
+import os
+
+Base = declarative_base()
+
+
+class RawItem(Base):
+    """Raw RSS feed items."""
+    __tablename__ = 'raw_items'
+
+    id = Column(Integer, primary_key=True)
+    url = Column(String, unique=True, nullable=False, index=True)
+    title = Column(String, nullable=False)
+    rss_summary = Column(Text)
+    published_date = Column(DateTime)
+    feed_source = Column(String)  # Which Google Alert feed
+    date_found = Column(DateTime, default=datetime.utcnow)
+    status = Column(String, default='new')  # new, scraped, failed
+
+    # Relationships
+    article = relationship("ArticleContent", back_populates="raw_item", uselist=False)
+    extraction = relationship("AIExtraction", back_populates="raw_item", uselist=False)
+    master = relationship("MasterItem", back_populates="raw_item", uselist=False)
+
+    def __repr__(self):
+        return f"<RawItem(id={self.id}, title='{self.title[:50]}...')>"
+
+
+class ArticleContent(Base):
+    """Scraped full article content."""
+    __tablename__ = 'article_content'
+
+    id = Column(Integer, primary_key=True)
+    item_id = Column(Integer, ForeignKey('raw_items.id'), unique=True, nullable=False)
+    html = Column(Text)
+    clean_text = Column(Text)
+    scraped_at = Column(DateTime, default=datetime.utcnow)
+    scrape_success = Column(Boolean, default=True)
+    error_message = Column(Text)
+
+    # Relationships
+    raw_item = relationship("RawItem", back_populates="article")
+
+    def __repr__(self):
+        return f"<ArticleContent(item_id={self.item_id}, success={self.scrape_success})>"
+
+
+class AIExtraction(Base):
+    """AI-extracted structured data (Phase 2)."""
+    __tablename__ = 'ai_extractions'
+
+    id = Column(Integer, primary_key=True)
+    item_id = Column(Integer, ForeignKey('raw_items.id'), unique=True, nullable=False)
+
+    # Extracted fields
+    company = Column(String)
+    investment_amount = Column(String)  # Store as string, parse later (e.g., "$100M")
+    capital_type = Column(String)  # VC, PE, corporate, public-private
+    location = Column(String)
+    sector = Column(String)
+    project_type = Column(String)  # factory, lab, test range, acquisition
+    ai_summary = Column(Text)
+
+    # Metadata
+    confidence_score = Column(Float)
+    extracted_at = Column(DateTime, default=datetime.utcnow)
+    model_used = Column(String)  # e.g., "claude-3-5-sonnet-20241022"
+
+    # Relationships
+    raw_item = relationship("RawItem", back_populates="extraction")
+
+    def __repr__(self):
+        return f"<AIExtraction(item_id={self.item_id}, company='{self.company}')>"
+
+
+class MasterItem(Base):
+    """Human-curated master list for publication."""
+    __tablename__ = 'master_list'
+
+    id = Column(Integer, primary_key=True)
+    item_id = Column(Integer, ForeignKey('raw_items.id'), unique=True, nullable=False)
+
+    # Human-verified fields (can override AI extractions)
+    company = Column(String)
+    investment_amount = Column(String)
+    capital_type = Column(String)
+    location = Column(String)
+    sector = Column(String)
+    project_type = Column(String)
+    summary = Column(Text)
+
+    # Curation metadata
+    human_notes = Column(Text)
+    curated_by = Column(String)  # Future: user authentication
+    curated_at = Column(DateTime, default=datetime.utcnow)
+
+    # Publishing
+    published = Column(Boolean, default=False)
+    published_at = Column(DateTime)
+
+    # Relationships
+    raw_item = relationship("RawItem", back_populates="master")
+
+    def __repr__(self):
+        return f"<MasterItem(id={self.id}, company='{self.company}')>"
+
+
+class RejectedItem(Base):
+    """Items that have been reviewed and rejected."""
+    __tablename__ = 'rejected_items'
+
+    id = Column(Integer, primary_key=True)
+    item_id = Column(Integer, ForeignKey('raw_items.id'), unique=True, nullable=False)
+    rejected_at = Column(DateTime, default=datetime.utcnow)
+    rejection_reason = Column(Text)  # Optional notes on why rejected
+
+    def __repr__(self):
+        return f"<RejectedItem(item_id={self.item_id})>"
+
+
+# Database setup
+def get_engine(db_path='data/tracker.db'):
+    """Create and return database engine."""
+    # Ensure data directory exists
+    os.makedirs(os.path.dirname(db_path), exist_ok=True)
+
+    engine = create_engine(f'sqlite:///{db_path}', echo=False)
+    Base.metadata.create_all(engine)
+    return engine
+
+
+def get_session(db_path='data/tracker.db'):
+    """Create and return database session."""
+    engine = get_engine(db_path)
+    Session = sessionmaker(bind=engine)
+    return Session()

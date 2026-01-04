@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Defense Capital Goods Orders - Defense Capital Dashboard</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <nav>
+        <div class="container">
+            <a href="../index.html" class="logo">Defense Capital Dashboard</a>
+            <button class="mobile-menu-toggle">☰</button>
+            <ul>
+                <li><a href="../index.html">Home</a></li>
+                <li><a href="../deals/index.html">Deal Tracker</a></li>
+                <li><a href="../charts/defense-investment.html" class="active">Defense Investment Trends</a></li>
+                <li><a href="../charts/defense-industrial.html" >Defense Industrial Health</a></li>
+                <li><a href="../charts/us-industrial.html" >Overall US Industrial Health</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>Defense Capital Goods Orders</h1>
+            <p>Manufacturers' new orders for defense capital goods</p>
+        </div>
+
+        <div class="card">
+            <div class="chart-container" style="height: 500px;">
+                <canvas id="mainChart"></canvas>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>About This Metric</h2>
+            <p>
+            <strong>Manufacturers' New Orders: Defense Capital Goods</strong> is a data set released monthly by the US Census Bureau.
+            This data set tracks how much money US manufacturers are receiving in new orders for military equipment and technology,
+            from aircraft and missiles to small arms and communication systems. It gives us a snapshot of how active the defense
+            industry is at any given time.
+        </p>
+            <p>
+            Because these are long-term, high-value items, an increase in orders usually reflects a boost in government spending
+            or a shift in national defense priorities. When new orders rise, it can indicate that the government is preparing for
+            future defense needs or responding to global tensions. On the flip side, a drop might suggest tightening budgets or
+            changes in sentiment in industry.
+        </p>
+            <p><strong>Units:</strong> Millions of Dollars</p>
+            <p><strong>Source:</strong> Federal Reserve Economic Data (FRED)</p>
+        </div>
+
+        <div class="card">
+            <h2>Related Charts</h2>
+            <div class="grid grid-3">
+                <a href="vc-investment.html" class="btn btn-secondary">Venture Capital Investment in Defense</a>
+                <a href="ma-activity.html" class="btn btn-secondary">M&A Activity in Defense</a>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Defense Capital Dashboard</p>
+        <p>Data source: Federal Reserve Economic Data (FRED)</p>
+    </footer>
+
+    <script src="../js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            await ChartUtils.loadAndRenderChart(
+                '../data/dgorder.json',
+                'mainChart',
+                {
+                    fill: true,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Value: ${context.parsed.y.toFixed(2)}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            );
+        });
+    </script>
+</body>
+</html>

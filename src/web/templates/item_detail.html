@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}{{ item.title | safe }} - Defense Capital Tracker{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 20px;">
+    <a href="/" class="btn btn-secondary">← Back to Triage</a>
+</div>
+
+<div class="card">
+    <h2 style="margin-bottom: 15px;">{{ item.title | safe }}</h2>
+
+    <div class="item-meta" style="margin-bottom: 20px;">
+        <span class="badge badge-info">{{ item.feed_source }}</span>
+        {% if item.published_date %}
+        <span style="margin-left: 10px;">Published: {{ item.published_date.strftime('%Y-%m-%d %H:%M') }}</span>
+        {% endif %}
+    </div>
+
+    <div style="margin-bottom: 20px;">
+        <strong>Original URL:</strong><br>
+        <a href="{{ item.url }}" target="_blank" style="color: #5e81ac; word-break: break-all;">{{ item.url }}</a>
+    </div>
+
+    <div style="margin-bottom: 20px;">
+        <strong>RSS Summary:</strong><br>
+        {{ item.rss_summary | safe }}
+    </div>
+
+    {% if article and article.clean_text %}
+    <div style="margin-bottom: 20px;">
+        <strong>Full Article:</strong><br>
+        <div style="background: #f9f9f9; padding: 15px; border-radius: 4px; max-height: 400px; overflow-y: auto;">
+            {{ article.clean_text[:2000] }}
+            {% if article.clean_text | length > 2000 %}
+            <p style="color: #666; margin-top: 10px;"><em>... (showing first 2000 of {{ "{:,}".format(article.clean_text | length) }} characters)</em></p>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<div class="card">
+    <h3 style="margin-bottom: 15px;">Accept & Curate</h3>
+    <form method="post" action="/accept/{{ item.id }}">
+        <div style="margin-bottom: 15px;">
+            <label style="display: block; font-weight: 600; margin-bottom: 5px;">Company/Companies:</label>
+            <input type="text" name="company" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;"
+                   placeholder="e.g., Anduril, Shield AI, McNally Capital">
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <label style="display: block; font-weight: 600; margin-bottom: 5px;">Investment Amount:</label>
+            <input type="text" name="investment_amount" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;"
+                   placeholder="e.g., $100M, $1.5B, Not disclosed">
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <label style="display: block; font-weight: 600; margin-bottom: 5px;">Capital Type:</label>
+            <select name="capital_type" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                <option value="">-- Select --</option>
+                <option value="Venture Capital">Venture Capital</option>
+                <option value="Private Equity">Private Equity</option>
+                <option value="Corporate Investment">Corporate Investment</option>
+                <option value="Public-Private">Public-Private</option>
+                <option value="IPO">IPO</option>
+                <option value="Other">Other</option>
+            </select>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <label style="display: block; font-weight: 600; margin-bottom: 5px;">Location:</label>
+            <input type="text" name="location" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;"
+                   placeholder="e.g., Austin, TX or California">
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <label style="display: block; font-weight: 600; margin-bottom: 5px;">Sector/Technology:</label>
+            <input type="text" name="sector" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;"
+                   placeholder="e.g., Drones, Semiconductors, Munitions, AI/ML">
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <label style="display: block; font-weight: 600; margin-bottom: 5px;">Project Type:</label>
+            <select name="project_type" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                <option value="">-- Select --</option>
+                <option value="Factory">Factory / Manufacturing Facility</option>
+                <option value="Lab">Lab / R&D Facility</option>
+                <option value="Test Range">Test Range</option>
+                <option value="Acquisition">Company Acquisition</option>
+                <option value="Funding Round">Funding Round</option>
+                <option value="Other">Other</option>
+            </select>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <label style="display: block; font-weight: 600; margin-bottom: 5px;">Summary (2-3 sentences):</label>
+            <textarea name="summary" rows="4" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;"
+                      placeholder="Write a concise summary of the investment/project..."></textarea>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <label style="display: block; font-weight: 600; margin-bottom: 5px;">Internal Notes:</label>
+            <textarea name="notes" rows="2" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;"
+                      placeholder="Any notes for yourself (not public)..."></textarea>
+        </div>
+
+        <div style="display: flex; gap: 10px;">
+            <button type="submit" class="btn btn-primary">Accept & Add to Master List</button>
+            <a href="/" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

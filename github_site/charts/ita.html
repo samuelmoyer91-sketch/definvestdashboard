@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aerospace & Defense ETF (ITA) - Defense Capital Dashboard</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <nav>
+        <div class="container">
+            <a href="../index.html" class="logo">Defense Capital Dashboard</a>
+            <button class="mobile-menu-toggle">☰</button>
+            <ul>
+                <li><a href="../index.html">Home</a></li>
+                <li><a href="../deals/index.html">Deal Tracker</a></li>
+                <li><a href="../charts/defense-investment.html" >Defense Investment Trends</a></li>
+                <li><a href="../charts/defense-industrial.html" class="active">Defense Industrial Health</a></li>
+                <li><a href="../charts/us-industrial.html" >Overall US Industrial Health</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>Aerospace & Defense ETF (ITA)</h1>
+            <p>iShares U.S. Aerospace & Defense ETF investor sentiment</p>
+        </div>
+
+        <div class="card">
+            <div class="chart-container" style="height: 500px;">
+                <canvas id="mainChart"></canvas>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>About This Metric</h2>
+            <p>
+            The <strong>iShares U.S. Aerospace & Defense ETF (ITA)</strong> tracks ETFs focused on the aerospace and defense
+            sectors, reflecting investor sentiment. It is a basket of stocks of companies in the defense industrial base.
+        </p>
+            <p>
+            Higher ITA prices demonstrate that investors believe the value of defense primes will increase, while lower prices
+            suggest caution towards the growth of the defense industrial base. The ETF serves as a real-time measure of market
+            confidence in the sector's future profitability and growth prospects.
+        </p>
+            <p><strong>Units:</strong> Price (USD)</p>
+            <p><strong>Source:</strong> Yahoo Finance</p>
+        </div>
+
+        <div class="card">
+            <h2>Related Charts</h2>
+            <div class="grid grid-3">
+                <a href="aircraft-orders.html" class="btn btn-secondary">Defense Aircraft Orders</a>
+                <a href="aircraft-parts-orders.html" class="btn btn-secondary">Defense Aircraft Parts Orders</a>
+                <a href="manufacturing-production.html" class="btn btn-secondary">Industrial Production: Defense Equipment</a>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Defense Capital Dashboard</p>
+        <p>Data source: Yahoo Finance</p>
+    </footer>
+
+    <script src="../js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            await ChartUtils.loadAndRenderChart(
+                '../data/ita.json',
+                'mainChart',
+                {
+                    fill: true,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Value: ${context.parsed.y.toFixed(2)}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            );
+        });
+    </script>
+</body>
+</html>
