@@ -435,14 +435,10 @@ function addRecessionShading(chartData, recessions) {
     };
 }
 
-// Load recession data globally
+// Load recession data globally (optional feature, not critical)
 let recessionData = null;
-fetch('data/recessions.json')
-    .then(response => response.json())
-    .then(data => {
-        recessionData = data.recessions;
-    })
-    .catch(err => console.log('Recession data not available'));
+// Removed automatic loading to prevent path issues
+// Can be loaded on-demand when recession shading is activated
 
 // Export functions for use in other scripts
 window.ChartUtils = {

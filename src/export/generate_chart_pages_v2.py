@@ -467,23 +467,19 @@ def generate_chart_page(chart_id, chart_info):
                     document.getElementById('lastUpdated').textContent = 'Last updated: ' + chartData.last_updated;
                 }}
 
-                // Render chart
-                await ChartUtils.loadAndRenderChart(
-                    '{data_file}',
-                    'mainChart',
-                    {{
-                        fill: true,
-                        plugins: {{
-                            tooltip: {{
-                                callbacks: {{
-                                    label: function(context) {{
-                                        return `Value: ${{context.parsed.y.toFixed(2)}}`;
-                                    }}
+                // Render chart using already-loaded data
+                ChartUtils.createLineChart('mainChart', chartData, {{
+                    fill: true,
+                    plugins: {{
+                        tooltip: {{
+                            callbacks: {{
+                                label: function(context) {{
+                                    return `Value: ${{context.parsed.y.toFixed(2)}}`;
                                 }}
                             }}
                         }}
                     }}
-                );
+                }});
             }} catch (error) {{
                 console.error('Error loading chart:', error);
             }}
