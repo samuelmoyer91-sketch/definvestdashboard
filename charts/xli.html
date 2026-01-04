@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Industrial Sector ETF (XLI) - Defense Capital Dashboard</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <nav>
+        <div class="container">
+            <a href="../index.html" class="logo">Defense Capital Dashboard</a>
+            <button class="mobile-menu-toggle">☰</button>
+            <ul>
+                <li><a href="../index.html">Home</a></li>
+                <li><a href="../deals/index.html">Deal Tracker</a></li>
+                <li><a href="../charts/defense-investment.html" >Defense Investment Trends</a></li>
+                <li><a href="../charts/defense-industrial.html" >Defense Industrial Health</a></li>
+                <li><a href="../charts/us-industrial.html" class="active">Overall US Industrial Health</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>Industrial Sector ETF (XLI)</h1>
+            <p>Industrial Select Sector SPDR Fund performance</p>
+        </div>
+
+        <div class="card">
+            <div class="chart-container" style="height: 500px;">
+                <canvas id="mainChart"></canvas>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>About This Metric</h2>
+            <p>
+            <strong>XLI ETF</strong> tracks the Industrial sector of the S&P 500, including aerospace, defense,
+            construction, engineering, machinery companies, and industrial conglomerates. It provides a broader view
+            of industrial sector performance beyond just defense.
+        </p>
+            <p>
+            XLI provides context for defense sector trends within the larger industrial economy. Strong XLI performance
+            suggests robust demand for industrial products and services, healthy capital expenditures, and positive
+            investor sentiment toward manufacturing and infrastructure. Defense contractors often benefit from the same
+            economic tailwinds that lift the broader industrial sector.
+        </p>
+            <p><strong>Units:</strong> Price (USD)</p>
+            <p><strong>Source:</strong> Yahoo Finance</p>
+        </div>
+
+        <div class="card">
+            <h2>Related Charts</h2>
+            <div class="grid grid-3">
+                <a href="industrial-production.html" class="btn btn-secondary">Industrial Production Index</a>
+                <a href="investment-trends.html" class="btn btn-secondary">Business Investment Trends</a>
+                <a href="gdp-investment.html" class="btn btn-secondary">GDP Investment Component</a>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Defense Capital Dashboard</p>
+        <p>Data source: Yahoo Finance</p>
+    </footer>
+
+    <script src="../js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            await ChartUtils.loadAndRenderChart(
+                '../data/xli.json',
+                'mainChart',
+                {
+                    fill: true,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Value: ${context.parsed.y.toFixed(2)}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            );
+        });
+    </script>
+</body>
+</html>

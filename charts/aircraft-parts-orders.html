@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Defense Aircraft Parts Orders - Defense Capital Dashboard</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <nav>
+        <div class="container">
+            <a href="../index.html" class="logo">Defense Capital Dashboard</a>
+            <button class="mobile-menu-toggle">☰</button>
+            <ul>
+                <li><a href="../index.html">Home</a></li>
+                <li><a href="../deals/index.html">Deal Tracker</a></li>
+                <li><a href="../charts/defense-investment.html" >Defense Investment Trends</a></li>
+                <li><a href="../charts/defense-industrial.html" class="active">Defense Industrial Health</a></li>
+                <li><a href="../charts/us-industrial.html" >Overall US Industrial Health</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>Defense Aircraft Parts Orders</h1>
+            <p>Manufacturers' new orders for defense aircraft parts and components</p>
+        </div>
+
+        <div class="card">
+            <div class="chart-container" style="height: 500px;">
+                <canvas id="mainChart"></canvas>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>About This Metric</h2>
+            <p>
+            <strong>Defense Aircraft Parts Orders (ADAPNO)</strong> measures orders for aircraft components, subassemblies, and
+            replacement parts used in military aviation. This includes everything from engines and avionics to structural components
+            and weapons systems integration.
+        </p>
+            <p>
+            Parts orders complement aircraft orders and include maintenance, repair, and overhaul (MRO) activities. A healthy parts
+            order book indicates both new production activity and sustained support for existing aircraft fleets. This metric can
+            signal the health of the broader defense aerospace supply chain.
+        </p>
+            <p><strong>Units:</strong> Millions of Dollars</p>
+            <p><strong>Source:</strong> Federal Reserve Economic Data (FRED)</p>
+        </div>
+
+        <div class="card">
+            <h2>Related Charts</h2>
+            <div class="grid grid-3">
+                <a href="aircraft-orders.html" class="btn btn-secondary">Defense Aircraft Orders</a>
+                <a href="manufacturing-production.html" class="btn btn-secondary">Industrial Production: Defense Equipment</a>
+                <a href="defense-spending.html" class="btn btn-secondary">National Defense Spending</a>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Defense Capital Dashboard</p>
+        <p>Data source: Federal Reserve Economic Data (FRED)</p>
+    </footer>
+
+    <script src="../js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            await ChartUtils.loadAndRenderChart(
+                '../data/adapno.json',
+                'mainChart',
+                {
+                    fill: true,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Value: ${context.parsed.y.toFixed(2)}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            );
+        });
+    </script>
+</body>
+</html>

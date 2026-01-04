@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bank Lending Standards - Defense Capital Dashboard</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <nav>
+        <div class="container">
+            <a href="../index.html" class="logo">Defense Capital Dashboard</a>
+            <button class="mobile-menu-toggle">☰</button>
+            <ul>
+                <li><a href="../index.html">Home</a></li>
+                <li><a href="../deals/index.html">Deal Tracker</a></li>
+                <li><a href="../charts/defense-investment.html" >Defense Investment Trends</a></li>
+                <li><a href="../charts/defense-industrial.html" >Defense Industrial Health</a></li>
+                <li><a href="../charts/us-industrial.html" class="active">Overall US Industrial Health</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>Bank Lending Standards</h1>
+            <p>Net percentage of banks tightening standards for commercial loans</p>
+        </div>
+
+        <div class="card">
+            <div class="chart-container" style="height: 500px;">
+                <canvas id="mainChart"></canvas>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>About This Metric</h2>
+            <p>
+            <strong>Lending Standards (DRTSCILM)</strong> measures the net percentage of domestic banks reporting tightened
+            lending standards for commercial and industrial loans. Positive values indicate tightening (harder to get loans),
+            while negative values indicate loosening (easier to get loans).
+        </p>
+            <p>
+            This metric is crucial for understanding credit availability to defense contractors and industrial companies.
+            Tighter lending standards can constrain business expansion, capital expenditures, and working capital in the
+            defense sector. Access to credit is essential for companies to take on large defense contracts and invest in
+            new capabilities.
+        </p>
+            <p><strong>Units:</strong> Percent</p>
+            <p><strong>Source:</strong> Federal Reserve Economic Data (FRED)</p>
+        </div>
+
+        <div class="card">
+            <h2>Related Charts</h2>
+            <div class="grid grid-3">
+                <a href="industrial-production.html" class="btn btn-secondary">Industrial Production Index</a>
+                <a href="investment-trends.html" class="btn btn-secondary">Business Investment Trends</a>
+                <a href="gdp-investment.html" class="btn btn-secondary">GDP Investment Component</a>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Defense Capital Dashboard</p>
+        <p>Data source: Federal Reserve Economic Data (FRED)</p>
+    </footer>
+
+    <script src="../js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            await ChartUtils.loadAndRenderChart(
+                '../data/drtscilm.json',
+                'mainChart',
+                {
+                    fill: true,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Value: ${context.parsed.y.toFixed(2)}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            );
+        });
+    </script>
+</body>
+</html>
