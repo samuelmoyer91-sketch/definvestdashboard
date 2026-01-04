@@ -15,7 +15,8 @@
       "Bash(export FRED_API_KEY='d52c8a741ca8ff9a4c15cc93e7dfbc4c')",
       "Bash(git init:*)",
       "Bash(git add:*)",
-      "Bash(git commit -m \"$(cat <<''EOF''\nInitial commit - Current working version\n\nThis is the baseline before implementing evaluation improvements.\nIncludes:\n- Complete GitHub Pages site with 3 category pages + deal tracker\n- All FRED and market data fetchers working\n- VC/M&A custom charts integrated\n- User''s original metric descriptions\n- Teal theme (#226E93)\n- Mobile-responsive design\n- 17 HTML pages, 2,300+ lines of code\n\nAll data loading correctly. Site ready for enhancements.\nEOF\n)\")"
+      "Bash(git commit -m \"$(cat <<''EOF''\nInitial commit - Current working version\n\nThis is the baseline before implementing evaluation improvements.\nIncludes:\n- Complete GitHub Pages site with 3 category pages + deal tracker\n- All FRED and market data fetchers working\n- VC/M&A custom charts integrated\n- User''s original metric descriptions\n- Teal theme (#226E93)\n- Mobile-responsive design\n- 17 HTML pages, 2,300+ lines of code\n\nAll data loading correctly. Site ready for enhancements.\nEOF\n)\")",
+      "Bash(git checkout:*)"
     ]
   }
 }

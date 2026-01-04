@@ -6,22 +6,39 @@ Creates individual chart pages and category overview pages
 
 from pathlib import Path
 
-# Navigation categories
+# Navigation categories with key insights
 CATEGORIES = {
     'defense-investment': {
         'title': 'Defense Investment Trends',
         'description': 'Tracking capital flows and investment activity in the defense sector',
-        'charts': ['dgorder', 'vc_defense', 'ma_defense']
+        'charts': ['dgorder', 'vc_defense', 'ma_defense'],
+        'insights': [
+            'Defense capital goods orders provide early signals of future production activity and contractor revenue',
+            'VC investment trends indicate emerging technology areas attracting private capital in defense',
+            'M&A activity reflects industry consolidation and strategic positioning for major defense programs'
+        ]
     },
     'defense-industrial': {
         'title': 'Defense Industrial Health',
         'description': 'Measuring the production capacity and health of the defense industrial base',
-        'charts': ['adefno', 'adapno', 'ipb52300s', 'fdefx', 'prmfgcons', 'ita']
+        'charts': ['adefno', 'adapno', 'ipb52300s', 'fdefx', 'prmfgcons', 'ita'],
+        'insights': [
+            'Aircraft orders and production volumes indicate the health of major defense aerospace programs',
+            'Defense equipment production levels show current output capacity of the industrial base',
+            'Federal defense spending drives contractor revenues and investment in production capacity',
+            'Manufacturing construction reflects long-term capacity expansion in defense-critical facilities'
+        ]
     },
     'us-industrial': {
         'title': 'Overall US Industrial Health',
         'description': 'Broader economic indicators affecting defense manufacturing capabilities',
-        'charts': ['indpro', 'pnfi', 'gpdi', 'drtscilm', 'xli', 'pld', 'dgs10']
+        'charts': ['indpro', 'pnfi', 'gpdi', 'drtscilm', 'xli', 'pld', 'dgs10'],
+        'insights': [
+            'Overall industrial production indicates the health of the manufacturing base supporting defense',
+            'Business investment trends signal confidence and capacity expansion across the industrial economy',
+            'Bank lending standards affect access to capital for defense contractors and suppliers',
+            'Treasury yields influence borrowing costs for major defense programs and contractor financing'
+        ]
     }
 }
 
@@ -351,9 +368,40 @@ def generate_chart_page(chart_id, chart_info):
         <div class="page-header">
             <h1>{chart_info['title']}</h1>
             <p>{chart_info['subtitle']}</p>
+            <p class="last-updated" id="lastUpdated"></p>
+        </div>
+
+        <!-- Data Summary Stats -->
+        <div class="data-summary" id="dataSummary" style="display: none;">
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <div class="summary-label">Latest Value</div>
+                    <div class="summary-value" id="latestValue">--</div>
+                    <div class="summary-change" id="latestDate">--</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">Period Change</div>
+                    <div class="summary-value" id="monthChange">--</div>
+                    <div class="summary-change" id="monthChangePercent">--</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">Year-over-Year</div>
+                    <div class="summary-value" id="yearChange">--</div>
+                    <div class="summary-change" id="yearChangePercent">--</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">Trend</div>
+                    <div class="summary-value"><span id="trendIndicator" class="trend-indicator">→</span></div>
+                    <div class="summary-change">Recent direction</div>
+                </div>
+            </div>
         </div>
 
         <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2 style="margin: 0;">Chart</h2>
+                <button class="btn btn-download" id="downloadBtn">Download CSV</button>
+            </div>
             <div class="chart-container" style="height: 500px;">
                 <canvas id="mainChart"></canvas>
             </div>
@@ -382,23 +430,70 @@ def generate_chart_page(chart_id, chart_info):
 
     <script src="../js/main.js"></script>
     <script>
+        let chartData = null;
+
         document.addEventListener('DOMContentLoaded', async function() {{
-            await ChartUtils.loadAndRenderChart(
-                '{data_file}',
-                'mainChart',
-                {{
-                    fill: true,
-                    plugins: {{
-                        tooltip: {{
-                            callbacks: {{
-                                label: function(context) {{
-                                    return `Value: ${{context.parsed.y.toFixed(2)}}`;
+            try {{
+                // Load data
+                const response = await fetch('{data_file}');
+                chartData = await response.json();
+
+                // Calculate and display stats
+                const stats = ChartUtils.calculateStats(chartData.data);
+                if (stats) {{
+                    document.getElementById('dataSummary').style.display = 'block';
+                    document.getElementById('latestValue').textContent = ChartUtils.formatNumber(stats.latest.toFixed(2));
+                    document.getElementById('latestDate').textContent = stats.latestDate;
+
+                    if (stats.monthChange !== null) {{
+                        const monthChangeElem = document.getElementById('monthChange');
+                        const monthChangePercentElem = document.getElementById('monthChangePercent');
+                        monthChangeElem.textContent = (stats.monthChange >= 0 ? '+' : '') + ChartUtils.formatNumber(stats.monthChange.toFixed(2));
+                        monthChangePercentElem.textContent = (stats.monthChangePercent >= 0 ? '+' : '') + stats.monthChangePercent.toFixed(2) + '%';
+                        monthChangePercentElem.className = 'summary-change ' + (stats.monthChangePercent > 0 ? 'positive' : stats.monthChangePercent < 0 ? 'negative' : 'neutral');
+                    }}
+
+                    const yearChangeElem = document.getElementById('yearChange');
+                    const yearChangePercentElem = document.getElementById('yearChangePercent');
+                    yearChangeElem.textContent = (stats.yearChange >= 0 ? '+' : '') + ChartUtils.formatNumber(stats.yearChange.toFixed(2));
+                    yearChangePercentElem.textContent = (stats.yearChangePercent >= 0 ? '+' : '') + stats.yearChangePercent.toFixed(2) + '%';
+                    yearChangePercentElem.className = 'summary-change ' + (stats.yearChangePercent > 0 ? 'positive' : stats.yearChangePercent < 0 ? 'negative' : 'neutral');
+
+                    document.getElementById('trendIndicator').textContent = stats.trend;
+                }}
+
+                // Display last updated
+                if (chartData.last_updated) {{
+                    document.getElementById('lastUpdated').textContent = 'Last updated: ' + chartData.last_updated;
+                }}
+
+                // Render chart
+                await ChartUtils.loadAndRenderChart(
+                    '{data_file}',
+                    'mainChart',
+                    {{
+                        fill: true,
+                        plugins: {{
+                            tooltip: {{
+                                callbacks: {{
+                                    label: function(context) {{
+                                        return `Value: ${{context.parsed.y.toFixed(2)}}`;
+                                    }}
                                 }}
                             }}
                         }}
                     }}
+                );
+            }} catch (error) {{
+                console.error('Error loading chart:', error);
+            }}
+
+            // Download button handler
+            document.getElementById('downloadBtn').addEventListener('click', function() {{
+                if (chartData) {{
+                    ChartUtils.downloadCSV(chartData, '{chart_id}.csv');
                 }}
-            );
+            }});
         }});
     </script>
 </body>
@@ -430,6 +525,18 @@ def generate_category_page(cat_id, cat_info):
         """)
 
     chart_cards_html = '\n            '.join(chart_cards)
+
+    # Generate key insights HTML
+    insights_html = ''
+    if 'insights' in cat_info and cat_info['insights']:
+        insights_items = '\n                    '.join([f'<li>{insight}</li>' for insight in cat_info['insights']])
+        insights_html = f"""
+        <div class="key-insights">
+            <h3>Key Insights</h3>
+            <ul>
+                {insights_items}
+            </ul>
+        </div>"""
 
     # Generate chart loading scripts - using direct Chart.js to ensure all data shows
     chart_scripts = []
@@ -503,6 +610,8 @@ def generate_category_page(cat_id, cat_info):
             <h1>{cat_info['title']}</h1>
             <p>{cat_info['description']}</p>
         </div>
+
+        {insights_html}
 
         <div class="grid grid-2">
             {chart_cards_html}
