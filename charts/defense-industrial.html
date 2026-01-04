@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Defense Industrial Health - Defense Capital Dashboard</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <nav>
+        <div class="container">
+            <a href="../index.html" class="logo">Defense Capital Dashboard</a>
+            <button class="mobile-menu-toggle">☰</button>
+            <ul>
+                <li><a href="../index.html">Home</a></li>
+                <li><a href="../deals/index.html">Deal Tracker</a></li>
+                <li><a href="../charts/defense-investment.html" >Defense Investment Trends</a></li>
+                <li><a href="../charts/defense-industrial.html" class="active">Defense Industrial Health</a></li>
+                <li><a href="../charts/us-industrial.html" >Overall US Industrial Health</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>Defense Industrial Health</h1>
+            <p>Measuring the production capacity and health of the defense industrial base</p>
+        </div>
+
+        
+        <div class="key-insights">
+            <h3>Key Insights</h3>
+            <ul>
+                <li>Aircraft orders and production volumes indicate the health of major defense aerospace programs</li>
+                    <li>Defense equipment production levels show current output capacity of the industrial base</li>
+                    <li>Federal defense spending drives contractor revenues and investment in production capacity</li>
+                    <li>Manufacturing construction reflects long-term capacity expansion in defense-critical facilities</li>
+            </ul>
+        </div>
+
+        <div class="grid grid-2">
+            
+            <div class="card">
+                <h3><a href="aircraft-orders.html">Defense Aircraft Orders</a></h3>
+                <p>Manufacturers' new orders for defense aircraft</p>
+                <div class="chart-container" style="height: 250px;">
+                    <canvas id="chart_adefno"></canvas>
+                </div>
+                <a href="aircraft-orders.html" class="btn btn-primary" style="margin-top: 1rem;">View Details</a>
+            </div>
+        
+            
+            <div class="card">
+                <h3><a href="aircraft-parts-orders.html">Defense Aircraft Parts Orders</a></h3>
+                <p>Manufacturers' new orders for defense aircraft parts and components</p>
+                <div class="chart-container" style="height: 250px;">
+                    <canvas id="chart_adapno"></canvas>
+                </div>
+                <a href="aircraft-parts-orders.html" class="btn btn-primary" style="margin-top: 1rem;">View Details</a>
+            </div>
+        
+            
+            <div class="card">
+                <h3><a href="manufacturing-production.html">Industrial Production: Defense Equipment</a></h3>
+                <p>Production output of defense and space equipment</p>
+                <div class="chart-container" style="height: 250px;">
+                    <canvas id="chart_ipb52300s"></canvas>
+                </div>
+                <a href="manufacturing-production.html" class="btn btn-primary" style="margin-top: 1rem;">View Details</a>
+            </div>
+        
+            
+            <div class="card">
+                <h3><a href="defense-spending.html">National Defense Spending</a></h3>
+                <p>Federal defense consumption expenditures and procurement</p>
+                <div class="chart-container" style="height: 250px;">
+                    <canvas id="chart_fdefx"></canvas>
+                </div>
+                <a href="defense-spending.html" class="btn btn-primary" style="margin-top: 1rem;">View Details</a>
+            </div>
+        
+            
+            <div class="card">
+                <h3><a href="manufacturing-construction.html">Manufacturing Construction</a></h3>
+                <p>Construction spending in the manufacturing sector</p>
+                <div class="chart-container" style="height: 250px;">
+                    <canvas id="chart_prmfgcons"></canvas>
+                </div>
+                <a href="manufacturing-construction.html" class="btn btn-primary" style="margin-top: 1rem;">View Details</a>
+            </div>
+        
+            
+            <div class="card">
+                <h3><a href="ita.html">Aerospace & Defense ETF (ITA)</a></h3>
+                <p>iShares U.S. Aerospace & Defense ETF investor sentiment</p>
+                <div class="chart-container" style="height: 250px;">
+                    <canvas id="chart_ita"></canvas>
+                </div>
+                <a href="ita.html" class="btn btn-primary" style="margin-top: 1rem;">View Details</a>
+            </div>
+        
+        </div>
+    </div>
+
+    <footer>
+        <p>Defense Capital Dashboard</p>
+        <p>Data sources: Federal Reserve Economic Data (FRED), Yahoo Finance</p>
+    </footer>
+
+    <script src="../js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            
+            fetch('../data/adefno.json')
+                .then(response => response.json())
+                .then(data => {
+                    const ctx = document.getElementById('chart_adefno');
+                    if (!ctx) return;
+
+                    // Show only recent data for cleaner previews (last 10 years)
+                    const allData = data.data;
+                    const recentData = allData.length > 120 ? allData.slice(-120) : allData;
+
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: recentData.map(d => d.date),
+                            datasets: [{
+                                label: data.name,
+                                data: recentData.map(d => d.value || d.close),
+                                borderColor: '#226E93',
+                                backgroundColor: 'rgba(34, 110, 147, 0.1)',
+                                borderWidth: 2,
+                                fill: true,
+                                tension: 0.1,
+                                pointRadius: 0
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false }
+                            },
+                            scales: {
+                                x: { display: true, grid: { display: false } },
+                                y: { grid: { color: '#e0e0e0' } }
+                            }
+                        }
+                    });
+                })
+                .catch(err => console.log('Could not load adefno:', err));
+        
+            
+            fetch('../data/adapno.json')
+                .then(response => response.json())
+                .then(data => {
+                    const ctx = document.getElementById('chart_adapno');
+                    if (!ctx) return;
+
+                    // Show only recent data for cleaner previews (last 10 years)
+                    const allData = data.data;
+                    const recentData = allData.length > 120 ? allData.slice(-120) : allData;
+
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: recentData.map(d => d.date),
+                            datasets: [{
+                                label: data.name,
+                                data: recentData.map(d => d.value || d.close),
+                                borderColor: '#226E93',
+                                backgroundColor: 'rgba(34, 110, 147, 0.1)',
+                                borderWidth: 2,
+                                fill: true,
+                                tension: 0.1,
+                                pointRadius: 0
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false }
+                            },
+                            scales: {
+                                x: { display: true, grid: { display: false } },
+                                y: { grid: { color: '#e0e0e0' } }
+                            }
+                        }
+                    });
+                })
+                .catch(err => console.log('Could not load adapno:', err));
+        
+            
+            fetch('../data/ipb52300s.json')
+                .then(response => response.json())
+                .then(data => {
+                    const ctx = document.getElementById('chart_ipb52300s');
+                    if (!ctx) return;
+
+                    // Show only recent data for cleaner previews (last 10 years)
+                    const allData = data.data;
+                    const recentData = allData.length > 120 ? allData.slice(-120) : allData;
+
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: recentData.map(d => d.date),
+                            datasets: [{
+                                label: data.name,
+                                data: recentData.map(d => d.value || d.close),
+                                borderColor: '#226E93',
+                                backgroundColor: 'rgba(34, 110, 147, 0.1)',
+                                borderWidth: 2,
+                                fill: true,
+                                tension: 0.1,
+                                pointRadius: 0
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false }
+                            },
+                            scales: {
+                                x: { display: true, grid: { display: false } },
+                                y: { grid: { color: '#e0e0e0' } }
+                            }
+                        }
+                    });
+                })
+                .catch(err => console.log('Could not load ipb52300s:', err));
+        
+            
+            fetch('../data/fdefx.json')
+                .then(response => response.json())
+                .then(data => {
+                    const ctx = document.getElementById('chart_fdefx');
+                    if (!ctx) return;
+
+                    // Show only recent data for cleaner previews (last 10 years)
+                    const allData = data.data;
+                    const recentData = allData.length > 120 ? allData.slice(-120) : allData;
+
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: recentData.map(d => d.date),
+                            datasets: [{
+                                label: data.name,
+                                data: recentData.map(d => d.value || d.close),
+                                borderColor: '#226E93',
+                                backgroundColor: 'rgba(34, 110, 147, 0.1)',
+                                borderWidth: 2,
+                                fill: true,
+                                tension: 0.1,
+                                pointRadius: 0
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false }
+                            },
+                            scales: {
+                                x: { display: true, grid: { display: false } },
+                                y: { grid: { color: '#e0e0e0' } }
+                            }
+                        }
+                    });
+                })
+                .catch(err => console.log('Could not load fdefx:', err));
+        
+            
+            fetch('../data/prmfgcons.json')
+                .then(response => response.json())
+                .then(data => {
+                    const ctx = document.getElementById('chart_prmfgcons');
+                    if (!ctx) return;
+
+                    // Show only recent data for cleaner previews (last 10 years)
+                    const allData = data.data;
+                    const recentData = allData.length > 120 ? allData.slice(-120) : allData;
+
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: recentData.map(d => d.date),
+                            datasets: [{
+                                label: data.name,
+                                data: recentData.map(d => d.value || d.close),
+                                borderColor: '#226E93',
+                                backgroundColor: 'rgba(34, 110, 147, 0.1)',
+                                borderWidth: 2,
+                                fill: true,
+                                tension: 0.1,
+                                pointRadius: 0
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false }
+                            },
+                            scales: {
+                                x: { display: true, grid: { display: false } },
+                                y: { grid: { color: '#e0e0e0' } }
+                            }
+                        }
+                    });
+                })
+                .catch(err => console.log('Could not load prmfgcons:', err));
+        
+            
+            fetch('../data/ita.json')
+                .then(response => response.json())
+                .then(data => {
+                    const ctx = document.getElementById('chart_ita');
+                    if (!ctx) return;
+
+                    // Show only recent data for cleaner previews (last 10 years)
+                    const allData = data.data;
+                    const recentData = allData.length > 120 ? allData.slice(-120) : allData;
+
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: recentData.map(d => d.date),
+                            datasets: [{
+                                label: data.name,
+                                data: recentData.map(d => d.value || d.close),
+                                borderColor: '#226E93',
+                                backgroundColor: 'rgba(34, 110, 147, 0.1)',
+                                borderWidth: 2,
+                                fill: true,
+                                tension: 0.1,
+                                pointRadius: 0
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false }
+                            },
+                            scales: {
+                                x: { display: true, grid: { display: false } },
+                                y: { grid: { color: '#e0e0e0' } }
+                            }
+                        }
+                    });
+                })
+                .catch(err => console.log('Could not load ita:', err));
+        
+        });
+    </script>
+</body>
+</html>
