@@ -338,6 +338,112 @@ function percentChange(oldValue, newValue) {
     return `${sign}${change.toFixed(2)}%`;
 }
 
+/**
+ * Calculate data summary statistics
+ * @param {array} data - Array of data points with date and value
+ * @returns {object} Summary statistics
+ */
+function calculateStats(data) {
+    if (!data || data.length === 0) return null;
+
+    const sortedData = [...data].sort((a, b) => new Date(a.date) - new Date(b.date));
+    const latest = sortedData[sortedData.length - 1];
+    const latestValue = latest.value || latest.close;
+
+    // Month change (last vs 1 month ago)
+    const oneMonthAgo = sortedData.length > 1 ? sortedData[sortedData.length - 2] : null;
+    const oneMonthValue = oneMonthAgo ? (oneMonthAgo.value || oneMonthAgo.close) : null;
+    const monthChange = oneMonthValue ? latestValue - oneMonthValue : null;
+    const monthChangePercent = oneMonthValue ? ((latestValue - oneMonthValue) / oneMonthValue) * 100 : null;
+
+    // Year change (last vs ~12 months ago)
+    const oneYearAgo = sortedData.length > 12 ? sortedData[sortedData.length - 13] : sortedData[0];
+    const oneYearValue = oneYearAgo.value || oneYearAgo.close;
+    const yearChange = latestValue - oneYearValue;
+    const yearChangePercent = ((latestValue - oneYearValue) / oneYearValue) * 100;
+
+    // Trend indicator
+    let trend = '→'; // flat
+    if (monthChangePercent !== null) {
+        if (monthChangePercent > 1) trend = '↑';
+        else if (monthChangePercent < -1) trend = '↓';
+    }
+
+    return {
+        latest: latestValue,
+        latestDate: latest.date,
+        monthChange: monthChange,
+        monthChangePercent: monthChangePercent,
+        yearChange: yearChange,
+        yearChangePercent: yearChangePercent,
+        trend: trend
+    };
+}
+
+/**
+ * Download data as CSV
+ * @param {object} data - Data object with name and data array
+ * @param {string} filename - Output filename
+ */
+function downloadCSV(data, filename) {
+    // Create CSV content
+    let csv = 'Date,Value\n';
+    data.data.forEach(row => {
+        const value = row.value || row.close;
+        csv += `${row.date},${value}\n`;
+    });
+
+    // Create blob and download
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename || 'data.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+}
+
+/**
+ * Add recession shading to chart
+ * @param {object} chartData - Chart.js data object
+ * @param {array} recessions - Array of recession periods
+ * @returns {object} Annotations configuration
+ */
+function addRecessionShading(chartData, recessions) {
+    if (!recessions || recessions.length === 0) return {};
+
+    const annotations = {};
+    recessions.forEach((recession, index) => {
+        annotations[`recession${index}`] = {
+            type: 'box',
+            xMin: recession.start,
+            xMax: recession.end,
+            backgroundColor: 'rgba(128, 128, 128, 0.1)',
+            borderWidth: 0,
+            label: {
+                display: false
+            }
+        };
+    });
+
+    return {
+        annotation: {
+            annotations: annotations
+        }
+    };
+}
+
+// Load recession data globally
+let recessionData = null;
+fetch('data/recessions.json')
+    .then(response => response.json())
+    .then(data => {
+        recessionData = data.recessions;
+    })
+    .catch(err => console.log('Recession data not available'));
+
 // Export functions for use in other scripts
 window.ChartUtils = {
     createLineChart,
@@ -350,5 +456,8 @@ window.ChartUtils = {
     formatNumber,
     formatCurrency,
     percentChange,
+    calculateStats,
+    downloadCSV,
+    addRecessionShading,
     chartColors
 };
