@@ -255,6 +255,7 @@ python3 src/database/migrate_ai_fields.py
 
 Potential improvements to the AI workflow:
 
+- **🔄 Workflow Optimization (High Priority)**: Change workflow to "Curate First, AI Second" - only generate AI summaries for articles that have been approved in triage. This would save API costs by not analyzing articles that might be rejected. Current workflow: RSS → Scrape → AI → Triage → Publish. Proposed: RSS → Scrape → Triage → AI (only approved) → Publish.
 - **Batch API calls**: Process multiple articles in parallel
 - **Confidence scoring**: Flag low-confidence extractions for review
 - **Custom prompts**: Tailor extraction for specific deal types

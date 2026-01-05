@@ -140,7 +140,13 @@ if __name__ == '__main__':
         if sys.argv[1] == '--force':
             force = True
             limit = int(sys.argv[2]) if len(sys.argv) > 2 else 5
+        elif sys.argv[1] == '--limit' and len(sys.argv) > 2:
+            limit = int(sys.argv[2])
         else:
-            limit = int(sys.argv[1])
+            try:
+                limit = int(sys.argv[1])
+            except ValueError:
+                print("Usage: python3 generate_ai_summaries.py [--limit N] [--force]")
+                sys.exit(1)
 
     generate_summaries(limit=limit, force_regenerate=force)
