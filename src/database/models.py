@@ -51,25 +51,35 @@ class ArticleContent(Base):
 
 
 class AIExtraction(Base):
-    """AI-extracted structured data (Phase 2)."""
+    """AI-extracted structured data for defense investment deals."""
     __tablename__ = 'ai_extractions'
 
     id = Column(Integer, primary_key=True)
     item_id = Column(Integer, ForeignKey('raw_items.id'), unique=True, nullable=False)
 
-    # Extracted fields
-    company = Column(String)
-    investment_amount = Column(String)  # Store as string, parse later (e.g., "$100M")
+    # Core deal information
+    company = Column(String)  # Company name
+    company_description = Column(Text)  # What the company does (1 sentence)
+    deal_type = Column(String)  # VC, M&A, IPO, etc.
+    deal_amount = Column(String)  # e.g., "$300M", "$4.7B"
+    investors = Column(Text)  # Key investors/acquirers
+
+    # Analysis fields
+    strategic_significance = Column(Text)  # Why this matters (2-3 sentences)
+    market_implications = Column(Text)  # What this signals (1-2 sentences)
+
+    # Legacy/additional fields
     capital_type = Column(String)  # VC, PE, corporate, public-private
     location = Column(String)
     sector = Column(String)
     project_type = Column(String)  # factory, lab, test range, acquisition
-    ai_summary = Column(Text)
+    ai_summary = Column(Text)  # General summary field
 
     # Metadata
     confidence_score = Column(Float)
     extracted_at = Column(DateTime, default=datetime.utcnow)
-    model_used = Column(String)  # e.g., "claude-3-5-sonnet-20241022"
+    model_used = Column(String)  # e.g., "claude-sonnet-4-20250514"
+    summary_complete = Column(Boolean, default=False)  # Was AI extraction successful?
 
     # Relationships
     raw_item = relationship("RawItem", back_populates="extraction")

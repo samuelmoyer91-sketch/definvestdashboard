@@ -37,12 +37,20 @@ This dashboard provides comprehensive visibility into the defense industrial bas
 - **🔍 Key Insights** - Curated context explaining metric relationships
 - **📅 Timestamps** - Data freshness displayed on every page
 - **📱 Mobile Responsive** - Professional design on all devices
+- **🤖 AI Deal Summaries** - Claude-powered analysis of defense investments (optional)
 
 ### Interactive Charts:
 - Hover for exact values
 - Clean, focused visualizations
 - Last 10 years displayed by default
 - Full historical data available
+
+### Intelligence Briefing Deal Feed:
+- Professional briefing-style layout for government analysts
+- AI-extracted deal information (company, amount, investors, significance)
+- Real-time search and filtering by deal type
+- Chronological feed with pagination
+- Graceful fallback to RSS summaries
 
 ---
 
@@ -84,6 +92,7 @@ This dashboard provides comprehensive visibility into the defense industrial bas
 - **pandas** - Excel data processing
 - **SQLite** - Deal curation database (local)
 - **FastAPI** - Local triage UI for deal curation
+- **Claude AI (Anthropic)** - AI-powered deal analysis and summaries
 
 ### Hosting:
 - **GitHub Pages** - Free, fast, reliable
@@ -94,6 +103,7 @@ This dashboard provides comprehensive visibility into the defense industrial bas
 
 ## 🔄 Weekly Update Workflow
 
+### Quick Data Update
 ```bash
 # 1. Update all data and regenerate site
 cd ~/Documents/"Claude - Defense PC Dashboard"
@@ -109,6 +119,34 @@ git push origin main
 
 **Time required:** 5 minutes
 
+### With AI Deal Summaries
+
+For the deal tracker, you can generate AI-powered summaries:
+
+```bash
+# 1. Fetch new articles from RSS
+python3 src/scraper/rss_fetcher.py
+
+# 2. Scrape article content
+python3 src/scraper/article_scraper.py
+
+# 3. Generate AI summaries (requires ANTHROPIC_API_KEY)
+python3 src/scraper/generate_ai_summaries.py --limit 10
+
+# 4. Review and curate deals
+cd src/export
+python3 -m http.server 8080
+# Open http://localhost:8080/deals_triage.html
+
+# 5. Publish with updated deals
+python3 publish.py
+git add -A
+git commit -m "Update deals with AI summaries"
+git push
+```
+
+**See [docs/AI_WORKFLOW.md](docs/AI_WORKFLOW.md) for detailed AI setup instructions.**
+
 ---
 
 ## 📁 Project Structure
@@ -118,18 +156,21 @@ Claude - Defense PC Dashboard/
 ├── github_site/              # Published website (deployed to GitHub Pages)
 │   ├── index.html           # Homepage
 │   ├── charts/              # 16 individual chart pages + 3 category pages
-│   ├── deals/               # Deal tracker page
+│   ├── deals/               # Deal tracker (intelligence briefing style)
 │   ├── data/                # JSON datasets (FRED, finance, custom)
-│   ├── css/                 # Styling
+│   ├── css/                 # Styling (includes briefing styles)
 │   └── js/                  # Chart utilities
 ├── src/
 │   ├── data_fetchers/       # FRED, Yahoo Finance, Excel extractors
-│   ├── export/              # HTML generators
-│   ├── ingest/              # RSS feed fetcher
+│   ├── export/              # HTML generators (chart pages, deal feed)
+│   ├── scraper/             # RSS fetcher, article scraper, AI summarizer
+│   ├── utils/               # AI summarizer (Claude API)
 │   ├── web/                 # Local triage UI (FastAPI)
-│   └── database/            # SQLite models
+│   └── database/            # SQLite models (includes AIExtraction)
+├── docs/
+│   └── AI_WORKFLOW.md       # AI summary setup and usage guide
 ├── publish.py               # Unified update script
-└── requirements.txt         # Python dependencies
+└── requirements.txt         # Python dependencies (includes anthropic)
 ```
 
 ---

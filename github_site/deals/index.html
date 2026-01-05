@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Defense Private Capital Deals - Defense Capital Dashboard</title>
+    <title>Defense Investment Activity - Defense Capital Dashboard</title>
     <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
@@ -14,136 +14,122 @@
             <ul>
                 <li><a href="../index.html">Home</a></li>
                 <li><a href="index.html" class="active">Deal Tracker</a></li>
-                <li><a href="../charts/defense-investment.html">Defense Investment</a></li>
-                <li><a href="../charts/defense-industrial.html">Defense Industrial</a></li>
-                <li><a href="../charts/us-industrial.html">US Industrial</a></li>
+                <li><a href="../charts/defense-investment.html">Defense Investment Trends</a></li>
+                <li><a href="../charts/defense-industrial.html">Defense Industrial Health</a></li>
+                <li><a href="../charts/us-industrial.html">Overall US Industrial Health</a></li>
             </ul>
         </div>
     </nav>
 
     <div class="container">
         <div class="page-header">
-            <h1>Defense Private Capital Deals</h1>
-            <p>Tracking venture capital, private equity, and corporate investments in the defense sector</p>
+            <h1>Defense Investment Activity</h1>
+            <p>Curated intelligence on venture capital, M&A, and funding activity in the defense sector</p>
+            <p class="last-updated">Last updated: January 04, 2026</p>
         </div>
 
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-value">1</div>
+        <!-- Summary Stats -->
+        <div class="briefing-stats">
+            <div class="stat-item">
+                <div class="stat-number">1</div>
                 <div class="stat-label">Total Deals</div>
             </div>
-            <div class="stat-card">
-                <div class="stat-value">0</div>
-                <div class="stat-label">Sectors</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value">1</div>
-                <div class="stat-label">Capital Types</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="last-updated">-</div>
-                <div class="stat-label">Last Updated</div>
+            <div class="stat-item">
+                <div class="stat-number">0</div>
+                <div class="stat-label">AI Analyzed</div>
             </div>
         </div>
 
-        <div class="card">
-            <div class="search-filter-bar">
-                <div class="search-box">
-                    <input type="text" id="dealSearch" placeholder="Search deals...">
-                </div>
-                <div class="filter-group">
-                    <label for="sectorFilter">Sector:</label>
-                    <select id="sectorFilter">
-                        <option value="">All Sectors</option>
-                        
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label for="capitalFilter">Capital Type:</label>
-                    <select id="capitalFilter">
-                        <option value="">All Types</option>
-                        <option value="Private Equity">Private Equity</option>
-                    </select>
-                </div>
-            </div>
+        <!-- Search/Filter Bar -->
+        <div class="briefing-controls">
+            <input type="text" id="searchBox" placeholder="Search deals..." class="search-input">
+            <select id="dealTypeFilter" class="filter-select">
+                <option value="all">All Deal Types</option>
+                <option value="vc">Venture Capital</option>
+                <option value="m&a">M&A / Acquisition</option>
+                <option value="ipo">IPO</option>
+                <option value="other">Other</option>
+            </select>
+        </div>
 
-            <div style="overflow-x: auto;">
-                <table id="dealsTable">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Company</th>
-                            <th>Amount</th>
-                            <th>Type</th>
-                            <th>Sector</th>
-                            <th>Project</th>
-                            <th>Location</th>
-                            <th>Summary</th>
-                            <th>Link</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        
-        <tr>
-            <td>2026-01-02</td>
-            <td><strong>McNally Capital</strong></td>
-            <td>N/A</td>
-            <td><span class="badge badge-primary">Private Equity</span></td>
-            <td>N/A</td>
-            <td>N/A</td>
-            <td>Austin TX</td>
-            <td>... <b>Acquisition</b> of ATS McNally Capital, a <b>private equity</b> ... McNally Capital, a <b>private equity</b> firm specializing in mid-market aerospace, <b>defense</b>&nbsp;...</td>
-            <td><a href="https://www.google.com/url?rct=j&sa=t&url=https://www.eplaneai.com/zh/news/mcnally-capital-acquires-pt6a-mro-specialist-ats&ct=ga&cd=CAIyHDEzYWM2MTZjN2IyNDZmMjI6Y29tOmVuOlVTOlI&usg=AOvVaw10rKGZ2kXSNYDNwXc_xHmp" target="_blank">View</a></td>
-        </tr>
-        
-                    </tbody>
-                </table>
+        <!-- Deal Feed -->
+        <div id="dealFeed" class="briefing-feed">
+            
+    <div class="deal-card" data-deal-type="unknown">
+        <div class="deal-header">
+            <div class="deal-meta">
+                <span class="badge badge-secondary">UNKNOWN</span>
+                <span class="deal-date">January 02, 2026</span>
             </div>
+            <h2 class="deal-title">McNally <b>Capital</b> Acquires PT6A MRO Specialist ATS - ePlaneAI</h2>
+        </div>
+
+        <div class="deal-body">
+            <div class="deal-summary">
+                ... <b>Acquisition</b> of ATS McNally Capital, a <b>private equity</b> ... McNally Capital, a <b>private equity</b> firm specializing in mid-market aerospace, <b>defense</b>&nbsp;...
+            </div>
+        </div>
+
+        <div class="deal-footer">
+            <a href="https://www.google.com/url?rct=j&sa=t&url=https://www.eplaneai.com/zh/news/mcnally-capital-acquires-pt6a-mro-specialist-ats&ct=ga&cd=CAIyHDEzYWM2MTZjN2IyNDZmMjI6Y29tOmVuOlVTOlI&usg=AOvVaw10rKGZ2kXSNYDNwXc_xHmp" target="_blank" rel="noopener" class="source-link">
+                Read Full Article &rarr;
+            </a>
+        </div>
+    </div>
+        </div>
+
+        <!-- Pagination (client-side JavaScript) -->
+        <div id="pagination" class="pagination"></div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <p>No deals match your search criteria.</p>
         </div>
     </div>
 
     <footer>
         <p>Defense Capital Dashboard</p>
-        <p>Data sourced from Google Alerts and public filings</p>
-        <p>Last generated: 2026-01-04 21:13:03</p>
+        <p>Deal intelligence curated from open sources</p>
     </footer>
 
     <script src="../js/main.js"></script>
     <script>
-        // Initialize table features
-        document.addEventListener('DOMContentLoaded', function() {
-            // Make table sortable
-            ChartUtils.makeSortable(document.getElementById('dealsTable'));
+        // Simple client-side search and filter
+        const searchBox = document.getElementById('searchBox');
+        const dealTypeFilter = document.getElementById('dealTypeFilter');
+        const dealFeed = document.getElementById('dealFeed');
+        const deals = dealFeed.querySelectorAll('.deal-card');
+        const emptyState = document.getElementById('emptyState');
 
-            // Setup search
-            ChartUtils.setupTableSearch('dealSearch', 'dealsTable');
+        function filterDeals() {
+            const searchTerm = searchBox.value.toLowerCase();
+            const dealType = dealTypeFilter.value.toLowerCase();
+            let visibleCount = 0;
 
-            // Setup filters
-            const sectorFilter = document.getElementById('sectorFilter');
-            const capitalFilter = document.getElementById('capitalFilter');
-            const table = document.getElementById('dealsTable');
+            deals.forEach(deal => {
+                const text = deal.textContent.toLowerCase();
+                const type = deal.dataset.dealType ? deal.dataset.dealType.toLowerCase() : '';
 
-            function applyFilters() {
-                const sector = sectorFilter.value.toLowerCase();
-                const capital = capitalFilter.value.toLowerCase();
-                const rows = table.querySelectorAll('tbody tr');
+                const matchesSearch = text.includes(searchTerm);
+                const matchesType = dealType === 'all' || type.includes(dealType);
 
-                rows.forEach(row => {
-                    const rowSector = row.cells[4].textContent.toLowerCase();
-                    const rowCapital = row.cells[3].textContent.toLowerCase();
+                if (matchesSearch && matchesType) {
+                    deal.style.display = '';
+                    visibleCount++;
+                } else {
+                    deal.style.display = 'none';
+                }
+            });
 
-                    const sectorMatch = !sector || rowSector.includes(sector);
-                    const capitalMatch = !capital || rowCapital.includes(capital);
+            emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
+        }
 
-                    row.style.display = sectorMatch && capitalMatch ? '' : 'none';
-                });
-            }
+        searchBox.addEventListener('input', filterDeals);
+        dealTypeFilter.addEventListener('change', filterDeals);
 
-            sectorFilter.addEventListener('change', applyFilters);
-            capitalFilter.addEventListener('change', applyFilters);
-
-            // Update timestamp
-            document.getElementById('last-updated').textContent = new Date().toLocaleDateString();
+        // Mobile menu toggle
+        document.querySelector('.mobile-menu-toggle').addEventListener('click', function() {
+            document.querySelector('nav ul').classList.toggle('active');
         });
     </script>
 </body>

@@ -128,8 +128,8 @@ def main():
     # Step 4: Export deal tracker
     print_header("Step 4: Export Deal Tracker")
     run_step(
-        "Exporting deals from database to HTML",
-        [sys.executable, "src/export/export_to_html.py"],
+        "Exporting deals to intelligence briefing format",
+        [sys.executable, "src/export/export_to_html_v2.py"],
         required=True
     )
 

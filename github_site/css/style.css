@@ -577,6 +577,256 @@ footer a {
 .mb-1 { margin-bottom: var(--spacing-sm); }
 .mb-2 { margin-bottom: var(--spacing-md); }
 
+/* Intelligence Briefing Styles */
+.briefing-stats {
+  display: flex;
+  gap: var(--spacing-lg);
+  background: linear-gradient(135deg, var(--primary-teal) 0%, var(--primary-teal-dark) 100%);
+  padding: var(--spacing-lg);
+  border-radius: var(--border-radius);
+  margin-bottom: var(--spacing-lg);
+  box-shadow: 0 2px 4px var(--shadow);
+}
+
+.stat-item {
+  flex: 1;
+  text-align: center;
+  color: white;
+}
+
+.stat-number {
+  font-size: 2.5rem;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: var(--spacing-xs);
+}
+
+.stat-label {
+  font-size: var(--font-size-sm);
+  opacity: 0.9;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.briefing-controls {
+  display: flex;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+  flex-wrap: wrap;
+}
+
+.search-input {
+  flex: 1;
+  min-width: 250px;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-base);
+  background-color: white;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--primary-teal);
+  box-shadow: 0 0 0 3px rgba(34, 110, 147, 0.1);
+}
+
+.filter-select {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-base);
+  background-color: white;
+  cursor: pointer;
+  min-width: 180px;
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: var(--primary-teal);
+}
+
+.briefing-feed {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.deal-card {
+  background-color: white;
+  border-radius: var(--border-radius);
+  box-shadow: 0 2px 4px var(--shadow);
+  overflow: hidden;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.deal-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+.deal-header {
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.deal-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-sm);
+}
+
+.deal-date {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.deal-title {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--primary-teal-dark);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.deal-body {
+  padding: var(--spacing-lg);
+  color: var(--text-primary);
+}
+
+.deal-company {
+  font-size: var(--font-size-base);
+  margin-bottom: var(--spacing-md);
+  padding-bottom: var(--spacing-md);
+  border-bottom: 1px solid var(--bg-light);
+}
+
+.deal-details {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-md);
+  line-height: 1.6;
+}
+
+.deal-analysis {
+  margin-bottom: var(--spacing-md);
+  padding: var(--spacing-md);
+  background-color: #f0f8ff;
+  border-left: 3px solid var(--primary-teal);
+  border-radius: 4px;
+  line-height: 1.6;
+}
+
+.deal-analysis strong {
+  color: var(--primary-teal-dark);
+  display: block;
+  margin-bottom: 0.25rem;
+  font-size: var(--font-size-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.deal-implications {
+  margin-bottom: var(--spacing-md);
+  padding: var(--spacing-md);
+  background-color: #fff8f0;
+  border-left: 3px solid var(--warning);
+  border-radius: 4px;
+  line-height: 1.6;
+}
+
+.deal-implications strong {
+  color: #d97706;
+  display: block;
+  margin-bottom: 0.25rem;
+  font-size: var(--font-size-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.deal-summary {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  font-size: var(--font-size-base);
+}
+
+.deal-footer {
+  padding: var(--spacing-md) var(--spacing-lg);
+  background-color: var(--bg-light);
+  border-top: 1px solid var(--border-color);
+}
+
+.source-link {
+  color: var(--primary-teal);
+  font-weight: 500;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: color 0.2s ease;
+}
+
+.source-link:hover {
+  color: var(--primary-teal-dark);
+  text-decoration: underline;
+}
+
+.badge-secondary {
+  background-color: var(--text-light);
+  color: white;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-lg);
+  padding: var(--spacing-lg) 0;
+}
+
+.pagination button {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 1px solid var(--border-color);
+  background-color: white;
+  color: var(--primary-teal);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.pagination button:hover:not(:disabled) {
+  background-color: var(--primary-teal);
+  color: white;
+  border-color: var(--primary-teal);
+}
+
+.pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagination button.active {
+  background-color: var(--primary-teal);
+  color: white;
+  border-color: var(--primary-teal);
+}
+
+.empty-state {
+  text-align: center;
+  padding: var(--spacing-xl);
+  color: var(--text-secondary);
+  background-color: white;
+  border-radius: var(--border-radius);
+  box-shadow: 0 2px 4px var(--shadow);
+}
+
+.empty-state p {
+  font-size: var(--font-size-lg);
+  margin: 0;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .container {
@@ -601,5 +851,35 @@ footer a {
 
   th, td {
     padding: var(--spacing-sm);
+  }
+
+  .briefing-stats {
+    flex-direction: column;
+    gap: var(--spacing-md);
+  }
+
+  .stat-number {
+    font-size: 2rem;
+  }
+
+  .briefing-controls {
+    flex-direction: column;
+  }
+
+  .search-input,
+  .filter-select {
+    min-width: 100%;
+  }
+
+  .deal-header,
+  .deal-body,
+  .deal-footer {
+    padding: var(--spacing-md);
+  }
+
+  .deal-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-xs);
   }
 }

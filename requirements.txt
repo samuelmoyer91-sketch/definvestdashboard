@@ -16,5 +16,10 @@ sqlalchemy==2.0.25
 python-dateutil==2.8.2
 pytz==2024.1
 
-# Future: AI extraction (uncomment when ready)
-# anthropic==0.18.1
+# AI extraction
+anthropic>=0.40.0
+
+# Data analysis (for FRED/Finance)
+fredapi==0.5.2
+yfinance==0.2.37
+pandas==2.2.0
