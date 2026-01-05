@@ -139,6 +139,8 @@ async def reject_item(item_id: int):
 @app.get("/master", response_class=HTMLResponse)
 async def master_list(request: Request):
     """View master list of accepted items."""
+    from src.database import AIExtraction
+
     session = get_session()
 
     master_items = session.query(MasterItem).join(
@@ -147,15 +149,41 @@ async def master_list(request: Request):
         MasterItem.curated_at.desc()
     ).all()
 
-    # Add raw item data
+    # Add raw item data and pipeline status
     for master in master_items:
         master.raw_item = session.query(RawItem).filter_by(id=master.item_id).first()
+        master.article_content = session.query(ArticleContent).filter_by(item_id=master.item_id).first()
+        master.ai_extraction = session.query(AIExtraction).filter_by(item_id=master.item_id).first()
 
     session.close()
 
     return templates.TemplateResponse("master.html", {
         "request": request,
         "items": master_items
+    })
+
+
+@app.get("/rejected", response_class=HTMLResponse)
+async def rejected_list(request: Request):
+    """View rejected items."""
+    session = get_session()
+
+    rejected_items = session.query(RejectedItem).join(
+        RawItem, RejectedItem.item_id == RawItem.id
+    ).order_by(
+        RejectedItem.rejected_at.desc()
+    ).all()
+
+    # Add raw item data and pipeline status
+    for rejected in rejected_items:
+        rejected.raw_item = session.query(RawItem).filter_by(id=rejected.item_id).first()
+        rejected.article_content = session.query(ArticleContent).filter_by(item_id=rejected.item_id).first()
+
+    session.close()
+
+    return templates.TemplateResponse("rejected.html", {
+        "request": request,
+        "items": rejected_items
     })
 
 

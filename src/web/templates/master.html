@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 
-{% block title %}Master List - Defense Capital Tracker{% endblock %}
+{% block title %}Accepted Items - Defense Capital Tracker{% endblock %}
 
 {% block content %}
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-    <h2 style="margin: 0;">Master List ({{ items | length }} items)</h2>
+    <h2 style="margin: 0;">Accepted Items ({{ items | length }})</h2>
     {% if items | length > 0 %}
     <a href="/export/csv" class="btn btn-primary" download>📥 Export to CSV</a>
     {% endif %}
@@ -13,49 +13,147 @@
 {% if items | length == 0 %}
 <div class="card">
     <p style="text-align: center; color: #666;">
-        No items in master list yet. Review and accept items from the triage queue.
+        No items accepted yet. Review and accept items from the triage queue.
     </p>
 </div>
 {% else %}
-<div class="card" style="overflow-x: auto;">
-    <table style="width: 100%; border-collapse: collapse;">
-        <thead>
-            <tr style="border-bottom: 2px solid #ddd;">
-                <th style="text-align: left; padding: 12px;">Company</th>
-                <th style="text-align: left; padding: 12px;">Investment</th>
-                <th style="text-align: left; padding: 12px;">Type</th>
-                <th style="text-align: left; padding: 12px;">Sector</th>
-                <th style="text-align: left; padding: 12px;">Location</th>
-                <th style="text-align: left; padding: 12px;">Summary</th>
-                <th style="text-align: left; padding: 12px;">Source</th>
-                <th style="text-align: left; padding: 12px;">Date</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for item in items %}
-            <tr style="border-bottom: 1px solid #eee;">
-                <td style="padding: 12px;">{{ item.company or '-' }}</td>
-                <td style="padding: 12px;">{{ item.investment_amount or '-' }}</td>
-                <td style="padding: 12px;">
-                    {% if item.capital_type %}
-                    <span class="badge badge-info">{{ item.capital_type }}</span>
-                    {% else %}-{% endif %}
-                </td>
-                <td style="padding: 12px;">{{ item.sector or '-' }}</td>
-                <td style="padding: 12px;">{{ item.location or '-' }}</td>
-                <td style="padding: 12px; max-width: 300px;">
-                    {{ item.summary | truncate(150) if item.summary else '-' }}
-                </td>
-                <td style="padding: 12px;">
-                    <a href="{{ item.raw_item.url }}" target="_blank" class="btn-link" style="font-size: 12px;">View</a>
-                </td>
-                <td style="padding: 12px; white-space: nowrap;">
-                    {{ item.curated_at.strftime('%Y-%m-%d') }}
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+{% for item in items %}
+<div class="card item-card" style="border-left: 4px solid #4c9173;">
+    <div class="item-header">
+        <div class="item-title">{{ item.raw_item.title | safe }}</div>
+        <div style="display: flex; gap: 8px; align-items: center;">
+            {% if item.published %}
+            <span class="badge badge-success">Published</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="item-meta" style="margin-bottom: 15px;">
+        <span class="badge badge-info">{{ item.raw_item.feed_source }}</span>
+        <span style="margin-left: 10px;">Published: {{ item.raw_item.published_date.strftime('%Y-%m-%d') if item.raw_item.published_date else 'Unknown' }}</span>
+        <span style="margin-left: 10px;">Accepted: {{ item.curated_at.strftime('%Y-%m-%d %H:%M') }}</span>
+    </div>
+
+    <!-- Pipeline Status -->
+    <div style="background: #f8f9fa; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
+        <strong style="font-size: 13px; color: #666;">Pipeline Status:</strong>
+        <div style="display: flex; gap: 15px; margin-top: 8px; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 5px;">
+                {% if item.article_content and item.article_content.scrape_success %}
+                <span style="color: #4c9173;">✓</span>
+                <span style="font-size: 13px;">Article Scraped</span>
+                {% else %}
+                <span style="color: #999;">✗</span>
+                <span style="font-size: 13px; color: #999;">Not Scraped</span>
+                {% endif %}
+            </div>
+            <div style="display: flex; align-items: center; gap: 5px;">
+                {% if item.ai_extraction %}
+                <span style="color: #4c9173;">✓</span>
+                <span style="font-size: 13px;">AI Processed</span>
+                {% else %}
+                <span style="color: #999;">✗</span>
+                <span style="font-size: 13px; color: #999;">No AI Data</span>
+                {% endif %}
+            </div>
+            <div style="display: flex; align-items: center; gap: 5px;">
+                {% if item.company or item.capital_type or item.summary %}
+                <span style="color: #4c9173;">✓</span>
+                <span style="font-size: 13px;">Manually Curated</span>
+                {% else %}
+                <span style="color: #ebcb8b;">○</span>
+                <span style="font-size: 13px; color: #999;">No Manual Data</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Deal Information -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 12px;">
+        {% if item.company %}
+        <div>
+            <strong style="font-size: 12px; color: #666;">Company:</strong>
+            <div style="font-size: 14px; margin-top: 4px;">{{ item.company }}</div>
+        </div>
+        {% endif %}
+
+        {% if item.investment_amount %}
+        <div>
+            <strong style="font-size: 12px; color: #666;">Investment:</strong>
+            <div style="font-size: 14px; margin-top: 4px;">{{ item.investment_amount }}</div>
+        </div>
+        {% endif %}
+
+        {% if item.capital_type %}
+        <div>
+            <strong style="font-size: 12px; color: #666;">Type:</strong>
+            <div style="margin-top: 4px;"><span class="badge badge-info">{{ item.capital_type }}</span></div>
+        </div>
+        {% endif %}
+
+        {% if item.sector %}
+        <div>
+            <strong style="font-size: 12px; color: #666;">Sector:</strong>
+            <div style="font-size: 14px; margin-top: 4px;">{{ item.sector }}</div>
+        </div>
+        {% endif %}
+
+        {% if item.location %}
+        <div>
+            <strong style="font-size: 12px; color: #666;">Location:</strong>
+            <div style="font-size: 14px; margin-top: 4px;">{{ item.location }}</div>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if item.summary %}
+    <div style="margin-top: 12px;">
+        <strong style="font-size: 12px; color: #666;">Summary:</strong>
+        <div style="font-size: 14px; color: #555; margin-top: 4px; line-height: 1.5;">{{ item.summary }}</div>
+    </div>
+    {% endif %}
+
+    {% if item.human_notes %}
+    <div style="margin-top: 12px; padding: 10px; background: #fff3cd; border-radius: 4px;">
+        <strong style="font-size: 12px; color: #856404;">Notes:</strong>
+        <div style="font-size: 13px; color: #856404; margin-top: 4px;">{{ item.human_notes }}</div>
+    </div>
+    {% endif %}
+
+    <!-- AI Extraction Data -->
+    {% if item.ai_extraction %}
+    <details style="margin-top: 12px;">
+        <summary style="cursor: pointer; font-size: 13px; color: #5e81ac; font-weight: 600;">View AI Extraction Data</summary>
+        <div style="margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 4px; font-size: 13px;">
+            {% if item.ai_extraction.strategic_significance %}
+            <div style="margin-bottom: 8px;">
+                <strong>Strategic Significance:</strong> {{ item.ai_extraction.strategic_significance }}
+            </div>
+            {% endif %}
+            {% if item.ai_extraction.market_implications %}
+            <div style="margin-bottom: 8px;">
+                <strong>Market Implications:</strong> {{ item.ai_extraction.market_implications }}
+            </div>
+            {% endif %}
+            {% if item.ai_extraction.deal_type %}
+            <div style="margin-bottom: 8px;">
+                <strong>AI Deal Type:</strong> {{ item.ai_extraction.deal_type }}
+            </div>
+            {% endif %}
+            {% if item.ai_extraction.investors %}
+            <div style="margin-bottom: 8px;">
+                <strong>Investors:</strong> {{ item.ai_extraction.investors }}
+            </div>
+            {% endif %}
+        </div>
+    </details>
+    {% endif %}
+
+    <div class="item-actions" style="margin-top: 15px;">
+        <a href="{{ item.raw_item.url }}" target="_blank" class="btn btn-link">View Original Article</a>
+        <a href="/item/{{ item.item_id }}" class="btn btn-link">View Details</a>
+    </div>
 </div>
+{% endfor %}
 {% endif %}
 {% endblock %}
