@@ -1,0 +1,30 @@
+{
+  "series_id": "VC_DEFENSE",
+  "name": "Venture Capital Investment in Defense",
+  "description": "Annual venture capital investment in U.S. defense and dual-use companies",
+  "units": "Billions of Dollars",
+  "last_updated": "2026-01-04 21:13:03",
+  "data_points": 5,
+  "data": [
+    {
+      "date": "2019-12-31",
+      "value": 18.0
+    },
+    {
+      "date": "2020-12-31",
+      "value": 20.0
+    },
+    {
+      "date": "2021-12-31",
+      "value": 50.0
+    },
+    {
+      "date": "2022-12-31",
+      "value": 36.0
+    },
+    {
+      "date": "2023-12-31",
+      "value": 35.0
+    }
+  ]
+}
