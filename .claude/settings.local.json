@@ -30,7 +30,18 @@
       "Bash(git push origin main)",
       "Bash(git push)",
       "Bash(open http://localhost:8000/charts/defense-spending.html)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(for file in data/*.json)",
+      "Bash(do git ls-files --error-unmatch \"$file\")",
+      "Bash(echo:*)",
+      "Bash(done)",
+      "Bash(git ls-tree -r HEAD --name-only)",
+      "Bash(git show --name-only --pretty=\"\")",
+      "Bash(git ls-tree HEAD data/)",
+      "Bash(git fetch:*)",
+      "Bash(git ls-tree origin/main data/)",
+      "Bash(git ls-tree:*)",
+      "Bash(git rm:*)"
     ]
   }
 }
