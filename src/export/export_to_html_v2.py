@@ -105,18 +105,6 @@ def generate_html_page(deals, deals_per_page=10):
             <p class="last-updated">Last updated: {datetime.now().strftime('%B %d, %Y')}</p>
         </div>
 
-        <!-- Summary Stats -->
-        <div class="briefing-stats">
-            <div class="stat-item">
-                <div class="stat-number">{len(deals)}</div>
-                <div class="stat-label">Total Deals</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-number">{ai_summary_count}</div>
-                <div class="stat-label">AI Analyzed</div>
-            </div>
-        </div>
-
         <!-- Search/Filter Bar -->
         <div class="briefing-controls">
             <input type="text" id="searchBox" placeholder="Search deals..." class="search-input">
@@ -134,7 +122,7 @@ def generate_html_page(deals, deals_per_page=10):
             {deal_cards_html}
         </div>
 
-        <!-- Pagination (client-side JavaScript) -->
+        <!-- Pagination -->
         <div id="pagination" class="pagination"></div>
 
         <!-- Empty State -->
@@ -150,34 +138,87 @@ def generate_html_page(deals, deals_per_page=10):
 
     <script src="../js/main.js"></script>
     <script>
-        // Simple client-side search and filter
+        // Pagination and filtering
         const searchBox = document.getElementById('searchBox');
         const dealTypeFilter = document.getElementById('dealTypeFilter');
         const dealFeed = document.getElementById('dealFeed');
-        const deals = dealFeed.querySelectorAll('.deal-card');
+        const deals = Array.from(dealFeed.querySelectorAll('.deal-card'));
         const emptyState = document.getElementById('emptyState');
+        const paginationDiv = document.getElementById('pagination');
+
+        const DEALS_PER_PAGE = {deals_per_page};
+        let currentPage = 1;
+        let filteredDeals = deals;
 
         function filterDeals() {{
             const searchTerm = searchBox.value.toLowerCase();
             const dealType = dealTypeFilter.value.toLowerCase();
-            let visibleCount = 0;
 
-            deals.forEach(deal => {{
+            filteredDeals = deals.filter(deal => {{
                 const text = deal.textContent.toLowerCase();
                 const type = deal.dataset.dealType ? deal.dataset.dealType.toLowerCase() : '';
 
                 const matchesSearch = text.includes(searchTerm);
                 const matchesType = dealType === 'all' || type.includes(dealType);
 
-                if (matchesSearch && matchesType) {{
-                    deal.style.display = '';
-                    visibleCount++;
-                }} else {{
-                    deal.style.display = 'none';
-                }}
+                return matchesSearch && matchesType;
             }});
 
-            emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
+            currentPage = 1;
+            renderPage();
+        }}
+
+        function renderPage() {{
+            // Hide all deals
+            deals.forEach(deal => deal.style.display = 'none');
+
+            // Show deals for current page
+            const start = (currentPage - 1) * DEALS_PER_PAGE;
+            const end = start + DEALS_PER_PAGE;
+            const pageDeals = filteredDeals.slice(start, end);
+
+            pageDeals.forEach(deal => deal.style.display = 'block');
+
+            // Update empty state
+            emptyState.style.display = filteredDeals.length === 0 ? 'block' : 'none';
+
+            // Render pagination controls
+            renderPagination();
+
+            // Scroll to top
+            window.scrollTo({{ top: 0, behavior: 'smooth' }});
+        }}
+
+        function renderPagination() {{
+            const totalPages = Math.ceil(filteredDeals.length / DEALS_PER_PAGE);
+
+            if (totalPages <= 1) {{
+                paginationDiv.innerHTML = '';
+                return;
+            }}
+
+            let html = '<div class="pagination-controls">';
+
+            // Previous button
+            if (currentPage > 1) {{
+                html += `<button class="page-btn" onclick="changePage(${{currentPage - 1}})">&larr; Previous</button>`;
+            }}
+
+            // Page numbers
+            html += '<span class="page-info">Page ' + currentPage + ' of ' + totalPages + '</span>';
+
+            // Next button
+            if (currentPage < totalPages) {{
+                html += `<button class="page-btn" onclick="changePage(${{currentPage + 1}})">Next &rarr;</button>`;
+            }}
+
+            html += '</div>';
+            paginationDiv.innerHTML = html;
+        }}
+
+        function changePage(page) {{
+            currentPage = page;
+            renderPage();
         }}
 
         searchBox.addEventListener('input', filterDeals);
@@ -187,6 +228,9 @@ def generate_html_page(deals, deals_per_page=10):
         document.querySelector('.mobile-menu-toggle').addEventListener('click', function() {{
             document.querySelector('nav ul').classList.toggle('active');
         }});
+
+        // Initial render
+        renderPage();
     </script>
 </body>
 </html>"""
@@ -195,10 +239,10 @@ def generate_html_page(deals, deals_per_page=10):
 
 
 def generate_deal_card(master, raw, ai):
-    """Generate HTML for a single deal card"""
+    """Generate HTML for a single deal card with improved UX"""
 
     # Extract date
-    date_str = raw.published_date.strftime('%B %d, %Y') if raw.published_date else 'Date unknown'
+    date_str = raw.published_date.strftime('%b %d, %Y') if raw.published_date else 'Date unknown'
 
     # Deal type badge
     deal_type = 'UNKNOWN'
@@ -216,68 +260,78 @@ def generate_deal_card(master, raw, ai):
             deal_type = 'IPO'
             deal_type_class = 'badge-warning'
         else:
-            deal_type = dt[:20]  # Truncate if too long
+            deal_type = dt[:20]
 
-    # Build card content
+    # Extract company name from AI or master
+    company_name = (ai.company if ai and ai.company else
+                   master.company if master and master.company else None)
+
+    # Build card with cleaner hierarchy
     card_html = f"""
     <div class="deal-card" data-deal-type="{deal_type.lower()}">
-        <div class="deal-header">
-            <div class="deal-meta">
+        <div class="deal-card-header">
+            <div class="deal-meta-row">
                 <span class="badge {deal_type_class}">{deal_type}</span>
                 <span class="deal-date">{date_str}</span>
             </div>
-            <h2 class="deal-title">{raw.title}</h2>
         </div>
 
-        <div class="deal-body">"""
+        <div class="deal-card-body">"""
 
-    # Add AI summary if available
-    if ai and ai.summary_complete:
-        if ai.company and ai.company_description:
+    # Company headline
+    if company_name:
+        card_html += f"""
+            <h3 class="deal-company-name">{company_name}</h3>"""
+
+        if ai and ai.company_description:
             card_html += f"""
-            <div class="deal-company">
-                <strong>{ai.company}</strong> &mdash; {ai.company_description}
-            </div>"""
+            <p class="deal-company-desc">{ai.company_description}</p>"""
 
-        deal_details = []
+    # Deal details (amount and investors) in compact format
+    deal_details = []
+    if ai:
         if ai.deal_amount:
-            deal_details.append(f"<strong>Amount:</strong> {ai.deal_amount}")
+            deal_details.append(f'<span class="deal-amount">{ai.deal_amount}</span>')
         if ai.investors:
-            deal_details.append(f"<strong>Investors:</strong> {ai.investors}")
+            deal_details.append(f'<span class="deal-investors">{ai.investors}</span>')
 
-        if deal_details:
-            card_html += f"""
-            <div class="deal-details">
-                {' &nbsp;|&nbsp; '.join(deal_details)}
+    if deal_details:
+        card_html += f"""
+            <div class="deal-meta-info">
+                {' • '.join(deal_details)}
             </div>"""
 
+    # AI analysis sections
+    if ai and ai.summary_complete:
         if ai.strategic_significance:
             card_html += f"""
-            <div class="deal-analysis">
-                <strong>Strategic Significance:</strong> {ai.strategic_significance}
+            <div class="deal-insight">
+                <h4>Why It Matters</h4>
+                <p>{ai.strategic_significance}</p>
             </div>"""
 
         if ai.market_implications:
             card_html += f"""
-            <div class="deal-implications">
-                <strong>Market Implications:</strong> {ai.market_implications}
+            <div class="deal-insight">
+                <h4>Market Implications</h4>
+                <p>{ai.market_implications}</p>
             </div>"""
 
     else:
-        # Fallback to RSS summary if no AI summary
+        # Fallback to RSS summary
         if raw.rss_summary:
             card_html += f"""
-            <div class="deal-summary">
-                {raw.rss_summary}
+            <div class="deal-insight">
+                <p>{raw.rss_summary}</p>
             </div>"""
 
-    # Always include source link
+    # Footer with source link
     card_html += f"""
         </div>
 
-        <div class="deal-footer">
-            <a href="{raw.url}" target="_blank" rel="noopener" class="source-link">
-                Read Full Article &rarr;
+        <div class="deal-card-footer">
+            <a href="{raw.url}" target="_blank" rel="noopener" class="deal-source-link">
+                Read Full Article →
             </a>
         </div>
     </div>"""
