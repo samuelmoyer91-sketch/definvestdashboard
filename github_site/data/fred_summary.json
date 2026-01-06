@@ -1,16 +1,16 @@
 {
-  "last_updated": "2026-01-05 12:35:29",
+  "last_updated": "2026-01-05 22:50:36",
   "series_count": 10,
   "series": {
-    "FDEFX": 315,
-    "DRTSCILM": 143,
-    "DGORDER": 405,
-    "INDPRO": 1283,
-    "PNFI": 315,
-    "ADEFNO": 405,
-    "ADAPNO": 405,
-    "GPDI": 315,
-    "PRMFGCONS": 392,
-    "IPB52300S": 947
+    "FDEFX": 0,
+    "DRTSCILM": 0,
+    "DGORDER": 0,
+    "INDPRO": 0,
+    "PNFI": 0,
+    "ADEFNO": 0,
+    "ADAPNO": 0,
+    "GPDI": 0,
+    "PRMFGCONS": 0,
+    "IPB52300S": 0
   }
 }
