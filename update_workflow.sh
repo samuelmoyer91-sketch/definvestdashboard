@@ -64,7 +64,7 @@ elif [ "$STAGE" = "publish" ]; then
   echo "   - Generating chart pages..."
   echo "   - Exporting deal tracker..."
   echo ""
-  python3 publish.py
+  python3 generate_site.py
   echo "✓ Site generated with fresh data"
   echo ""
 

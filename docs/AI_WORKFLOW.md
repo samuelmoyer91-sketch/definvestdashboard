@@ -147,7 +147,7 @@ This automatically:
 **Manual alternative (advanced):**
 
 ```bash
-python3 publish.py
+python3 generate_site.py
 cd github_site
 git add .
 git commit -m "Update deal feed and charts"

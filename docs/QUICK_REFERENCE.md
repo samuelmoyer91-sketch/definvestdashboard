@@ -41,7 +41,7 @@ echo "export FRED_API_KEY='your_key_here'" >> ~/.zshrc
 ### 2. Generate Site
 ```bash
 cd ~/Documents/"Claude - Defense PC Dashboard"
-python3 publish.py
+python3 generate_site.py
 ```
 
 ### 3. Test Locally
@@ -87,7 +87,7 @@ uvicorn src.web.app:app --reload
 # Accept/reject articles
 
 # 3. Generate site
-python3 publish.py
+python3 generate_site.py
 
 # 4. Deploy manually
 git add github_site/
@@ -99,7 +99,7 @@ git subtree push --prefix github_site origin gh-pages
 **Update Data Only (No New Deals):**
 ```bash
 cd ~/Documents/"Claude - Defense PC Dashboard"
-python3 publish.py
+python3 generate_site.py
 git add github_site/
 git commit -m "Data refresh"
 git push origin main
@@ -133,14 +133,16 @@ python3 src/data_fetchers/finance_fetcher.py
 ### Regenerate Chart Pages
 ```bash
 cd ~/Documents/"Claude - Defense PC Dashboard"
-python3 src/export/generate_chart_pages.py
+python3 src/export/generate_chart_pages_v2.py
 ```
 
 ### Export Deal Tracker HTML
 ```bash
 cd ~/Documents/"Claude - Defense PC Dashboard"
-python3 src/export/export_to_html.py
+python3 src/export/export_to_html_v2.py
 ```
+
+**Note:** These are called automatically by `generate_site.py`, rarely need to run manually.
 
 ---
 
@@ -155,7 +157,7 @@ python3 src/export/export_to_html.py
 | Styles | `github_site/css/style.css` |
 | Data Files | `github_site/data/*.json` |
 | Database | `data/tracker.db` |
-| Publish Script | `publish.py` |
+| Site Generator | `generate_site.py` |
 
 ---
 
@@ -268,7 +270,7 @@ export FRED_API_KEY='your_key_here'
 
 # 2. Generate
 cd ~/Documents/"Claude - Defense PC Dashboard"
-python3 publish.py
+python3 generate_site.py
 
 # 3. Test
 cd github_site

@@ -139,7 +139,7 @@ uvicorn src.web.app:app --reload
 ```bash
 # Manual update (if workflow script unavailable)
 cd ~/Documents/"Claude - Defense PC Dashboard"
-python3 publish.py
+python3 generate_site.py
 git add github_site/
 git commit -m "Data update - $(date +%Y-%m-%d)"
 git push origin main
@@ -172,7 +172,7 @@ Claude - Defense PC Dashboard/
 │   └── database/            # SQLite models (includes AIExtraction)
 ├── docs/
 │   └── AI_WORKFLOW.md       # AI summary setup and usage guide
-├── publish.py               # Unified update script
+├── generate_site.py         # Site generation script (data + HTML)
 └── requirements.txt         # Python dependencies (includes anthropic)
 ```
 
@@ -197,9 +197,9 @@ python3 -m http.server 8080
 # Open http://localhost:8080
 ```
 
-### Update Data:
+### Generate Site:
 ```bash
-python3 publish.py
+python3 generate_site.py
 ```
 
 ---
