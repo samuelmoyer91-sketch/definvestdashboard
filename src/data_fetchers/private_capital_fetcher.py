@@ -11,15 +11,15 @@ import pandas as pd
 
 def fetch_private_capital_data(excel_file=None, output_dir=None):
     """
-    Extract VC and M&A data from Excel file and save as JSON
+    Extract VC, M&A, and Public Defense Companies data from Excel file and save as JSON
 
     Args:
-        excel_file: Path to Excel file (default: Defense Private Capital Dashboard.xlsx)
+        excel_file: Path to Excel file (default: Capital paper - first chart - investment trends.xlsx)
         output_dir: Output directory for JSON files (default: github_site/data)
     """
     if excel_file is None:
         script_dir = Path(__file__).parent
-        excel_file = script_dir.parent.parent / 'Defense Private Capital Dashboard.xlsx'
+        excel_file = script_dir.parent.parent / 'Capital paper - first chart - investment trends.xlsx'
     else:
         excel_file = Path(excel_file)
 
@@ -36,25 +36,46 @@ def fetch_private_capital_data(excel_file=None, output_dir=None):
         return False
 
     try:
-        # Read VC data
+        # Read the Excel file (Sheet3 has the data)
+        print("Reading Excel file...")
+        df = pd.read_excel(excel_file, sheet_name='Sheet3', header=None)
+
+        # Extract Public Defense Companies data (rows 15-20, columns 2-3)
+        print("Fetching Public Defense Companies data...")
+        pdc_data = []
+        for idx in range(16, 21):  # Rows 16-20 (0-indexed)
+            year = int(df.iloc[idx, 2])
+            value = int(df.iloc[idx, 3])
+            pdc_data.append({
+                'date': f'{year}-12-31',
+                'value': float(value)
+            })
+
+        pdc_output = {
+            'series_id': 'PUBLIC_DEFENSE_COMPANIES',
+            'name': 'Public Defense Companies',
+            'description': 'Number of publicly traded defense and aerospace companies',
+            'units': 'Count',
+            'last_updated': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            'data_points': len(pdc_data),
+            'data': pdc_data
+        }
+
+        pdc_file = output_dir / 'public_defense_companies.json'
+        with open(pdc_file, 'w') as f:
+            json.dump(pdc_output, f, indent=2)
+        print(f"  ✓ Saved {len(pdc_data)} Public Defense Companies data points to {pdc_file.name}")
+
+        # Extract Venture Capital data (rows 15-20, column 4)
         print("Fetching VC investment data...")
-        vc_df = pd.read_excel(excel_file, sheet_name='VC')
-
-        # Extract years and values (columns are: Year, 2023, 2022, 2021, 2020, 2019, ...)
-        years = [col for col in vc_df.columns if isinstance(col, int)]
-        values = vc_df.loc[0, years].values
-
-        # Create data list (sorted by year ascending)
         vc_data = []
-        for year, value in zip(years, values):
-            if pd.notna(value):
-                vc_data.append({
-                    'date': f'{year}-12-31',  # End of year
-                    'value': float(value)
-                })
-
-        # Sort by year
-        vc_data.sort(key=lambda x: x['date'])
+        for idx in range(16, 21):
+            year = int(df.iloc[idx, 2])
+            value = int(df.iloc[idx, 4])
+            vc_data.append({
+                'date': f'{year}-12-31',
+                'value': float(value)
+            })
 
         vc_output = {
             'series_id': 'VC_DEFENSE',
@@ -66,31 +87,21 @@ def fetch_private_capital_data(excel_file=None, output_dir=None):
             'data': vc_data
         }
 
-        # Save VC data
         vc_file = output_dir / 'vc_defense.json'
         with open(vc_file, 'w') as f:
             json.dump(vc_output, f, indent=2)
         print(f"  ✓ Saved {len(vc_data)} VC data points to {vc_file.name}")
 
-        # Read M&A data
+        # Extract M&A data (rows 15-20, column 5)
         print("Fetching M&A activity data...")
-        ma_df = pd.read_excel(excel_file, sheet_name='M&A')
-
-        # Extract years and values
-        years = [col for col in ma_df.columns if isinstance(col, int)]
-        values = ma_df.loc[0, years].values
-
-        # Create data list
         ma_data = []
-        for year, value in zip(years, values):
-            if pd.notna(value):
-                ma_data.append({
-                    'date': f'{year}-12-31',
-                    'value': float(value)
-                })
-
-        # Sort by year
-        ma_data.sort(key=lambda x: x['date'])
+        for idx in range(16, 21):
+            year = int(df.iloc[idx, 2])
+            value = int(df.iloc[idx, 5])
+            ma_data.append({
+                'date': f'{year}-12-31',
+                'value': float(value)
+            })
 
         ma_output = {
             'series_id': 'MA_DEFENSE',
@@ -102,13 +113,12 @@ def fetch_private_capital_data(excel_file=None, output_dir=None):
             'data': ma_data
         }
 
-        # Save M&A data
         ma_file = output_dir / 'ma_defense.json'
         with open(ma_file, 'w') as f:
             json.dump(ma_output, f, indent=2)
         print(f"  ✓ Saved {len(ma_data)} M&A data points to {ma_file.name}")
 
-        print(f"\n✓ Fetched private capital data successfully")
+        print(f"\n✓ Fetched all private capital data successfully (Public Defense Companies, VC, M&A)")
         return True
 
     except Exception as e:

@@ -11,7 +11,7 @@ CATEGORIES = {
     'defense-investment': {
         'title': 'Defense Investment Trends',
         'description': 'Tracking capital flows and investment activity in the defense sector',
-        'charts': ['dgorder', 'vc_defense', 'ma_defense'],
+        'charts': ['dgorder', 'public_defense_companies', 'vc_defense', 'ma_defense'],
         'insights': [
             'Defense capital goods orders provide early signals of future production activity and contractor revenue',
             'VC investment trends indicate emerging technology areas attracting private capital in defense',
@@ -77,6 +77,23 @@ CHARTS = {
             future growth opportunities.
         """,
         'units': 'Billions of Dollars',
+        'category': 'defense-investment'
+    },
+    'public_defense_companies': {
+        'title': 'Public Defense Companies',
+        'subtitle': 'Number of publicly traded defense and aerospace companies',
+        'description': """
+            <strong>Public Defense Companies</strong> tracks the number of publicly traded companies in the U.S. defense and aerospace
+            sector. This metric provides insight into the structure and accessibility of the defense industrial base to public market
+            investors.
+        """,
+        'context': """
+            The number of public defense companies reflects market consolidation trends, IPO activity, and the overall health of the
+            publicly traded defense sector. A growing count suggests new entrants going public or demergers creating standalone companies,
+            while a declining count may indicate M&A consolidation or companies going private. Public companies provide transparency and
+            liquidity for investors seeking defense sector exposure.
+        """,
+        'units': 'Count',
         'category': 'defense-investment'
     },
     'ma_defense': {
@@ -647,6 +664,7 @@ def get_chart_filename(chart_id):
         'xli': 'xli.html',
         'pld': 'pld.html',
         'dgs10': 'dgs10.html',
+        'public_defense_companies': 'public-defense-companies.html',
         'vc_defense': 'vc-investment.html',
         'ma_defense': 'ma-activity.html'
     }

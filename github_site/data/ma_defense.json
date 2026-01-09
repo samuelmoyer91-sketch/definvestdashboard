@@ -3,13 +3,9 @@
   "name": "M&A Activity in Defense",
   "description": "Annual merger and acquisition activity in the U.S. aerospace and defense sector",
   "units": "Billions of Dollars",
-  "last_updated": "2026-01-09 14:45:59",
+  "last_updated": "2026-01-09 16:34:31",
   "data_points": 5,
   "data": [
-    {
-      "date": "2019-12-31",
-      "value": 171.0
-    },
     {
       "date": "2020-12-31",
       "value": 21.0
@@ -24,7 +20,11 @@
     },
     {
       "date": "2023-12-31",
-      "value": 24.0
+      "value": 25.0
+    },
+    {
+      "date": "2024-12-31",
+      "value": 35.0
     }
   ]
 }
