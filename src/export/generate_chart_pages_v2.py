@@ -80,20 +80,20 @@ CHARTS = {
         'category': 'defense-investment'
     },
     'public_defense_companies': {
-        'title': 'Public Defense Companies',
-        'subtitle': 'Number of publicly traded defense and aerospace companies',
+        'title': 'Public Defense Companies - Capex & R&D',
+        'subtitle': 'Capital expenditures and R&D investment by publicly traded defense companies',
         'description': """
-            <strong>Public Defense Companies</strong> tracks the number of publicly traded companies in the U.S. defense and aerospace
-            sector. This metric provides insight into the structure and accessibility of the defense industrial base to public market
-            investors.
+            <strong>Public Defense Companies - Capex & R&D</strong> tracks the annual capital expenditures and research & development
+            investment by publicly traded defense and aerospace companies. This measures how much these companies are investing in
+            facilities, equipment, and innovation to support future growth and capabilities.
         """,
         'context': """
-            The number of public defense companies reflects market consolidation trends, IPO activity, and the overall health of the
-            publicly traded defense sector. A growing count suggests new entrants going public or demergers creating standalone companies,
-            while a declining count may indicate M&A consolidation or companies going private. Public companies provide transparency and
-            liquidity for investors seeking defense sector exposure.
+            Rising capex and R&D spending by public defense companies signals confidence in future demand and strategic positioning for
+            major programs. These investments build manufacturing capacity, develop next-generation technologies, and modernize production
+            facilities. Strong investment levels indicate a healthy, growing defense industrial base preparing for long-term demand.
+            Declining investment may suggest caution about future budgets or industry consolidation reducing the number of major programs.
         """,
-        'units': 'Count',
+        'units': 'Billions of Dollars',
         'category': 'defense-investment'
     },
     'ma_defense': {

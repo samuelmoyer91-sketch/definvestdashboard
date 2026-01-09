@@ -53,9 +53,9 @@ def fetch_private_capital_data(excel_file=None, output_dir=None):
 
         pdc_output = {
             'series_id': 'PUBLIC_DEFENSE_COMPANIES',
-            'name': 'Public Defense Companies',
-            'description': 'Number of publicly traded defense and aerospace companies',
-            'units': 'Count',
+            'name': 'Public Defense Companies - Capex & R&D',
+            'description': 'Capital expenditures and R&D investment by publicly traded defense and aerospace companies',
+            'units': 'Billions of Dollars',
             'last_updated': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
             'data_points': len(pdc_data),
             'data': pdc_data

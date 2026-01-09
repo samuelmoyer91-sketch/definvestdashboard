@@ -41,7 +41,9 @@
       "Bash(git fetch:*)",
       "Bash(git ls-tree origin/main data/)",
       "Bash(git ls-tree:*)",
-      "Bash(git rm:*)"
+      "Bash(git rm:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nRedesign triage interface with collapsible inline expansion\n\n- Add investors and deal_type fields to MasterItem model and database\n- Rebuild triage.html with collapsible cards that expand inline\n- Collapsed view shows: title, date, AI one-liner \\(Deal Type • Amount • Sector\\)\n- Expanded view shows: collapsible article preview + AI-pre-populated form\n- All AI-populated fields have blue backgrounds \\(#e3f2fd\\) with \"AI\" badges\n- Updated dropdowns: Deal Type, Capital Type, Project Type\n- Form fields: Company, Investors, Deal Amount, Deal Type, Capital Type, Location, Sector, Project Type, Summary, Internal Notes\n- Update workflow script to run uvicorn from project root\n- Add database migration script for new columns\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git mv:*)"
     ]
   }
 }
