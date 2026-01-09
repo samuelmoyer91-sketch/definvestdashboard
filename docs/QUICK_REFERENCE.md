@@ -4,6 +4,28 @@
 
 ---
 
+## ⭐ Primary Workflow (Use This)
+
+### Complete Weekly Update
+```bash
+cd ~/Documents/"Claude - Defense PC Dashboard"
+
+# 1. Fetch new deals and generate AI summaries
+./update_workflow.sh all
+
+# 2. Review deals in triage UI
+uvicorn src.web.app:app --reload
+# Open http://127.0.0.1:8000
+# Accept/reject deals with collapsible cards
+
+# 3. Publish everything (auto-deploys)
+./update_workflow.sh publish
+```
+
+**Done!** Site updates in ~30 seconds at https://samuelmoyer91-sketch.github.io/definvestdashboard/
+
+---
+
 ## 🚀 Initial Setup (Do Once)
 
 ### 1. Get FRED API Key
@@ -46,39 +68,42 @@ git push -u origin main
 
 ---
 
-## 📊 Weekly Updates
+## 📊 Alternative Workflows
 
-### Update Deal Tracker + Data
+### Manual Update (Advanced - If Workflow Script Fails)
+
+**Update Deal Tracker + Data:**
 ```bash
 cd ~/Documents/"Claude - Defense PC Dashboard"
 
 # 1. Fetch new articles
 python3 src/ingest/rss_fetcher.py
-python3 src/scraper/article_scraper.py 10
+python3 src/scraper/article_scraper.py
+python3 src/scraper/generate_ai_summaries.py
 
-# 2. Review in browser
-python3 src/web/app.py
+# 2. Review in triage UI
+uvicorn src.web.app:app --reload
 # Open: http://127.0.0.1:8000
 # Accept/reject articles
 
-# 3. Publish everything
+# 3. Generate site
 python3 publish.py
 
-# 4. Deploy
-cd github_site
-git add .
+# 4. Deploy manually
+git add github_site/
 git commit -m "Weekly update"
-git push
+git push origin main
+git subtree push --prefix github_site origin gh-pages
 ```
 
-### Update Data Only (No New Deals)
+**Update Data Only (No New Deals):**
 ```bash
 cd ~/Documents/"Claude - Defense PC Dashboard"
 python3 publish.py
-cd github_site
-git add .
+git add github_site/
 git commit -m "Data refresh"
-git push
+git push origin main
+git subtree push --prefix github_site origin gh-pages
 ```
 
 ---

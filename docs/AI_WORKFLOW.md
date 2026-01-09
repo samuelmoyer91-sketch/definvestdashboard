@@ -104,36 +104,55 @@ python3 src/scraper/generate_ai_summaries.py --force
 
 ### Step 4: Curate Deals (Triage UI)
 
-Review AI-extracted deals and approve for publication:
+Review AI-extracted deals and approve for publication using the FastAPI triage interface:
 
 ```bash
-cd src/export
-python3 -m http.server 8080
+cd ~/Documents/"Claude - Defense PC Dashboard"
+uvicorn src.web.app:app --reload
 ```
 
-Open: http://localhost:8080/deals_triage.html
+Open: http://127.0.0.1:8000
 
 **In the triage UI:**
-1. Review AI-extracted information
-2. Edit any fields if needed
-3. Click "Publish to Master List"
-4. Deals appear on the public dashboard
+1. See collapsed cards with AI one-liners (Deal Type • Amount • Sector)
+2. Click "▼ Review & Accept" to expand inline
+3. Review AI-populated fields (blue backgrounds indicate AI data)
+4. Edit any fields if needed
+5. Expand article preview to validate information
+6. Click "✓ Accept & Add to Master List" to publish
+7. Or click "Reject" for irrelevant articles
+
+**Features:**
+- Collapsible inline expansion (no page navigation)
+- AI pre-populated fields with visual indicators
+- Dropdown menus for Deal Type, Capital Type, Project Type
+- Full article preview for validation
 
 ### Step 5: Publish to GitHub Pages
 
-Generate the intelligence briefing and all chart pages:
+**Recommended: Use the automated workflow script**
+
+```bash
+./update_workflow.sh publish
+```
+
+This automatically:
+- Refreshes FRED economic data
+- Refreshes Yahoo Finance market data
+- Generates all chart pages
+- Exports accepted deals to intelligence briefing format
+- Commits changes
+- Deploys to GitHub Pages
+
+**Manual alternative (advanced):**
 
 ```bash
 python3 publish.py
-```
-
-Then push to GitHub:
-
-```bash
 cd github_site
 git add .
 git commit -m "Update deal feed and charts"
 git push
+git subtree push --prefix github_site origin gh-pages
 ```
 
 ## Database Schema

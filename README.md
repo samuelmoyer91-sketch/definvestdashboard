@@ -103,22 +103,9 @@ This dashboard provides comprehensive visibility into the defense industrial bas
 
 ## 🔄 Weekly Update Workflow
 
-### Quick Data Update (Charts Only)
-```bash
-# Just update economic data and charts
-cd ~/Documents/"Claude - Defense PC Dashboard"
-python3 publish.py
-git add github_site/
-git commit -m "Data update - $(date +%Y-%m-%d)"
-git push origin main
-git subtree push --prefix github_site origin gh-pages
-```
+### ⭐ Recommended: Complete Update with New Deals
 
-**Time required:** 2 minutes
-
-### Complete Update with New Deals (Recommended)
-
-Use the automated workflow script:
+Use the automated workflow script for the full process:
 
 ```bash
 cd ~/Documents/"Claude - Defense PC Dashboard"
@@ -129,17 +116,37 @@ cd ~/Documents/"Claude - Defense PC Dashboard"
 # Then pauses for your manual triage
 
 # Step 2: Manual triage (10-15 min)
-cd src/web
-uvicorn app:app --reload
+uvicorn src.web.app:app --reload
 # Open http://127.0.0.1:8000
-# Review AI-populated deals, accept/reject
+# Review AI-populated deals with collapsible cards
+# Accept good deals, reject irrelevant articles
 
 # Step 3: Publish and deploy (automated - 1 min)
 ./update_workflow.sh publish
-# Generates website with NEW deals and deploys to GitHub Pages
+# Refreshes ALL data (FRED, Yahoo Finance)
+# Generates website with new deals
+# Auto-commits and deploys to GitHub Pages
 ```
 
 **Total time: ~15 minutes** (vs. 2-3 hours manual)
+
+---
+
+### Quick Data Update (Charts Only, No New Deals)
+
+**Note:** The automated workflow (`./update_workflow.sh publish`) is recommended as it refreshes all data automatically. Manual updates below are for advanced use only.
+
+```bash
+# Manual update (if workflow script unavailable)
+cd ~/Documents/"Claude - Defense PC Dashboard"
+python3 publish.py
+git add github_site/
+git commit -m "Data update - $(date +%Y-%m-%d)"
+git push origin main
+git subtree push --prefix github_site origin gh-pages
+```
+
+**Time required:** 2 minutes
 
 **See [docs/AI_WORKFLOW.md](docs/AI_WORKFLOW.md) for detailed AI setup instructions.**
 
