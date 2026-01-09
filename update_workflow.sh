@@ -52,9 +52,14 @@ case $STAGE in
     ;;
 
   "publish")
-    echo "📄 STAGE 4: Publishing website..."
-    FRED_API_KEY='skip' python3 publish.py
-    echo "✓ Site generated"
+    echo "📄 STAGE 4: Refreshing economic data & publishing website..."
+    echo "   - Fetching FRED economic indicators..."
+    echo "   - Fetching Yahoo Finance market data..."
+    echo "   - Generating chart pages..."
+    echo "   - Exporting deal tracker..."
+    echo ""
+    python3 publish.py
+    echo "✓ Site generated with fresh data"
     echo ""
     ;&
 
@@ -88,16 +93,19 @@ case $STAGE in
     echo "Usage: ./update_workflow.sh [stage]"
     echo ""
     echo "Stages:"
-    echo "  fetch   - Fetch RSS feeds"
+    echo "  fetch   - Fetch RSS feeds (deal articles)"
     echo "  scrape  - Scrape article content"
-    echo "  ai      - Generate AI summaries"
-    echo "  publish - Generate website (after triage)"
-    echo "  deploy  - Deploy to GitHub"
+    echo "  ai      - Generate AI summaries for deals"
+    echo "  publish - Refresh ALL data (FRED, Yahoo Finance, deals) & generate site"
+    echo "  deploy  - Deploy to GitHub Pages"
     echo "  all     - Run fetch→scrape→ai, then pause for triage"
     echo ""
-    echo "Example workflows:"
-    echo "  ./update_workflow.sh all      # Fetch data, then pause for triage"
-    echo "  ./update_workflow.sh publish  # After triage, publish & deploy"
+    echo "Complete workflow:"
+    echo "  1. ./update_workflow.sh all      # Fetch deal data, pause for triage"
+    echo "  2. [Do manual triage at http://127.0.0.1:8000]"
+    echo "  3. ./update_workflow.sh publish  # Refresh economic data + publish + deploy"
+    echo ""
+    echo "Note: 'publish' stage fetches fresh FRED & Yahoo Finance data automatically"
     exit 1
     ;;
 esac
