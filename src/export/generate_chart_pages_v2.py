@@ -485,7 +485,7 @@ def generate_chart_page(chart_id, chart_info):
                 }}
 
                 // Render chart using already-loaded data
-                ChartUtils.createLineChart('mainChart', chartData, {{
+                const chartOptions = {{
                     fill: true,
                     plugins: {{
                         tooltip: {{
@@ -496,7 +496,19 @@ def generate_chart_page(chart_id, chart_info):
                             }}
                         }}
                     }}
-                }});
+                }};
+
+                // Force y-axis to start at zero for investment trend charts
+                const investmentCharts = ['public_defense_companies', 'vc_defense', 'ma_defense'];
+                if (investmentCharts.includes('{chart_id}')) {{
+                    chartOptions.scales = {{
+                        y: {{
+                            beginAtZero: true
+                        }}
+                    }};
+                }}
+
+                ChartUtils.createLineChart('mainChart', chartData, chartOptions);
             }} catch (error) {{
                 console.error('Error loading chart:', error);
             }}

@@ -138,7 +138,7 @@
                 }
 
                 // Render chart using already-loaded data
-                ChartUtils.createLineChart('mainChart', chartData, {
+                const chartOptions = {
                     fill: true,
                     plugins: {
                         tooltip: {
@@ -149,7 +149,19 @@
                             }
                         }
                     }
-                });
+                };
+
+                // Force y-axis to start at zero for investment trend charts
+                const investmentCharts = ['public_defense_companies', 'vc_defense', 'ma_defense'];
+                if (investmentCharts.includes('dgorder')) {
+                    chartOptions.scales = {
+                        y: {
+                            beginAtZero: true
+                        }
+                    };
+                }
+
+                ChartUtils.createLineChart('mainChart', chartData, chartOptions);
             } catch (error) {
                 console.error('Error loading chart:', error);
             }
