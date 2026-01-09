@@ -42,6 +42,10 @@ CATEGORIES = {
     }
 }
 
+# Default date range for consistent visualization (2019-present)
+# Charts with limited data (VC, M&A, Public Defense Companies) will show all available data
+DEFAULT_START_DATE = '2019-01-01'
+
 # Chart definitions with user's original descriptions
 CHARTS = {
     'dgorder': {
@@ -484,9 +488,42 @@ def generate_chart_page(chart_id, chart_info):
                     document.getElementById('lastUpdated').textContent = 'Last updated: ' + chartData.last_updated;
                 }}
 
-                // Render chart using already-loaded data
+                // Filter data to 2019-present for consistent visualization
+                // Exception: Annual investment charts (VC, M&A, PDC) show all available data
+                const limitedDataCharts = ['public_defense_companies', 'vc_defense', 'ma_defense'];
+                let displayData = chartData;
+
+                if (!limitedDataCharts.includes('{chart_id}')) {{
+                    const filteredData = chartData.data.filter(d => new Date(d.date) >= new Date('{DEFAULT_START_DATE}'));
+                    if (filteredData.length > 0) {{
+                        displayData = {{
+                            ...chartData,
+                            data: filteredData
+                        }};
+                    }}
+                }}
+
+                // Render chart with clean year-only labels
                 const chartOptions = {{
                     fill: true,
+                    scales: {{
+                        x: {{
+                            type: 'time',
+                            time: {{
+                                unit: 'year',
+                                displayFormats: {{
+                                    year: 'yyyy'
+                                }}
+                            }},
+                            ticks: {{
+                                maxTicksLimit: 10
+                            }}
+                        }},
+                        y: {{
+                            // Start at zero for investment/dollar amount charts
+                            beginAtZero: ['public_defense_companies', 'vc_defense', 'ma_defense', 'dgorder', 'fdefx', 'pnfi', 'gpdi', 'prmfgcons', 'adefno', 'adapno'].includes('{chart_id}')
+                        }}
+                    }},
                     plugins: {{
                         tooltip: {{
                             callbacks: {{
@@ -498,17 +535,7 @@ def generate_chart_page(chart_id, chart_info):
                     }}
                 }};
 
-                // Force y-axis to start at zero for investment trend charts
-                const investmentCharts = ['public_defense_companies', 'vc_defense', 'ma_defense'];
-                if (investmentCharts.includes('{chart_id}')) {{
-                    chartOptions.scales = {{
-                        y: {{
-                            beginAtZero: true
-                        }}
-                    }};
-                }}
-
-                ChartUtils.createLineChart('mainChart', chartData, chartOptions);
+                ChartUtils.createLineChart('mainChart', displayData, chartOptions);
             }} catch (error) {{
                 console.error('Error loading chart:', error);
             }}
