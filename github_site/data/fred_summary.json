@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-01-09 11:24:37",
+  "last_updated": "2026-01-09 14:45:55",
   "series_count": 10,
   "series": {
     "FDEFX": 315,
@@ -8,7 +8,7 @@
     "INDPRO": 1283,
     "PNFI": 315,
     "ADEFNO": 405,
-    "ADAPNO": 0,
+    "ADAPNO": 405,
     "GPDI": 315,
     "PRMFGCONS": 392,
     "IPB52300S": 947
