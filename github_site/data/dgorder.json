@@ -3,7 +3,7 @@
   "name": "Manufacturers' New Orders: Durable Goods",
   "description": "Defense goods orders",
   "units": "Millions of Dollars",
-  "last_updated": "2026-01-05 12:35:28",
+  "last_updated": "2026-01-09 11:24:30",
   "data_points": 405,
   "data": [
     {
@@ -1620,11 +1620,11 @@
     },
     {
       "date": "2025-09-01",
-      "value": 314183.0
+      "value": 314147.0
     },
     {
       "date": "2025-10-01",
-      "value": 307380.0
+      "value": 307262.0
     }
   ]
 }
