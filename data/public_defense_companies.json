@@ -1,9 +1,9 @@
 {
   "series_id": "PUBLIC_DEFENSE_COMPANIES",
-  "name": "Public Defense Companies",
-  "description": "Number of publicly traded defense and aerospace companies",
-  "units": "Count",
-  "last_updated": "2026-01-09 16:37:15",
+  "name": "Public Defense Companies - Capex & R&D",
+  "description": "Capital expenditures and R&D investment by publicly traded defense and aerospace companies",
+  "units": "Billions of Dollars",
+  "last_updated": "2026-01-09 16:42:04",
   "data_points": 5,
   "data": [
     {
