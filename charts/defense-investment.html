@@ -51,6 +51,16 @@
         
             
             <div class="card">
+                <h3><a href="public-defense-companies.html">Public Defense Companies</a></h3>
+                <p>Number of publicly traded defense and aerospace companies</p>
+                <div class="chart-container" style="height: 250px;">
+                    <canvas id="chart_public_defense_companies"></canvas>
+                </div>
+                <a href="public-defense-companies.html" class="btn btn-primary" style="margin-top: 1rem;">View Details</a>
+            </div>
+        
+            
+            <div class="card">
                 <h3><a href="vc-investment.html">Venture Capital Investment in Defense</a></h3>
                 <p>Annual VC investment in defense and dual-use companies</p>
                 <div class="chart-container" style="height: 250px;">
@@ -120,6 +130,47 @@
                     });
                 })
                 .catch(err => console.log('Could not load dgorder:', err));
+        
+            
+            fetch('../data/public_defense_companies.json')
+                .then(response => response.json())
+                .then(data => {
+                    const ctx = document.getElementById('chart_public_defense_companies');
+                    if (!ctx) return;
+
+                    // Show only recent data for cleaner previews (last 10 years)
+                    const allData = data.data;
+                    const recentData = allData.length > 120 ? allData.slice(-120) : allData;
+
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: recentData.map(d => d.date),
+                            datasets: [{
+                                label: data.name,
+                                data: recentData.map(d => d.value || d.close),
+                                borderColor: '#226E93',
+                                backgroundColor: 'rgba(34, 110, 147, 0.1)',
+                                borderWidth: 2,
+                                fill: true,
+                                tension: 0.1,
+                                pointRadius: 0
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false }
+                            },
+                            scales: {
+                                x: { display: true, grid: { display: false } },
+                                y: { grid: { color: '#e0e0e0' } }
+                            }
+                        }
+                    });
+                })
+                .catch(err => console.log('Could not load public_defense_companies:', err));
         
             
             fetch('../data/vc_defense.json')

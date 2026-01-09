@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>M&A Activity in Defense - Defense Capital Dashboard</title>
+    <title>Public Defense Companies - Defense Capital Dashboard</title>
     <link rel="stylesheet" href="../css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
@@ -24,8 +24,8 @@
 
     <div class="container">
         <div class="page-header">
-            <h1>M&A Activity in Defense</h1>
-            <p>Annual merger and acquisition activity in aerospace and defense</p>
+            <h1>Public Defense Companies</h1>
+            <p>Number of publicly traded defense and aerospace companies</p>
             <p class="last-updated" id="lastUpdated"></p>
         </div>
 
@@ -68,17 +68,17 @@
         <div class="card">
             <h2>About This Metric</h2>
             <p>
-            <strong>M&A Activity in Defense</strong> tracks the dollar value of mergers and acquisitions in the U.S. aerospace and
-            defense sector. This includes private equity buyouts, strategic acquisitions by defense primes, and consolidation activity
-            across the defense industrial base.
+            <strong>Public Defense Companies</strong> tracks the number of publicly traded companies in the U.S. defense and aerospace
+            sector. This metric provides insight into the structure and accessibility of the defense industrial base to public market
+            investors.
         </p>
             <p>
-            M&A activity reflects consolidation trends, capital deployment by private equity and strategic buyers, and the overall
-            health of the defense sector. High M&A volumes can indicate strong valuations, buyer confidence, and strategic positioning
-            for future defense programs. Tracking M&A helps identify which segments of the defense industrial base are seeing the most
-            investment interest and consolidation.
+            The number of public defense companies reflects market consolidation trends, IPO activity, and the overall health of the
+            publicly traded defense sector. A growing count suggests new entrants going public or demergers creating standalone companies,
+            while a declining count may indicate M&A consolidation or companies going private. Public companies provide transparency and
+            liquidity for investors seeking defense sector exposure.
         </p>
-            <p><strong>Units:</strong> Billions of Dollars</p>
+            <p><strong>Units:</strong> Count</p>
             <p><strong>Source:</strong> Federal Reserve Economic Data (FRED)</p>
         </div>
 
@@ -87,7 +87,7 @@
             <div class="grid grid-3">
                 <a href="defense-goods-orders.html" class="btn btn-secondary">Defense Capital Goods Orders</a>
                 <a href="vc-investment.html" class="btn btn-secondary">Venture Capital Investment in Defense</a>
-                <a href="public-defense-companies.html" class="btn btn-secondary">Public Defense Companies</a>
+                <a href="ma-activity.html" class="btn btn-secondary">M&A Activity in Defense</a>
             </div>
         </div>
     </div>
@@ -104,7 +104,7 @@
         document.addEventListener('DOMContentLoaded', async function() {
             try {
                 // Load data
-                const response = await fetch('../data/ma_defense.json');
+                const response = await fetch('../data/public_defense_companies.json');
                 chartData = await response.json();
 
                 // Calculate and display stats
@@ -156,7 +156,7 @@
             // Download button handler
             document.getElementById('downloadBtn').addEventListener('click', function() {
                 if (chartData) {
-                    ChartUtils.downloadCSV(chartData, 'ma_defense.csv');
+                    ChartUtils.downloadCSV(chartData, 'public_defense_companies.csv');
                 }
             });
         });
