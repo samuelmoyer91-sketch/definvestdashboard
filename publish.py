@@ -171,33 +171,26 @@ def main():
     print("Site location:")
     print(f"  {github_site}\n")
 
+    print("What was updated:")
+    print("  ✓ Fresh economic data (FRED indicators)")
+    print("  ✓ Fresh market data (Yahoo Finance)")
+    print("  ✓ Updated chart pages")
+    print("  ✓ Exported accepted deals from triage\n")
+
     print("Next steps:")
-    print("  1. Test locally:")
+    print("  When called via './update_workflow.sh publish', deployment is automatic:")
+    print("  • Changes are committed to git")
+    print("  • Pushed to main branch")
+    print("  • Deployed to GitHub Pages")
+    print("  • Site goes live in ~30 seconds\n")
+
+    print("  To test locally before deploying:")
     print(f"     cd {github_site}")
     print("     python3 -m http.server 8080")
     print("     Open: http://localhost:8080\n")
 
-    print("  2. Push to GitHub:")
-    print("     - Create a new PRIVATE repo: defense-dashboard")
-    print("     - Initialize git in github_site/:")
-    print(f"       cd {github_site}")
-    print("       git init")
-    print("       git add .")
-    print('       git commit -m "Initial commit"')
-    print("       git branch -M main")
-    print("       git remote add origin https://github.com/samuelmoyer91-sketch/defense-dashboard.git")
-    print("       git push -u origin main\n")
-
-    print("  3. Enable GitHub Pages:")
-    print("     - Go to repo Settings > Pages")
-    print("     - Source: Deploy from branch 'main'")
-    print("     - Folder: / (root)")
-    print("     - Save\n")
-
-    print("  4. Your site will be live at:")
-    print("     https://samuelmoyer91-sketch.github.io/defense-dashboard/\n")
-
-    print("⚠️  Remember: Keep repo PRIVATE until you review it!\n")
+    print("  Live site:")
+    print("     https://samuelmoyer91-sketch.github.io/definvestdashboard/\n")
 
     print(f"Completed at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
