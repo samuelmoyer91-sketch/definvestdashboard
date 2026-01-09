@@ -103,47 +103,43 @@ This dashboard provides comprehensive visibility into the defense industrial bas
 
 ## 🔄 Weekly Update Workflow
 
-### Quick Data Update
+### Quick Data Update (Charts Only)
 ```bash
-# 1. Update all data and regenerate site
+# Just update economic data and charts
 cd ~/Documents/"Claude - Defense PC Dashboard"
 python3 publish.py
-
-# 2. Deploy to live site
-git add -A
-git commit -m "Weekly update - $(date +%Y-%m-%d)"
+git add github_site/
+git commit -m "Data update - $(date +%Y-%m-%d)"
 git push origin main
-
-# Site updates in ~30 seconds!
+git subtree push --prefix github_site origin gh-pages
 ```
 
-**Time required:** 5 minutes
+**Time required:** 2 minutes
 
-### With AI Deal Summaries
+### Complete Update with New Deals (Recommended)
 
-For the deal tracker, you can generate AI-powered summaries:
+Use the automated workflow script:
 
 ```bash
-# 1. Fetch new articles from RSS
-python3 src/scraper/rss_fetcher.py
+cd ~/Documents/"Claude - Defense PC Dashboard"
 
-# 2. Scrape article content
-python3 src/scraper/article_scraper.py
+# Step 1: Fetch and prepare data (automated - 2 min)
+./update_workflow.sh all
+# Fetches RSS → scrapes articles → generates AI summaries
+# Then pauses for your manual triage
 
-# 3. Generate AI summaries (requires ANTHROPIC_API_KEY)
-python3 src/scraper/generate_ai_summaries.py --limit 10
+# Step 2: Manual triage (10-15 min)
+cd src/web
+uvicorn app:app --reload
+# Open http://127.0.0.1:8000
+# Review AI-populated deals, accept/reject
 
-# 4. Review and curate deals
-cd src/export
-python3 -m http.server 8080
-# Open http://localhost:8080/deals_triage.html
-
-# 5. Publish with updated deals
-python3 publish.py
-git add -A
-git commit -m "Update deals with AI summaries"
-git push
+# Step 3: Publish and deploy (automated - 1 min)
+./update_workflow.sh publish
+# Generates website with NEW deals and deploys to GitHub Pages
 ```
+
+**Total time: ~15 minutes** (vs. 2-3 hours manual)
 
 **See [docs/AI_WORKFLOW.md](docs/AI_WORKFLOW.md) for detailed AI setup instructions.**
 
