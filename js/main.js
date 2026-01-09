@@ -82,10 +82,23 @@ function createLineChart(canvasId, data, options = {}) {
         }]
     };
 
-    // Merge options with defaults
+    // Deep merge scales configuration
+    const mergedScales = {
+        x: {
+            ...chartDefaults.scales.x,
+            ...(options.scales?.x || {})
+        },
+        y: {
+            ...chartDefaults.scales.y,
+            ...(options.scales?.y || {})
+        }
+    };
+
+    // Merge options with defaults (deep merge for nested objects)
     const chartOptions = {
         ...chartDefaults,
         ...options,
+        scales: mergedScales,
         plugins: {
             ...chartDefaults.plugins,
             ...(options.plugins || {}),
