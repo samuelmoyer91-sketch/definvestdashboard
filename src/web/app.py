@@ -10,7 +10,7 @@ from datetime import datetime
 
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
-from src.database import RawItem, ArticleContent, MasterItem, RejectedItem, get_session
+from src.database import RawItem, ArticleContent, AIExtraction, MasterItem, RejectedItem, get_session
 
 app = FastAPI(title="Defense Capital Tracker")
 
@@ -43,9 +43,10 @@ async def home(request: Request):
         RawItem.published_date.desc()
     ).limit(50).all()
 
-    # Add article content to each item
+    # Add article content and AI extraction to each item
     for item in items:
         item.article_content = session.query(ArticleContent).filter_by(item_id=item.id).first()
+        item.ai_extraction = session.query(AIExtraction).filter_by(item_id=item.id).first()
 
     total_items = len(items)
     master_count = session.query(MasterItem).count()
@@ -67,6 +68,7 @@ async def view_item(request: Request, item_id: int):
 
     item = session.query(RawItem).filter_by(id=item_id).first()
     article = session.query(ArticleContent).filter_by(item_id=item_id).first()
+    ai_extraction = session.query(AIExtraction).filter_by(item_id=item_id).first()
     master = session.query(MasterItem).filter_by(item_id=item_id).first()
 
     session.close()
@@ -75,6 +77,7 @@ async def view_item(request: Request, item_id: int):
         "request": request,
         "item": item,
         "article": article,
+        "ai_extraction": ai_extraction,
         "master": master
     })
 
@@ -83,7 +86,9 @@ async def view_item(request: Request, item_id: int):
 async def accept_item(
     item_id: int,
     company: str = Form(""),
+    investors: str = Form(""),
     investment_amount: str = Form(""),
+    deal_type: str = Form(""),
     capital_type: str = Form(""),
     location: str = Form(""),
     sector: str = Form(""),
@@ -101,7 +106,9 @@ async def accept_item(
         master = MasterItem(
             item_id=item_id,
             company=company if company else None,
+            investors=investors if investors else None,
             investment_amount=investment_amount if investment_amount else None,
+            deal_type=deal_type if deal_type else None,
             capital_type=capital_type if capital_type else None,
             location=location if location else None,
             sector=sector if sector else None,

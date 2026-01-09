@@ -97,7 +97,9 @@ class MasterItem(Base):
 
     # Human-verified fields (can override AI extractions)
     company = Column(String)
+    investors = Column(String)
     investment_amount = Column(String)
+    deal_type = Column(String)
     capital_type = Column(String)
     location = Column(String)
     sector = Column(String)

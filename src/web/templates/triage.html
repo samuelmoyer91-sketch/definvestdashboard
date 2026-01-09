@@ -3,6 +3,37 @@
 {% block title %}Triage Queue - Defense Capital Tracker{% endblock %}
 
 {% block content %}
+<style>
+/* AI pre-populated field styling */
+.ai-populated {
+    background-color: #e3f2fd !important;
+    border-left: 3px solid #2196F3;
+}
+
+.ai-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    background-color: #2196F3;
+    color: white;
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: 600;
+    margin-left: 5px;
+}
+
+.item-card {
+    margin-bottom: 15px;
+}
+
+.item-collapsed {
+    display: block;
+}
+
+.item-expanded {
+    display: none;
+}
+</style>
+
 <div class="stats">
     <div class="stat-card">
         <div class="stat-number">{{ total_items }}</div>
@@ -19,42 +50,261 @@
 {% if total_items == 0 %}
 <div class="card">
     <p style="text-align: center; color: #666;">
-        No items to review. Run the RSS ingestion and scraper to fetch new items.
+        No items to review. Run the workflow to fetch new items.
     </p>
     <p style="text-align: center; margin-top: 10px;">
-        <code>python src/ingest/rss_fetcher.py</code><br>
-        <code>python src/scraper/article_scraper.py</code>
+        <code>./update_workflow.sh all</code>
     </p>
 </div>
 {% else %}
+
 {% for item in items %}
-<div class="card item-card">
-    <div class="item-header">
-        <div class="item-title">{{ item.title | safe }}</div>
-    </div>
-    <div class="item-meta">
-        <span class="badge badge-info">{{ item.feed_source }}</span>
-        {% if item.published_date %}
-        <span style="margin-left: 10px;">Published: {{ item.published_date.strftime('%Y-%m-%d %H:%M') }}</span>
+<div class="card item-card" id="item-{{ item.id }}">
+    <!-- COLLAPSED VIEW (Default) -->
+    <div class="item-collapsed" id="collapsed-{{ item.id }}">
+        <div class="item-header">
+            <div class="item-title">{{ item.title | safe }}</div>
+        </div>
+
+        <div class="item-meta" style="margin-top: 8px;">
+            <span class="badge badge-info">{{ item.feed_source }}</span>
+            {% if item.published_date %}
+            <span style="margin-left: 10px; color: #666;">{{ item.published_date.strftime('%Y-%m-%d') }}</span>
+            {% endif %}
+        </div>
+
+        <!-- AI One-liner Summary -->
+        {% if item.ai_extraction %}
+        <div style="margin-top: 10px; font-size: 14px; color: #333; font-weight: 500;">
+            {% if item.ai_extraction.deal_type %}<strong>{{ item.ai_extraction.deal_type }}</strong>{% endif %}
+            {% if item.ai_extraction.deal_amount %} • {{ item.ai_extraction.deal_amount }}{% endif %}
+            {% if item.ai_extraction.sector %} • {{ item.ai_extraction.sector }}{% endif %}
+        </div>
         {% endif %}
+
+        <div class="item-actions" style="margin-top: 12px;">
+            <button onclick="toggleReview({{ item.id }})" class="btn btn-primary">▼ Review & Accept</button>
+            <form method="post" action="/reject/{{ item.id }}" style="display: inline;">
+                <button type="submit" class="btn btn-danger">Reject</button>
+            </form>
+            <a href="{{ item.url }}" target="_blank" class="btn btn-link">View Original</a>
+        </div>
     </div>
-    <div class="item-summary">
-        {{ item.rss_summary | safe | truncate(300) }}
-    </div>
-    {% if item.article_content and item.article_content.clean_text %}
-    <div class="item-meta" style="margin-top: 10px;">
-        <span class="badge badge-success">Scraped</span>
-        <span style="margin-left: 10px;">{{ "{:,}".format(item.article_content.clean_text | length) }} chars</span>
-    </div>
-    {% endif %}
-    <div class="item-actions">
-        <a href="/item/{{ item.id }}" class="btn btn-primary">Review & Accept</a>
-        <form method="post" action="/reject/{{ item.id }}">
-            <button type="submit" class="btn btn-danger">Reject</button>
+
+    <!-- EXPANDED VIEW (Hidden by default) -->
+    <div class="item-expanded" id="expanded-{{ item.id }}">
+        <div class="item-header">
+            <div class="item-title">{{ item.title | safe }}</div>
+        </div>
+
+        <div class="item-meta" style="margin-top: 8px; margin-bottom: 15px;">
+            <span class="badge badge-info">{{ item.feed_source }}</span>
+            {% if item.published_date %}
+            <span style="margin-left: 10px; color: #666;">{{ item.published_date.strftime('%Y-%m-%d') }}</span>
+            {% endif %}
+        </div>
+
+        <!-- Collapsible Article Preview -->
+        {% if item.article_content and item.article_content.clean_text %}
+        <details style="margin-bottom: 20px; border: 1px solid #e0e0e0; border-radius: 4px; padding: 12px; background: #f9f9f9;">
+            <summary style="cursor: pointer; font-weight: 600; color: #5e81ac; font-size: 14px;">
+                📄 Article Preview ({{ "{:,}".format(item.article_content.clean_text | length) }} characters)
+            </summary>
+            <div style="margin-top: 12px; padding: 12px; background: white; border-radius: 4px; max-height: 350px; overflow-y: auto; font-size: 13px; line-height: 1.7; color: #333;">
+                {{ item.article_content.clean_text[:1500] }}
+                {% if item.article_content.clean_text | length > 1500 %}
+                <p style="color: #999; margin-top: 12px; font-style: italic;">... (showing first 1,500 characters)</p>
+                {% endif %}
+            </div>
+        </details>
+        {% endif %}
+
+        <!-- Curation Form -->
+        <form method="post" action="/accept/{{ item.id }}">
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 6px; margin-bottom: 15px;">
+                <h4 style="margin-bottom: 15px; color: #333; font-size: 16px;">Edit Deal Information</h4>
+
+                <!-- Row 1: Company & Investors -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div>
+                        <label style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 5px; color: #555;">
+                            Company
+                            {% if item.ai_extraction and item.ai_extraction.company %}<span class="ai-badge">AI</span>{% endif %}
+                        </label>
+                        <input type="text" name="company"
+                               value="{{ item.ai_extraction.company if item.ai_extraction and item.ai_extraction.company else '' }}"
+                               {% if item.ai_extraction and item.ai_extraction.company %}class="ai-populated"{% endif %}
+                               style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
+                               placeholder="e.g., Anduril, Shield AI">
+                    </div>
+
+                    <div>
+                        <label style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 5px; color: #555;">
+                            Investors / Acquirer
+                            {% if item.ai_extraction and item.ai_extraction.investors %}<span class="ai-badge">AI</span>{% endif %}
+                        </label>
+                        <input type="text" name="investors"
+                               value="{{ item.ai_extraction.investors if item.ai_extraction and item.ai_extraction.investors else '' }}"
+                               {% if item.ai_extraction and item.ai_extraction.investors %}class="ai-populated"{% endif %}
+                               style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
+                               placeholder="e.g., McNally Capital, Andreessen Horowitz">
+                    </div>
+                </div>
+
+                <!-- Row 2: Deal Amount & Deal Type -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div>
+                        <label style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 5px; color: #555;">
+                            Deal Amount
+                            {% if item.ai_extraction and item.ai_extraction.deal_amount %}<span class="ai-badge">AI</span>{% endif %}
+                        </label>
+                        <input type="text" name="investment_amount"
+                               value="{{ item.ai_extraction.deal_amount if item.ai_extraction and item.ai_extraction.deal_amount else '' }}"
+                               {% if item.ai_extraction and item.ai_extraction.deal_amount %}class="ai-populated"{% endif %}
+                               style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
+                               placeholder="e.g., $100M, Not disclosed">
+                    </div>
+
+                    <div>
+                        <label style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 5px; color: #555;">
+                            Deal Type
+                            {% if item.ai_extraction and item.ai_extraction.deal_type %}<span class="ai-badge">AI</span>{% endif %}
+                        </label>
+                        <select name="deal_type"
+                                {% if item.ai_extraction and item.ai_extraction.deal_type %}class="ai-populated"{% endif %}
+                                style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                            <option value="">-- Select --</option>
+                            {% set ai_deal = item.ai_extraction.deal_type if item.ai_extraction and item.ai_extraction.deal_type else '' %}
+                            <option value="Acquisition" {% if 'Acquisition' in ai_deal or 'M&A' in ai_deal %}selected{% endif %}>Acquisition</option>
+                            <option value="Funding Round" {% if 'Funding' in ai_deal or 'Investment' in ai_deal %}selected{% endif %}>Funding Round</option>
+                            <option value="IPO" {% if 'IPO' in ai_deal %}selected{% endif %}>IPO</option>
+                            <option value="Merger" {% if 'Merger' in ai_deal %}selected{% endif %}>Merger</option>
+                            <option value="Strategic Investment" {% if 'Strategic' in ai_deal %}selected{% endif %}>Strategic Investment</option>
+                            <option value="Public-Private Partnership" {% if 'Public-Private' in ai_deal or 'PPP' in ai_deal %}selected{% endif %}>Public-Private Partnership</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Row 3: Capital Type & Project Type -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div>
+                        <label style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 5px; color: #555;">
+                            Capital Type
+                            {% if item.ai_extraction and item.ai_extraction.capital_type %}<span class="ai-badge">AI</span>{% endif %}
+                        </label>
+                        <select name="capital_type"
+                                {% if item.ai_extraction and item.ai_extraction.capital_type %}class="ai-populated"{% endif %}
+                                style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                            <option value="">-- Select --</option>
+                            {% set ai_capital = item.ai_extraction.capital_type if item.ai_extraction and item.ai_extraction.capital_type else '' %}
+                            <option value="Venture Capital" {% if 'Venture' in ai_capital or 'VC' in ai_capital %}selected{% endif %}>Venture Capital</option>
+                            <option value="Private Equity" {% if 'Private Equity' in ai_capital or 'PE' in ai_capital %}selected{% endif %}>Private Equity</option>
+                            <option value="Corporate Investment" {% if 'Corporate' in ai_capital %}selected{% endif %}>Corporate Investment</option>
+                            <option value="Public-Private" {% if 'Public-Private' in ai_capital %}selected{% endif %}>Public-Private</option>
+                            <option value="IPO" {% if ai_capital == 'IPO' %}selected{% endif %}>IPO</option>
+                            <option value="Grant/SBIR" {% if 'Grant' in ai_capital or 'SBIR' in ai_capital %}selected{% endif %}>Grant/SBIR</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 5px; color: #555;">
+                            Project Type
+                            {% if item.ai_extraction and item.ai_extraction.project_type %}<span class="ai-badge">AI</span>{% endif %}
+                        </label>
+                        <select name="project_type"
+                                {% if item.ai_extraction and item.ai_extraction.project_type %}class="ai-populated"{% endif %}
+                                style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                            <option value="">-- Select --</option>
+                            {% set ai_project = item.ai_extraction.project_type if item.ai_extraction and item.ai_extraction.project_type else '' %}
+                            <option value="Factory/Manufacturing" {% if 'Factory' in ai_project or 'Manufacturing' in ai_project %}selected{% endif %}>Factory/Manufacturing</option>
+                            <option value="R&D Facility" {% if 'R&D' in ai_project or 'Lab' in ai_project %}selected{% endif %}>R&D Facility</option>
+                            <option value="Test Range" {% if 'Test' in ai_project %}selected{% endif %}>Test Range</option>
+                            <option value="Acquisition" {% if 'Acquisition' in ai_project %}selected{% endif %}>Acquisition</option>
+                            <option value="Funding Round" {% if 'Funding' in ai_project %}selected{% endif %}>Funding Round</option>
+                            <option value="Product Development" {% if 'Product' in ai_project %}selected{% endif %}>Product Development</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Row 4: Sector & Location -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div>
+                        <label style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 5px; color: #555;">
+                            Sector/Technology
+                            {% if item.ai_extraction and item.ai_extraction.sector %}<span class="ai-badge">AI</span>{% endif %}
+                        </label>
+                        <input type="text" name="sector"
+                               value="{{ item.ai_extraction.sector if item.ai_extraction and item.ai_extraction.sector else '' }}"
+                               {% if item.ai_extraction and item.ai_extraction.sector %}class="ai-populated"{% endif %}
+                               style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
+                               placeholder="e.g., Drones, AI/ML, Semiconductors">
+                    </div>
+
+                    <div>
+                        <label style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 5px; color: #555;">
+                            Location
+                            {% if item.ai_extraction and item.ai_extraction.location %}<span class="ai-badge">AI</span>{% endif %}
+                        </label>
+                        <input type="text" name="location"
+                               value="{{ item.ai_extraction.location if item.ai_extraction and item.ai_extraction.location else '' }}"
+                               {% if item.ai_extraction and item.ai_extraction.location %}class="ai-populated"{% endif %}
+                               style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
+                               placeholder="e.g., Austin, TX">
+                    </div>
+                </div>
+
+                <!-- Row 5: Summary -->
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 5px; color: #555;">
+                        Summary (2-3 sentences)
+                        {% if item.ai_extraction and (item.ai_extraction.strategic_significance or item.ai_extraction.market_implications) %}<span class="ai-badge">AI</span>{% endif %}
+                    </label>
+                    <textarea name="summary" rows="3"
+                              {% if item.ai_extraction and (item.ai_extraction.strategic_significance or item.ai_extraction.market_implications) %}class="ai-populated"{% endif %}
+                              style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; font-family: inherit;"
+                              placeholder="Write a concise summary of the deal...">{% if item.ai_extraction %}{% if item.ai_extraction.strategic_significance %}{{ item.ai_extraction.strategic_significance }}{% endif %}{% if item.ai_extraction.market_implications and item.ai_extraction.strategic_significance %} {{ item.ai_extraction.market_implications }}{% elif item.ai_extraction.market_implications %}{{ item.ai_extraction.market_implications }}{% endif %}{% endif %}</textarea>
+                </div>
+
+                <!-- Row 6: Internal Notes -->
+                <div>
+                    <label style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 5px; color: #555;">
+                        Internal Notes
+                    </label>
+                    <textarea name="notes" rows="2"
+                              style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; font-family: inherit;"
+                              placeholder="Any notes for yourself (not public)..."></textarea>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button type="submit" class="btn btn-primary">✓ Accept & Add to Master List</button>
+                <button type="button" onclick="toggleReview({{ item.id }})" class="btn btn-secondary">Cancel</button>
+                <a href="{{ item.url }}" target="_blank" class="btn btn-link">View Original</a>
+            </div>
         </form>
-        <a href="{{ item.url }}" target="_blank" class="btn btn-link">View Original</a>
     </div>
 </div>
 {% endfor %}
+
+<script>
+function toggleReview(itemId) {
+    const collapsed = document.getElementById(`collapsed-${itemId}`);
+    const expanded = document.getElementById(`expanded-${itemId}`);
+
+    if (collapsed.style.display === 'none') {
+        // Show collapsed, hide expanded
+        collapsed.style.display = 'block';
+        expanded.style.display = 'none';
+    } else {
+        // Hide collapsed, show expanded
+        collapsed.style.display = 'none';
+        expanded.style.display = 'block';
+    }
+}
+</script>
+
 {% endif %}
 {% endblock %}

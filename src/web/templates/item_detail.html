@@ -3,9 +3,42 @@
 {% block title %}{{ item.title | safe }} - Defense Capital Tracker{% endblock %}
 
 {% block content %}
+<style>
+/* AI pre-populated field styling */
+.ai-populated {
+    background-color: #e3f2fd !important;
+    border-left: 3px solid #2196F3 !important;
+}
+
+.ai-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    background-color: #2196F3;
+    color: white;
+    border-radius: 3px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-left: 8px;
+}
+</style>
+
 <div style="margin-bottom: 20px;">
     <a href="/" class="btn btn-secondary">← Back to Triage</a>
 </div>
+
+{% if ai_extraction and ai_extraction.summary_complete %}
+<div class="card" style="background-color: #e3f2fd; border-left: 4px solid #2196F3; margin-bottom: 20px;">
+    <div style="display: flex; align-items: center; margin-bottom: 10px;">
+        <strong style="font-size: 1.1rem;">AI Extraction Available</strong>
+        <span class="ai-badge" style="margin-left: 10px;">AI</span>
+    </div>
+    <div style="font-size: 0.95rem; color: #555;">
+        <strong>{{ ai_extraction.deal_type or 'Deal' }}</strong>
+        {% if ai_extraction.deal_amount %} • {{ ai_extraction.deal_amount }}{% endif %}
+        {% if ai_extraction.company %} • {{ ai_extraction.company }}{% endif %}
+    </div>
+</div>
+{% endif %}
 
 <div class="card">
     <h2 style="margin-bottom: 15px;">{{ item.title | safe }}</h2>
@@ -44,19 +77,62 @@
     <h3 style="margin-bottom: 15px;">Accept & Curate</h3>
     <form method="post" action="/accept/{{ item.id }}">
         <div style="margin-bottom: 15px;">
-            <label style="display: block; font-weight: 600; margin-bottom: 5px;">Company/Companies:</label>
-            <input type="text" name="company" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;"
+            <label style="display: block; font-weight: 600; margin-bottom: 5px;">
+                Company/Companies
+                {% if ai_extraction and ai_extraction.company %}<span class="ai-badge">AI</span>{% endif %}
+            </label>
+            <input type="text" name="company"
+                   value="{{ ai_extraction.company if ai_extraction and ai_extraction.company else '' }}"
+                   {% if ai_extraction and ai_extraction.company %}class="ai-populated"{% endif %}
+                   style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;"
                    placeholder="e.g., Anduril, Shield AI, McNally Capital">
         </div>
 
         <div style="margin-bottom: 15px;">
-            <label style="display: block; font-weight: 600; margin-bottom: 5px;">Investment Amount:</label>
-            <input type="text" name="investment_amount" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;"
+            <label style="display: block; font-weight: 600; margin-bottom: 5px;">
+                Investors / Acquirer
+                {% if ai_extraction and ai_extraction.investors %}<span class="ai-badge">AI</span>{% endif %}
+            </label>
+            <input type="text" name="investors"
+                   value="{{ ai_extraction.investors if ai_extraction and ai_extraction.investors else '' }}"
+                   {% if ai_extraction and ai_extraction.investors %}class="ai-populated"{% endif %}
+                   style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;"
+                   placeholder="e.g., Andreessen Horowitz, Goldman Sachs">
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <label style="display: block; font-weight: 600; margin-bottom: 5px;">
+                Investment Amount
+                {% if ai_extraction and ai_extraction.deal_amount %}<span class="ai-badge">AI</span>{% endif %}
+            </label>
+            <input type="text" name="investment_amount"
+                   value="{{ ai_extraction.deal_amount if ai_extraction and ai_extraction.deal_amount else '' }}"
+                   {% if ai_extraction and ai_extraction.deal_amount %}class="ai-populated"{% endif %}
+                   style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;"
                    placeholder="e.g., $100M, $1.5B, Not disclosed">
         </div>
 
         <div style="margin-bottom: 15px;">
-            <label style="display: block; font-weight: 600; margin-bottom: 5px;">Capital Type:</label>
+            <label style="display: block; font-weight: 600; margin-bottom: 5px;">
+                Deal Type
+                {% if ai_extraction and ai_extraction.deal_type %}<span class="ai-badge">AI</span>{% endif %}
+            </label>
+            <select name="deal_type"
+                    {% if ai_extraction and ai_extraction.deal_type %}class="ai-populated"{% endif %}
+                    style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                <option value="">-- Select --</option>
+                {% set ai_deal_type = ai_extraction.deal_type if ai_extraction and ai_extraction.deal_type else '' %}
+                <option value="Venture Capital" {% if 'VC' in ai_deal_type or 'Venture' in ai_deal_type %}selected{% endif %}>Venture Capital</option>
+                <option value="M&A" {% if 'M&A' in ai_deal_type or 'Acquisition' in ai_deal_type %}selected{% endif %}>M&A / Acquisition</option>
+                <option value="IPO" {% if 'IPO' in ai_deal_type %}selected{% endif %}>IPO</option>
+                <option value="Debt Financing">Debt Financing</option>
+                <option value="Strategic Partnership">Strategic Partnership</option>
+                <option value="Other">Other</option>
+            </select>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <label style="display: block; font-weight: 600; margin-bottom: 5px;">Capital Type</label>
             <select name="capital_type" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                 <option value="">-- Select --</option>
                 <option value="Venture Capital">Venture Capital</option>
@@ -69,19 +145,19 @@
         </div>
 
         <div style="margin-bottom: 15px;">
-            <label style="display: block; font-weight: 600; margin-bottom: 5px;">Location:</label>
+            <label style="display: block; font-weight: 600; margin-bottom: 5px;">Location</label>
             <input type="text" name="location" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;"
                    placeholder="e.g., Austin, TX or California">
         </div>
 
         <div style="margin-bottom: 15px;">
-            <label style="display: block; font-weight: 600; margin-bottom: 5px;">Sector/Technology:</label>
+            <label style="display: block; font-weight: 600; margin-bottom: 5px;">Sector/Technology</label>
             <input type="text" name="sector" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;"
                    placeholder="e.g., Drones, Semiconductors, Munitions, AI/ML">
         </div>
 
         <div style="margin-bottom: 15px;">
-            <label style="display: block; font-weight: 600; margin-bottom: 5px;">Project Type:</label>
+            <label style="display: block; font-weight: 600; margin-bottom: 5px;">Project Type</label>
             <select name="project_type" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                 <option value="">-- Select --</option>
                 <option value="Factory">Factory / Manufacturing Facility</option>
@@ -94,13 +170,18 @@
         </div>
 
         <div style="margin-bottom: 15px;">
-            <label style="display: block; font-weight: 600; margin-bottom: 5px;">Summary (2-3 sentences):</label>
-            <textarea name="summary" rows="4" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;"
-                      placeholder="Write a concise summary of the investment/project..."></textarea>
+            <label style="display: block; font-weight: 600; margin-bottom: 5px;">
+                Summary (2-3 sentences)
+                {% if ai_extraction and (ai_extraction.strategic_significance or ai_extraction.market_implications) %}<span class="ai-badge">AI</span>{% endif %}
+            </label>
+            <textarea name="summary" rows="4"
+                      {% if ai_extraction and (ai_extraction.strategic_significance or ai_extraction.market_implications) %}class="ai-populated"{% endif %}
+                      style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;"
+                      placeholder="Write a concise summary of the investment/project...">{% if ai_extraction %}{% if ai_extraction.strategic_significance %}{{ ai_extraction.strategic_significance }}{% endif %}{% if ai_extraction.market_implications %} {{ ai_extraction.market_implications }}{% endif %}{% endif %}</textarea>
         </div>
 
         <div style="margin-bottom: 15px;">
-            <label style="display: block; font-weight: 600; margin-bottom: 5px;">Internal Notes:</label>
+            <label style="display: block; font-weight: 600; margin-bottom: 5px;">Internal Notes</label>
             <textarea name="notes" rows="2" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;"
                       placeholder="Any notes for yourself (not public)..."></textarea>
         </div>

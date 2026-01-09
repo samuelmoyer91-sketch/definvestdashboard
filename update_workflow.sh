@@ -14,98 +14,126 @@ echo ""
 # Check which stage to run
 STAGE=${1:-all}
 
-case $STAGE in
-  "fetch"|"all")
-    echo "📥 STAGE 1: Fetching RSS feeds..."
-    python3 src/ingest/rss_fetcher.py
-    echo "✓ RSS fetch complete"
-    echo ""
+if [ "$STAGE" = "all" ]; then
+  # Run fetch → scrape → ai, then pause
+  echo "📥 STAGE 1: Fetching RSS feeds..."
+  python3 src/ingest/rss_fetcher.py
+  echo "✓ RSS fetch complete"
+  echo ""
 
-    if [ "$STAGE" != "all" ]; then exit 0; fi
-    ;&
+  echo "🌐 STAGE 2: Scraping article content..."
+  python3 src/scraper/article_scraper.py
+  echo "✓ Scraping complete"
+  echo ""
 
-  "scrape")
-    echo "🌐 STAGE 2: Scraping article content..."
-    python3 src/scraper/article_scraper.py
-    echo "✓ Scraping complete"
-    echo ""
+  echo "🤖 STAGE 3: Generating AI summaries..."
+  python3 src/scraper/generate_ai_summaries.py --limit 20
+  echo "✓ AI summaries complete"
+  echo ""
 
-    if [ "$STAGE" != "all" ]; then exit 0; fi
-    ;&
+  # Pause for manual triage
+  echo "⏸️  MANUAL STEP REQUIRED:"
+  echo "   1. Start triage server:"
+  echo "      uvicorn src.web.app:app --reload"
+  echo "   2. Open: http://127.0.0.1:8000"
+  echo "   3. Review and accept/reject deals"
+  echo "   4. When done, run: ./update_workflow.sh publish"
+  echo ""
+  exit 0
 
-  "ai")
-    echo "🤖 STAGE 3: Generating AI summaries..."
-    python3 src/scraper/generate_ai_summaries.py --limit 20
-    echo "✓ AI summaries complete"
-    echo ""
+elif [ "$STAGE" = "fetch" ]; then
+  echo "📥 STAGE 1: Fetching RSS feeds..."
+  python3 src/ingest/rss_fetcher.py
+  echo "✓ RSS fetch complete"
 
-    if [ "$STAGE" != "all" ]; then exit 0; fi
+elif [ "$STAGE" = "scrape" ]; then
+  echo "🌐 STAGE 2: Scraping article content..."
+  python3 src/scraper/article_scraper.py
+  echo "✓ Scraping complete"
 
-    # Pause for manual triage
-    echo "⏸️  MANUAL STEP REQUIRED:"
-    echo "   1. Start triage server: cd src/web && uvicorn app:app --reload"
-    echo "   2. Open: http://127.0.0.1:8000"
-    echo "   3. Review and accept/reject deals"
-    echo "   4. When done, run: ./update_workflow.sh publish"
-    echo ""
+elif [ "$STAGE" = "ai" ]; then
+  echo "🤖 STAGE 3: Generating AI summaries..."
+  python3 src/scraper/generate_ai_summaries.py --limit 20
+  echo "✓ AI summaries complete"
+
+elif [ "$STAGE" = "publish" ]; then
+  # Publish and automatically deploy
+  echo "📄 STAGE 4: Refreshing economic data & publishing website..."
+  echo "   - Fetching FRED economic indicators..."
+  echo "   - Fetching Yahoo Finance market data..."
+  echo "   - Generating chart pages..."
+  echo "   - Exporting deal tracker..."
+  echo ""
+  python3 publish.py
+  echo "✓ Site generated with fresh data"
+  echo ""
+
+  # Automatically proceed to deploy
+  echo "🚀 STAGE 5: Deploying to GitHub..."
+
+  # Check if there are changes
+  if git diff --quiet github_site/; then
+    echo "⚠️  No changes detected in github_site/"
+    echo "   Did you accept any deals in triage?"
     exit 0
-    ;;
+  fi
 
-  "publish")
-    echo "📄 STAGE 4: Refreshing economic data & publishing website..."
-    echo "   - Fetching FRED economic indicators..."
-    echo "   - Fetching Yahoo Finance market data..."
-    echo "   - Generating chart pages..."
-    echo "   - Exporting deal tracker..."
-    echo ""
-    python3 publish.py
-    echo "✓ Site generated with fresh data"
-    echo ""
-    ;&
+  # Commit and push
+  git add github_site/
+  git commit -m "Update deals - $(date +%Y-%m-%d)"
+  git push origin main
 
-  "deploy")
-    echo "🚀 STAGE 5: Deploying to GitHub..."
+  # Deploy to GitHub Pages
+  echo ""
+  echo "📤 Deploying to GitHub Pages..."
+  git subtree push --prefix github_site origin gh-pages
 
-    # Check if there are changes
-    if git diff --quiet github_site/; then
-      echo "⚠️  No changes detected in github_site/"
-      echo "   Did you accept any deals in triage?"
-      exit 0
-    fi
+  echo ""
+  echo "✅ DEPLOYMENT COMPLETE!"
+  echo "   Your site will update in ~30 seconds at:"
+  echo "   https://samuelmoyer91-sketch.github.io/definvestdashboard/"
 
-    # Commit and push
-    git add github_site/
-    git commit -m "Update deals - $(date +%Y-%m-%d)"
-    git push origin main
+elif [ "$STAGE" = "deploy" ]; then
+  echo "🚀 STAGE 5: Deploying to GitHub..."
 
-    # Deploy to GitHub Pages
-    echo ""
-    echo "📤 Deploying to GitHub Pages..."
-    git subtree push --prefix github_site origin gh-pages
+  # Check if there are changes
+  if git diff --quiet github_site/; then
+    echo "⚠️  No changes detected in github_site/"
+    echo "   Did you accept any deals in triage?"
+    exit 0
+  fi
 
-    echo ""
-    echo "✅ DEPLOYMENT COMPLETE!"
-    echo "   Your site will update in ~30 seconds at:"
-    echo "   https://samuelmoyer91-sketch.github.io/definvestdashboard/"
-    ;;
+  # Commit and push
+  git add github_site/
+  git commit -m "Update deals - $(date +%Y-%m-%d)"
+  git push origin main
 
-  *)
-    echo "Usage: ./update_workflow.sh [stage]"
-    echo ""
-    echo "Stages:"
-    echo "  fetch   - Fetch RSS feeds (deal articles)"
-    echo "  scrape  - Scrape article content"
-    echo "  ai      - Generate AI summaries for deals"
-    echo "  publish - Refresh ALL data (FRED, Yahoo Finance, deals) & generate site"
-    echo "  deploy  - Deploy to GitHub Pages"
-    echo "  all     - Run fetch→scrape→ai, then pause for triage"
-    echo ""
-    echo "Complete workflow:"
-    echo "  1. ./update_workflow.sh all      # Fetch deal data, pause for triage"
-    echo "  2. [Do manual triage at http://127.0.0.1:8000]"
-    echo "  3. ./update_workflow.sh publish  # Refresh economic data + publish + deploy"
-    echo ""
-    echo "Note: 'publish' stage fetches fresh FRED & Yahoo Finance data automatically"
-    exit 1
-    ;;
-esac
+  # Deploy to GitHub Pages
+  echo ""
+  echo "📤 Deploying to GitHub Pages..."
+  git subtree push --prefix github_site origin gh-pages
+
+  echo ""
+  echo "✅ DEPLOYMENT COMPLETE!"
+  echo "   Your site will update in ~30 seconds at:"
+  echo "   https://samuelmoyer91-sketch.github.io/definvestdashboard/"
+
+else
+  echo "Usage: ./update_workflow.sh [stage]"
+  echo ""
+  echo "Stages:"
+  echo "  fetch   - Fetch RSS feeds (deal articles)"
+  echo "  scrape  - Scrape article content"
+  echo "  ai      - Generate AI summaries for deals"
+  echo "  publish - Refresh ALL data (FRED, Yahoo Finance, deals) & generate site + deploy"
+  echo "  deploy  - Deploy to GitHub Pages only"
+  echo "  all     - Run fetch→scrape→ai, then pause for triage"
+  echo ""
+  echo "Complete workflow:"
+  echo "  1. ./update_workflow.sh all      # Fetch deal data, pause for triage"
+  echo "  2. [Do manual triage at http://127.0.0.1:8000]"
+  echo "  3. ./update_workflow.sh publish  # Refresh economic data + publish + deploy"
+  echo ""
+  echo "Note: 'publish' stage fetches fresh FRED & Yahoo Finance data automatically"
+  exit 1
+fi
