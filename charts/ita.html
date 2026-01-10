@@ -149,20 +149,29 @@
                     }
                 }
 
-                // Render chart with clean year-only labels
+                // Render chart with quarterly labels
                 const chartOptions = {
                     fill: true,
                     scales: {
                         x: {
-                            type: 'time',
-                            time: {
-                                unit: 'year',
-                                displayFormats: {
-                                    year: 'yyyy'
-                                }
-                            },
                             ticks: {
-                                maxTicksLimit: 10
+                                autoSkip: true,
+                                maxRotation: 45,
+                                minRotation: 45,
+                                maxTicksLimit: 20,
+                                callback: function(value, index, ticks) {
+                                    // value is the tick value, we need to get the label from the chart
+                                    const label = this.getLabelForValue(value);
+                                    if (!label) return '';
+
+                                    const d = new Date(label);
+                                    const year = d.getFullYear();
+                                    const month = d.getMonth(); // 0-11
+                                    const quarter = Math.floor(month / 3) + 1;
+
+                                    // Show quarterly labels
+                                    return `${year} Q${quarter}`;
+                                }
                             }
                         },
                         y: {
