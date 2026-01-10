@@ -105,10 +105,19 @@
                         displayData = data.data.filter(d => new Date(d.date) >= new Date('2019-01-01'));
                     }
 
+                    // Create quarterly labels
+                    const quarterlyLabels = displayData.map(d => {
+                        const date = new Date(d.date);
+                        const year = date.getFullYear();
+                        const month = date.getMonth();
+                        const quarter = Math.floor(month / 3) + 1;
+                        return `${year} Q${quarter}`;
+                    });
+
                     new Chart(ctx, {
                         type: 'line',
                         data: {
-                            labels: displayData.map(d => d.date),
+                            labels: quarterlyLabels,
                             datasets: [{
                                 label: data.name,
                                 data: displayData.map(d => d.value || d.close),
@@ -129,25 +138,42 @@
                             scales: {
                                 x: {
                                     display: true,
-                                    grid: { display: false },
+                                    grid: {
+                                        display: true,
+                                        color: function(context) {
+                                            const dataPoint = displayData[context.index];
+                                            if (!dataPoint) return '#e0e0e0';
+                                            const date = new Date(dataPoint.date);
+                                            const month = date.getMonth();
+                                            // Heavier line for January
+                                            if (month === 0) return '#999999';
+                                            // Quarter lines
+                                            if (month % 3 === 0) return '#cccccc';
+                                            return '#e8e8e8';
+                                        },
+                                        lineWidth: function(context) {
+                                            const dataPoint = displayData[context.index];
+                                            if (!dataPoint) return 1;
+                                            const date = new Date(dataPoint.date);
+                                            return (date.getMonth() === 0) ? 2 : 1;
+                                        }
+                                    },
                                     ticks: {
                                         maxRotation: 45,
                                         minRotation: 45,
-                                        maxTicksLimit: 12,
-                                        callback: function(value, index) {
-                                            const label = this.getLabelForValue(value);
-                                            if (!label) return '';
-                                            const d = new Date(label);
-                                            const year = d.getFullYear();
-                                            const month = d.getMonth();
-                                            const quarter = Math.floor(month / 3) + 1;
-                                            return `${year} Q${quarter}`;
-                                        }
+                                        maxTicksLimit: 12
                                     }
                                 },
                                 y: {
                                     grid: { color: '#e0e0e0' },
-                                    beginAtZero: true
+                                    beginAtZero: true,
+                                    ticks: {
+                                        callback: function(value) {
+                                            const formats = {'prefix': '$', 'suffix': 'B', 'divisor': 1000};
+                                            const displayValue = value / formats.divisor;
+                                            return formats.prefix + displayValue.toLocaleString() + formats.suffix;
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -170,10 +196,19 @@
                         displayData = data.data.filter(d => new Date(d.date) >= new Date('2019-01-01'));
                     }
 
+                    // Create quarterly labels
+                    const quarterlyLabels = displayData.map(d => {
+                        const date = new Date(d.date);
+                        const year = date.getFullYear();
+                        const month = date.getMonth();
+                        const quarter = Math.floor(month / 3) + 1;
+                        return `${year} Q${quarter}`;
+                    });
+
                     new Chart(ctx, {
                         type: 'line',
                         data: {
-                            labels: displayData.map(d => d.date),
+                            labels: quarterlyLabels,
                             datasets: [{
                                 label: data.name,
                                 data: displayData.map(d => d.value || d.close),
@@ -194,25 +229,42 @@
                             scales: {
                                 x: {
                                     display: true,
-                                    grid: { display: false },
+                                    grid: {
+                                        display: true,
+                                        color: function(context) {
+                                            const dataPoint = displayData[context.index];
+                                            if (!dataPoint) return '#e0e0e0';
+                                            const date = new Date(dataPoint.date);
+                                            const month = date.getMonth();
+                                            // Heavier line for January
+                                            if (month === 0) return '#999999';
+                                            // Quarter lines
+                                            if (month % 3 === 0) return '#cccccc';
+                                            return '#e8e8e8';
+                                        },
+                                        lineWidth: function(context) {
+                                            const dataPoint = displayData[context.index];
+                                            if (!dataPoint) return 1;
+                                            const date = new Date(dataPoint.date);
+                                            return (date.getMonth() === 0) ? 2 : 1;
+                                        }
+                                    },
                                     ticks: {
                                         maxRotation: 45,
                                         minRotation: 45,
-                                        maxTicksLimit: 12,
-                                        callback: function(value, index) {
-                                            const label = this.getLabelForValue(value);
-                                            if (!label) return '';
-                                            const d = new Date(label);
-                                            const year = d.getFullYear();
-                                            const month = d.getMonth();
-                                            const quarter = Math.floor(month / 3) + 1;
-                                            return `${year} Q${quarter}`;
-                                        }
+                                        maxTicksLimit: 12
                                     }
                                 },
                                 y: {
                                     grid: { color: '#e0e0e0' },
-                                    beginAtZero: true
+                                    beginAtZero: true,
+                                    ticks: {
+                                        callback: function(value) {
+                                            const formats = {'prefix': '$', 'suffix': 'B', 'divisor': 1};
+                                            const displayValue = value / formats.divisor;
+                                            return formats.prefix + displayValue.toLocaleString() + formats.suffix;
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -235,10 +287,19 @@
                         displayData = data.data.filter(d => new Date(d.date) >= new Date('2019-01-01'));
                     }
 
+                    // Create quarterly labels
+                    const quarterlyLabels = displayData.map(d => {
+                        const date = new Date(d.date);
+                        const year = date.getFullYear();
+                        const month = date.getMonth();
+                        const quarter = Math.floor(month / 3) + 1;
+                        return `${year} Q${quarter}`;
+                    });
+
                     new Chart(ctx, {
                         type: 'line',
                         data: {
-                            labels: displayData.map(d => d.date),
+                            labels: quarterlyLabels,
                             datasets: [{
                                 label: data.name,
                                 data: displayData.map(d => d.value || d.close),
@@ -259,25 +320,42 @@
                             scales: {
                                 x: {
                                     display: true,
-                                    grid: { display: false },
+                                    grid: {
+                                        display: true,
+                                        color: function(context) {
+                                            const dataPoint = displayData[context.index];
+                                            if (!dataPoint) return '#e0e0e0';
+                                            const date = new Date(dataPoint.date);
+                                            const month = date.getMonth();
+                                            // Heavier line for January
+                                            if (month === 0) return '#999999';
+                                            // Quarter lines
+                                            if (month % 3 === 0) return '#cccccc';
+                                            return '#e8e8e8';
+                                        },
+                                        lineWidth: function(context) {
+                                            const dataPoint = displayData[context.index];
+                                            if (!dataPoint) return 1;
+                                            const date = new Date(dataPoint.date);
+                                            return (date.getMonth() === 0) ? 2 : 1;
+                                        }
+                                    },
                                     ticks: {
                                         maxRotation: 45,
                                         minRotation: 45,
-                                        maxTicksLimit: 12,
-                                        callback: function(value, index) {
-                                            const label = this.getLabelForValue(value);
-                                            if (!label) return '';
-                                            const d = new Date(label);
-                                            const year = d.getFullYear();
-                                            const month = d.getMonth();
-                                            const quarter = Math.floor(month / 3) + 1;
-                                            return `${year} Q${quarter}`;
-                                        }
+                                        maxTicksLimit: 12
                                     }
                                 },
                                 y: {
                                     grid: { color: '#e0e0e0' },
-                                    beginAtZero: true
+                                    beginAtZero: true,
+                                    ticks: {
+                                        callback: function(value) {
+                                            const formats = {'prefix': '$', 'suffix': 'B', 'divisor': 1};
+                                            const displayValue = value / formats.divisor;
+                                            return formats.prefix + displayValue.toLocaleString() + formats.suffix;
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -300,10 +378,19 @@
                         displayData = data.data.filter(d => new Date(d.date) >= new Date('2019-01-01'));
                     }
 
+                    // Create quarterly labels
+                    const quarterlyLabels = displayData.map(d => {
+                        const date = new Date(d.date);
+                        const year = date.getFullYear();
+                        const month = date.getMonth();
+                        const quarter = Math.floor(month / 3) + 1;
+                        return `${year} Q${quarter}`;
+                    });
+
                     new Chart(ctx, {
                         type: 'line',
                         data: {
-                            labels: displayData.map(d => d.date),
+                            labels: quarterlyLabels,
                             datasets: [{
                                 label: data.name,
                                 data: displayData.map(d => d.value || d.close),
@@ -324,25 +411,42 @@
                             scales: {
                                 x: {
                                     display: true,
-                                    grid: { display: false },
+                                    grid: {
+                                        display: true,
+                                        color: function(context) {
+                                            const dataPoint = displayData[context.index];
+                                            if (!dataPoint) return '#e0e0e0';
+                                            const date = new Date(dataPoint.date);
+                                            const month = date.getMonth();
+                                            // Heavier line for January
+                                            if (month === 0) return '#999999';
+                                            // Quarter lines
+                                            if (month % 3 === 0) return '#cccccc';
+                                            return '#e8e8e8';
+                                        },
+                                        lineWidth: function(context) {
+                                            const dataPoint = displayData[context.index];
+                                            if (!dataPoint) return 1;
+                                            const date = new Date(dataPoint.date);
+                                            return (date.getMonth() === 0) ? 2 : 1;
+                                        }
+                                    },
                                     ticks: {
                                         maxRotation: 45,
                                         minRotation: 45,
-                                        maxTicksLimit: 12,
-                                        callback: function(value, index) {
-                                            const label = this.getLabelForValue(value);
-                                            if (!label) return '';
-                                            const d = new Date(label);
-                                            const year = d.getFullYear();
-                                            const month = d.getMonth();
-                                            const quarter = Math.floor(month / 3) + 1;
-                                            return `${year} Q${quarter}`;
-                                        }
+                                        maxTicksLimit: 12
                                     }
                                 },
                                 y: {
                                     grid: { color: '#e0e0e0' },
-                                    beginAtZero: true
+                                    beginAtZero: true,
+                                    ticks: {
+                                        callback: function(value) {
+                                            const formats = {'prefix': '$', 'suffix': 'B', 'divisor': 1};
+                                            const displayValue = value / formats.divisor;
+                                            return formats.prefix + displayValue.toLocaleString() + formats.suffix;
+                                        }
+                                    }
                                 }
                             }
                         }

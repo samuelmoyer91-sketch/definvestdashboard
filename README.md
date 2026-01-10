@@ -40,10 +40,12 @@ This dashboard provides comprehensive visibility into the defense industrial bas
 - **🤖 AI Deal Summaries** - Claude-powered analysis of defense investments (optional)
 
 ### Interactive Charts:
-- Hover for exact values
-- Clean, focused visualizations
-- Last 10 years displayed by default
-- Full historical data available
+- Hover for exact values with formatted units ($B, $T, %)
+- Clean quarterly labels (2019 Q1, 2020 Q2, etc.)
+- Consistent 2019-present timeframe across all charts
+- Vertical gridlines marking quarters and years
+- Properly scaled y-axes (billions, trillions, percentages)
+- Full historical data available via CSV export
 
 ### Intelligence Briefing Deal Feed:
 - Professional briefing-style layout for government analysts

@@ -46,6 +46,34 @@ CATEGORIES = {
 # Charts with limited data (VC, M&A, Public Defense Companies) will show all available data
 DEFAULT_START_DATE = '2019-01-01'
 
+# Y-axis formatting configuration
+# Format: {'prefix': '$', 'suffix': 'B', 'divisor': 1000} means divide value by 1000 and show as $XB
+Y_AXIS_FORMATS = {
+    # Trillions (divide billions by 1000)
+    'gpdi': {'prefix': '$', 'suffix': 'T', 'divisor': 1000},
+    'pnfi': {'prefix': '$', 'suffix': 'T', 'divisor': 1000},
+    # Billions (divide millions by 1000)
+    'dgorder': {'prefix': '$', 'suffix': 'B', 'divisor': 1000},
+    'adefno': {'prefix': '$', 'suffix': 'B', 'divisor': 1000},
+    'adapno': {'prefix': '$', 'suffix': 'B', 'divisor': 1000},
+    'prmfgcons': {'prefix': '$', 'suffix': 'B', 'divisor': 1000},
+    # Billions (already in billions)
+    'vc_defense': {'prefix': '$', 'suffix': 'B', 'divisor': 1},
+    'public_defense_companies': {'prefix': '$', 'suffix': 'B', 'divisor': 1},
+    'ma_defense': {'prefix': '$', 'suffix': 'B', 'divisor': 1},
+    'fdefx': {'prefix': '$', 'suffix': 'B', 'divisor': 1},
+    # USD prices
+    'ita': {'prefix': '$', 'suffix': '', 'divisor': 1},
+    'xli': {'prefix': '$', 'suffix': '', 'divisor': 1},
+    'pld': {'prefix': '$', 'suffix': '', 'divisor': 1},
+    # Percentages
+    'drtscilm': {'prefix': '', 'suffix': '%', 'divisor': 1},
+    'dgs10': {'prefix': '', 'suffix': '%', 'divisor': 1},
+    # Indexes (no formatting)
+    'ipb52300s': {'prefix': '', 'suffix': '', 'divisor': 1},
+    'indpro': {'prefix': '', 'suffix': '', 'divisor': 1},
+}
+
 # Chart definitions with user's original descriptions
 CHARTS = {
     'dgorder': {
@@ -503,34 +531,77 @@ def generate_chart_page(chart_id, chart_info):
                     }}
                 }}
 
-                // Render chart with quarterly labels
+                // Create quarterly labels from the filtered data
+                const quarterlyLabels = displayData.data.map(d => {{
+                    const date = new Date(d.date);
+                    const year = date.getFullYear();
+                    const month = date.getMonth();
+                    const quarter = Math.floor(month / 3) + 1;
+                    return `${{year}} Q${{quarter}}`;
+                }});
+
+                // Modify displayData to include quarterly labels
+                displayData = {{
+                    ...displayData,
+                    quarterlyLabels: quarterlyLabels
+                }};
+
+                // Render chart with quarterly labels and gridlines
                 const chartOptions = {{
                     fill: true,
                     scales: {{
                         x: {{
+                            grid: {{
+                                display: true,
+                                color: function(context) {{
+                                    // Get the date for this gridline
+                                    const dataPoint = displayData.data[context.index];
+                                    if (!dataPoint) return '#e0e0e0';
+
+                                    const date = new Date(dataPoint.date);
+                                    const month = date.getMonth();
+
+                                    // Heavier line for January (start of year)
+                                    if (month === 0) {{
+                                        return '#999999';
+                                    }}
+                                    // Lighter lines for quarters
+                                    if (month % 3 === 0) {{
+                                        return '#cccccc';
+                                    }}
+                                    return '#e8e8e8';
+                                }},
+                                lineWidth: function(context) {{
+                                    const dataPoint = displayData.data[context.index];
+                                    if (!dataPoint) return 1;
+
+                                    const date = new Date(dataPoint.date);
+                                    const month = date.getMonth();
+
+                                    // Thicker line for January
+                                    return (month === 0) ? 2 : 1;
+                                }}
+                            }},
                             ticks: {{
                                 autoSkip: true,
                                 maxRotation: 45,
                                 minRotation: 45,
                                 maxTicksLimit: 20,
                                 callback: function(value, index, ticks) {{
-                                    // value is the tick value, we need to get the label from the chart
-                                    const label = this.getLabelForValue(value);
-                                    if (!label) return '';
-
-                                    const d = new Date(label);
-                                    const year = d.getFullYear();
-                                    const month = d.getMonth(); // 0-11
-                                    const quarter = Math.floor(month / 3) + 1;
-
-                                    // Show quarterly labels
-                                    return `${{year}} Q${{quarter}}`;
+                                    return displayData.quarterlyLabels[value] || '';
                                 }}
                             }}
                         }},
                         y: {{
                             // Start at zero for investment/dollar amount charts
-                            beginAtZero: ['public_defense_companies', 'vc_defense', 'ma_defense', 'dgorder', 'fdefx', 'pnfi', 'gpdi', 'prmfgcons', 'adefno', 'adapno'].includes('{chart_id}')
+                            beginAtZero: ['public_defense_companies', 'vc_defense', 'ma_defense', 'dgorder', 'fdefx', 'pnfi', 'gpdi', 'prmfgcons', 'adefno', 'adapno'].includes('{chart_id}'),
+                            ticks: {{
+                                callback: function(value) {{
+                                    const formats = {str(Y_AXIS_FORMATS.get(chart_id, {'prefix': '', 'suffix': '', 'divisor': 1}))};
+                                    const displayValue = value / formats.divisor;
+                                    return formats.prefix + displayValue.toLocaleString() + formats.suffix;
+                                }}
+                            }}
                         }}
                     }},
                     plugins: {{
@@ -620,10 +691,19 @@ def generate_category_page(cat_id, cat_info):
                         displayData = data.data.filter(d => new Date(d.date) >= new Date('{DEFAULT_START_DATE}'));
                     }}
 
+                    // Create quarterly labels
+                    const quarterlyLabels = displayData.map(d => {{
+                        const date = new Date(d.date);
+                        const year = date.getFullYear();
+                        const month = date.getMonth();
+                        const quarter = Math.floor(month / 3) + 1;
+                        return `${{year}} Q${{quarter}}`;
+                    }});
+
                     new Chart(ctx, {{
                         type: 'line',
                         data: {{
-                            labels: displayData.map(d => d.date),
+                            labels: quarterlyLabels,
                             datasets: [{{
                                 label: data.name,
                                 data: displayData.map(d => d.value || d.close),
@@ -644,25 +724,42 @@ def generate_category_page(cat_id, cat_info):
                             scales: {{
                                 x: {{
                                     display: true,
-                                    grid: {{ display: false }},
+                                    grid: {{
+                                        display: true,
+                                        color: function(context) {{
+                                            const dataPoint = displayData[context.index];
+                                            if (!dataPoint) return '#e0e0e0';
+                                            const date = new Date(dataPoint.date);
+                                            const month = date.getMonth();
+                                            // Heavier line for January
+                                            if (month === 0) return '#999999';
+                                            // Quarter lines
+                                            if (month % 3 === 0) return '#cccccc';
+                                            return '#e8e8e8';
+                                        }},
+                                        lineWidth: function(context) {{
+                                            const dataPoint = displayData[context.index];
+                                            if (!dataPoint) return 1;
+                                            const date = new Date(dataPoint.date);
+                                            return (date.getMonth() === 0) ? 2 : 1;
+                                        }}
+                                    }},
                                     ticks: {{
                                         maxRotation: 45,
                                         minRotation: 45,
-                                        maxTicksLimit: 12,
-                                        callback: function(value, index) {{
-                                            const label = this.getLabelForValue(value);
-                                            if (!label) return '';
-                                            const d = new Date(label);
-                                            const year = d.getFullYear();
-                                            const month = d.getMonth();
-                                            const quarter = Math.floor(month / 3) + 1;
-                                            return `${{year}} Q${{quarter}}`;
-                                        }}
+                                        maxTicksLimit: 12
                                     }}
                                 }},
                                 y: {{
                                     grid: {{ color: '#e0e0e0' }},
-                                    beginAtZero: {str(cid in ['public_defense_companies', 'vc_defense', 'ma_defense', 'dgorder', 'fdefx', 'pnfi', 'gpdi', 'prmfgcons', 'adefno', 'adapno']).lower()}
+                                    beginAtZero: {str(cid in ['public_defense_companies', 'vc_defense', 'ma_defense', 'dgorder', 'fdefx', 'pnfi', 'gpdi', 'prmfgcons', 'adefno', 'adapno']).lower()},
+                                    ticks: {{
+                                        callback: function(value) {{
+                                            const formats = {str(Y_AXIS_FORMATS.get(cid, {'prefix': '', 'suffix': '', 'divisor': 1}))};
+                                            const displayValue = value / formats.divisor;
+                                            return formats.prefix + displayValue.toLocaleString() + formats.suffix;
+                                        }}
+                                    }}
                                 }}
                             }}
                         }}

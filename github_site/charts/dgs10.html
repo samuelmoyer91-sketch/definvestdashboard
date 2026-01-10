@@ -150,34 +150,77 @@
                     }
                 }
 
-                // Render chart with quarterly labels
+                // Create quarterly labels from the filtered data
+                const quarterlyLabels = displayData.data.map(d => {
+                    const date = new Date(d.date);
+                    const year = date.getFullYear();
+                    const month = date.getMonth();
+                    const quarter = Math.floor(month / 3) + 1;
+                    return `${year} Q${quarter}`;
+                });
+
+                // Modify displayData to include quarterly labels
+                displayData = {
+                    ...displayData,
+                    quarterlyLabels: quarterlyLabels
+                };
+
+                // Render chart with quarterly labels and gridlines
                 const chartOptions = {
                     fill: true,
                     scales: {
                         x: {
+                            grid: {
+                                display: true,
+                                color: function(context) {
+                                    // Get the date for this gridline
+                                    const dataPoint = displayData.data[context.index];
+                                    if (!dataPoint) return '#e0e0e0';
+
+                                    const date = new Date(dataPoint.date);
+                                    const month = date.getMonth();
+
+                                    // Heavier line for January (start of year)
+                                    if (month === 0) {
+                                        return '#999999';
+                                    }
+                                    // Lighter lines for quarters
+                                    if (month % 3 === 0) {
+                                        return '#cccccc';
+                                    }
+                                    return '#e8e8e8';
+                                },
+                                lineWidth: function(context) {
+                                    const dataPoint = displayData.data[context.index];
+                                    if (!dataPoint) return 1;
+
+                                    const date = new Date(dataPoint.date);
+                                    const month = date.getMonth();
+
+                                    // Thicker line for January
+                                    return (month === 0) ? 2 : 1;
+                                }
+                            },
                             ticks: {
                                 autoSkip: true,
                                 maxRotation: 45,
                                 minRotation: 45,
                                 maxTicksLimit: 20,
                                 callback: function(value, index, ticks) {
-                                    // value is the tick value, we need to get the label from the chart
-                                    const label = this.getLabelForValue(value);
-                                    if (!label) return '';
-
-                                    const d = new Date(label);
-                                    const year = d.getFullYear();
-                                    const month = d.getMonth(); // 0-11
-                                    const quarter = Math.floor(month / 3) + 1;
-
-                                    // Show quarterly labels
-                                    return `${year} Q${quarter}`;
+                                    return displayData.quarterlyLabels[value] || '';
                                 }
                             }
                         },
                         y: {
                             // Start at zero for investment/dollar amount charts
-                            beginAtZero: ['public_defense_companies', 'vc_defense', 'ma_defense', 'dgorder', 'fdefx', 'pnfi', 'gpdi', 'prmfgcons', 'adefno', 'adapno'].includes('dgs10')
+                            beginAtZero: ['public_defense_companies', 'vc_defense', 'ma_defense', 'dgorder', 'fdefx', 'pnfi', 'gpdi', 'prmfgcons', 'adefno', 'adapno'].includes('dgs10'),
+                            ticks: {
+                                callback: function(value) {
+                                    const formats = {'prefix': '', 'suffix': '%', 'divisor': 1};
+                                    const displayValue = value / formats.divisor;
+                                    return formats.prefix + displayValue.toLocaleString() + formats.suffix;
+                                }
+                            }
                         }
                     },
                     plugins: {
