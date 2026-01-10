@@ -586,10 +586,7 @@ def generate_chart_page(chart_id, chart_info):
                                 autoSkip: true,
                                 maxRotation: 45,
                                 minRotation: 45,
-                                maxTicksLimit: 20,
-                                callback: function(value, index, ticks) {{
-                                    return displayData.quarterlyLabels[value] || '';
-                                }}
+                                maxTicksLimit: 20
                             }}
                         }},
                         y: {{
