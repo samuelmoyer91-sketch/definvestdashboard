@@ -503,20 +503,29 @@ def generate_chart_page(chart_id, chart_info):
                     }}
                 }}
 
-                // Render chart with clean year-only labels
+                // Render chart with quarterly labels
                 const chartOptions = {{
                     fill: true,
                     scales: {{
                         x: {{
-                            type: 'time',
-                            time: {{
-                                unit: 'year',
-                                displayFormats: {{
-                                    year: 'yyyy'
-                                }}
-                            }},
                             ticks: {{
-                                maxTicksLimit: 10
+                                autoSkip: true,
+                                maxRotation: 45,
+                                minRotation: 45,
+                                maxTicksLimit: 20,
+                                callback: function(value, index, ticks) {{
+                                    // value is the tick value, we need to get the label from the chart
+                                    const label = this.getLabelForValue(value);
+                                    if (!label) return '';
+
+                                    const d = new Date(label);
+                                    const year = d.getFullYear();
+                                    const month = d.getMonth(); // 0-11
+                                    const quarter = Math.floor(month / 3) + 1;
+
+                                    // Show quarterly labels
+                                    return `${{year}} Q${{quarter}}`;
+                                }}
                             }}
                         }},
                         y: {{
@@ -590,9 +599,12 @@ def generate_category_page(cat_id, cat_info):
             </ul>
         </div>"""
 
-    # Generate chart loading scripts - using direct Chart.js to ensure all data shows
+    # Generate chart loading scripts with 2019+ filtering and clean year labels
     chart_scripts = []
     for cid, cinfo in category_charts:
+        # Check if this is a limited data chart (annual investment charts)
+        is_limited = cid in ['public_defense_companies', 'vc_defense', 'ma_defense']
+
         chart_scripts.append(f"""
             fetch('../data/{cid.lower()}.json')
                 .then(response => response.json())
@@ -600,17 +612,21 @@ def generate_category_page(cat_id, cat_info):
                     const ctx = document.getElementById('chart_{cid}');
                     if (!ctx) return;
 
-                    // Show only recent data for cleaner previews (last 10 years)
-                    const allData = data.data;
-                    const recentData = allData.length > 120 ? allData.slice(-120) : allData;
+                    // Filter to 2019+ for consistency (except annual investment charts)
+                    const limitedDataChart = {str(is_limited).lower()};
+                    let displayData = data.data;
+
+                    if (!limitedDataChart) {{
+                        displayData = data.data.filter(d => new Date(d.date) >= new Date('{DEFAULT_START_DATE}'));
+                    }}
 
                     new Chart(ctx, {{
                         type: 'line',
                         data: {{
-                            labels: recentData.map(d => d.date),
+                            labels: displayData.map(d => d.date),
                             datasets: [{{
                                 label: data.name,
-                                data: recentData.map(d => d.value || d.close),
+                                data: displayData.map(d => d.value || d.close),
                                 borderColor: '#226E93',
                                 backgroundColor: 'rgba(34, 110, 147, 0.1)',
                                 borderWidth: 2,
@@ -626,8 +642,28 @@ def generate_category_page(cat_id, cat_info):
                                 legend: {{ display: false }}
                             }},
                             scales: {{
-                                x: {{ display: true, grid: {{ display: false }} }},
-                                y: {{ grid: {{ color: '#e0e0e0' }} }}
+                                x: {{
+                                    display: true,
+                                    grid: {{ display: false }},
+                                    ticks: {{
+                                        maxRotation: 45,
+                                        minRotation: 45,
+                                        maxTicksLimit: 12,
+                                        callback: function(value, index) {{
+                                            const label = this.getLabelForValue(value);
+                                            if (!label) return '';
+                                            const d = new Date(label);
+                                            const year = d.getFullYear();
+                                            const month = d.getMonth();
+                                            const quarter = Math.floor(month / 3) + 1;
+                                            return `${{year}} Q${{quarter}}`;
+                                        }}
+                                    }}
+                                }},
+                                y: {{
+                                    grid: {{ color: '#e0e0e0' }},
+                                    beginAtZero: {str(cid in ['public_defense_companies', 'vc_defense', 'ma_defense', 'dgorder', 'fdefx', 'pnfi', 'gpdi', 'prmfgcons', 'adefno', 'adapno']).lower()}
+                                }}
                             }}
                         }}
                     }});
