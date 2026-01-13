@@ -60,18 +60,23 @@ class AIExtraction(Base):
     # Core deal information
     company = Column(String)  # Company name
     company_description = Column(Text)  # What the company does (1 sentence)
-    deal_type = Column(String)  # VC, M&A, IPO, etc.
+    deal_type = Column(String)  # VC, M&A, IPO, etc. (legacy)
     deal_amount = Column(String)  # e.g., "$300M", "$4.7B"
     investors = Column(Text)  # Key investors/acquirers
+
+    # New enhanced category fields
+    transaction_type = Column(String)  # Single-select: Equity Funding Round, Acquisition, etc.
+    capital_sources = Column(Text)  # Multi-select comma-separated: "Venture Capital,Corporate Venture"
+    sectors = Column(Text)  # Multi-select comma-separated: "AI/ML,Autonomous Systems/Drones"
 
     # Analysis fields
     strategic_significance = Column(Text)  # Why this matters (2-3 sentences)
     market_implications = Column(Text)  # What this signals (1-2 sentences)
 
-    # Legacy/additional fields
+    # Legacy/additional fields (kept for backward compatibility)
     capital_type = Column(String)  # VC, PE, corporate, public-private
     location = Column(String)
-    sector = Column(String)
+    sector = Column(String)  # Single sector (legacy)
     project_type = Column(String)  # factory, lab, test range, acquisition
     ai_summary = Column(Text)  # General summary field
 
@@ -99,11 +104,19 @@ class MasterItem(Base):
     company = Column(String)
     investors = Column(String)
     investment_amount = Column(String)
+
+    # Legacy single-select fields (kept for backward compatibility)
     deal_type = Column(String)
     capital_type = Column(String)
-    location = Column(String)
-    sector = Column(String)
     project_type = Column(String)
+    sector = Column(String)
+
+    # New multi-select fields (JSON-encoded comma-separated lists)
+    transaction_type = Column(String)  # Single-select
+    capital_sources = Column(Text)  # Multi-select: "Venture Capital,Corporate Venture"
+    sectors = Column(Text)  # Multi-select: "AI/ML,Space,Aerospace"
+
+    location = Column(String)
     summary = Column(Text)
 
     # Curation metadata
@@ -136,7 +149,7 @@ class RejectedItem(Base):
 
 
 # Database setup
-def get_engine(db_path='data/tracker.db'):
+def get_engine(db_path='databases/tracker.db'):
     """Create and return database engine."""
     # Ensure data directory exists
     os.makedirs(os.path.dirname(db_path), exist_ok=True)
@@ -146,7 +159,7 @@ def get_engine(db_path='data/tracker.db'):
     return engine
 
 
-def get_session(db_path='data/tracker.db'):
+def get_session(db_path='databases/tracker.db'):
     """Create and return database session."""
     engine = get_engine(db_path)
     Session = sessionmaker(bind=engine)

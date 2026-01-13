@@ -36,10 +36,16 @@ def generate_summaries(limit=5, force_regenerate=False):
             ArticleContent.scrape_success == True
         ).limit(limit).all()
     else:
-        # Only generate for items without summaries
+        # Only generate for items without complete summaries
+        # Include items with no AI extraction OR incomplete extractions
+        from sqlalchemy import or_
         items = query.filter(
             ArticleContent.scrape_success == True,
-            AIExtraction.id == None  # No AI extraction yet
+            or_(
+                AIExtraction.id == None,  # No AI extraction yet
+                AIExtraction.summary_complete == False,  # Incomplete extraction
+                AIExtraction.summary_complete == None  # Null summary_complete
+            )
         ).limit(limit).all()
 
     if not items:
@@ -76,9 +82,13 @@ def generate_summaries(limit=5, force_regenerate=False):
                 # Update existing
                 extraction.company = summary.get('company_name')
                 extraction.company_description = summary.get('company_description')
-                extraction.deal_type = summary.get('deal_type')
+                extraction.deal_type = summary.get('deal_type')  # Legacy
                 extraction.deal_amount = summary.get('deal_amount')
                 extraction.investors = summary.get('investors')
+                # New enhanced category fields
+                extraction.transaction_type = summary.get('transaction_type')
+                extraction.capital_sources = ','.join(summary.get('capital_sources', [])) if summary.get('capital_sources') else None
+                extraction.sectors = ','.join(summary.get('sectors', [])) if summary.get('sectors') else None
                 extraction.strategic_significance = summary.get('strategic_significance')
                 extraction.market_implications = summary.get('market_implications')
                 extraction.summary_complete = summary.get('summary_complete', False)
@@ -89,9 +99,13 @@ def generate_summaries(limit=5, force_regenerate=False):
                     item_id=item.id,
                     company=summary.get('company_name'),
                     company_description=summary.get('company_description'),
-                    deal_type=summary.get('deal_type'),
+                    deal_type=summary.get('deal_type'),  # Legacy
                     deal_amount=summary.get('deal_amount'),
                     investors=summary.get('investors'),
+                    # New enhanced category fields
+                    transaction_type=summary.get('transaction_type'),
+                    capital_sources=','.join(summary.get('capital_sources', [])) if summary.get('capital_sources') else None,
+                    sectors=','.join(summary.get('sectors', [])) if summary.get('sectors') else None,
                     strategic_significance=summary.get('strategic_significance'),
                     market_implications=summary.get('market_implications'),
                     summary_complete=summary.get('summary_complete', False),

@@ -1,7 +1,7 @@
 """FastAPI web application for triage and dashboard."""
 
 from fastapi import FastAPI, Request, Form
-from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 import sys
@@ -88,13 +88,17 @@ async def accept_item(
     company: str = Form(""),
     investors: str = Form(""),
     investment_amount: str = Form(""),
+    transaction_type: str = Form(""),
+    capital_sources: list[str] = Form([]),
+    sectors: list[str] = Form([]),
+    location: str = Form(""),
+    summary: str = Form(""),
+    notes: str = Form(""),
+    # OLD fields for backward compatibility
     deal_type: str = Form(""),
     capital_type: str = Form(""),
-    location: str = Form(""),
     sector: str = Form(""),
-    project_type: str = Form(""),
-    summary: str = Form(""),
-    notes: str = Form("")
+    project_type: str = Form("")
 ):
     """Accept item and add to master list."""
     session = get_session()
@@ -108,11 +112,16 @@ async def accept_item(
             company=company if company else None,
             investors=investors if investors else None,
             investment_amount=investment_amount if investment_amount else None,
+            # NEW fields
+            transaction_type=transaction_type if transaction_type else None,
+            capital_sources=",".join(capital_sources) if capital_sources else None,
+            sectors=",".join(sectors) if sectors else None,
+            # OLD fields (for backward compatibility)
             deal_type=deal_type if deal_type else None,
             capital_type=capital_type if capital_type else None,
-            location=location if location else None,
             sector=sector if sector else None,
             project_type=project_type if project_type else None,
+            location=location if location else None,
             summary=summary if summary else None,
             human_notes=notes if notes else None,
             published=False
@@ -221,63 +230,6 @@ async def stats(request: Request):
     })
 
 
-@app.get("/export/csv")
-async def export_csv():
-    """Export master list to CSV and download."""
-    import csv
-    import tempfile
-
-    session = get_session()
-
-    # Get all master items with their raw item data
-    master_items = session.query(MasterItem).join(
-        RawItem, MasterItem.item_id == RawItem.id
-    ).order_by(
-        RawItem.published_date.desc()
-    ).all()
-
-    # Create temporary CSV file
-    temp_file = tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.csv', newline='', encoding='utf-8')
-
-    fieldnames = [
-        'Date',
-        'Company',
-        'Investment Amount',
-        'Capital Type',
-        'Sector',
-        'Location',
-        'Project Type',
-        'Summary',
-        'Source URL'
-    ]
-
-    writer = csv.DictWriter(temp_file, fieldnames=fieldnames)
-    writer.writeheader()
-
-    for master in master_items:
-        raw = session.query(RawItem).filter_by(id=master.item_id).first()
-
-        writer.writerow({
-            'Date': raw.published_date.strftime('%Y-%m-%d') if raw.published_date else 'N/A',
-            'Company': master.company or 'N/A',
-            'Investment Amount': master.investment_amount or 'Not disclosed',
-            'Capital Type': master.capital_type or 'N/A',
-            'Sector': master.sector or 'N/A',
-            'Location': master.location or 'N/A',
-            'Project Type': master.project_type or 'N/A',
-            'Summary': master.summary if master.summary else 'N/A',
-            'Source URL': raw.url
-        })
-
-    temp_file.close()
-    session.close()
-
-    # Return file for download
-    return FileResponse(
-        temp_file.name,
-        media_type='text/csv',
-        filename='defense_capital_deals.csv'
-    )
 
 
 if __name__ == "__main__":

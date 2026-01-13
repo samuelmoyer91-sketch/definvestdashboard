@@ -7,7 +7,9 @@ This document explains how to use the AI-powered intelligence briefing feature f
 The dashboard now includes AI-powered summaries for defense investment deals using Claude (Anthropic). The AI analyzes scraped articles and extracts:
 
 - **Company name** and description
-- **Deal type** (VC, M&A, IPO, etc.)
+- **Transaction type** (Equity Funding Round, Acquisition, Merger, Contract/Award, etc.)
+- **Capital sources** (multi-select: Venture Capital, Corporate Venture, Private Equity, Government/Contract, etc.)
+- **Sectors** (multi-select: AI/ML, Autonomous Systems/Drones, Space/Satellites, Aerospace, Cybersecurity, etc.)
 - **Deal amount** and investors
 - **Strategic significance** (why it matters)
 - **Market implications** (what it signals)
@@ -117,16 +119,25 @@ Open: http://127.0.0.1:8000
 1. See collapsed cards with AI one-liners (Deal Type • Amount • Sector)
 2. Click "▼ Review & Accept" to expand inline
 3. Review AI-populated fields (blue backgrounds indicate AI data)
-4. Edit any fields if needed
-5. Expand article preview to validate information
-6. Click "✓ Accept & Add to Master List" to publish
-7. Or click "Reject" for irrelevant articles
+4. **Edit the category fields:**
+   - **Transaction Type**: Single-select dropdown (Equity Funding Round, Acquisition, Merger, etc.)
+   - **Capital Sources**: Multi-select checkboxes (Venture Capital, Corporate Venture, Private Equity, etc.)
+   - **Sectors**: Multi-select checkboxes (AI/ML, Autonomous Systems/Drones, Space/Satellites, etc.)
+5. **Edit the summary section** - AI pre-drafts two subsections:
+   - **Why It Matters:** Strategic significance (2-3 sentences)
+   - **Market Implications:** What this signals about trends (1-2 sentences)
+6. Edit company name, investors, amounts, or any other field as needed
+7. Expand article preview to validate information
+8. Click "✓ Accept & Add to Master List" to publish
+9. Or click "Reject" for irrelevant articles
 
 **Features:**
 - Collapsible inline expansion (no page navigation)
 - AI pre-populated fields with visual indicators
-- Dropdown menus for Deal Type, Capital Type, Project Type
+- **Enhanced category system** with multi-select checkboxes for Capital Sources and Sectors
+- **Human-curated summaries** - what you review is what gets published
 - Full article preview for validation
+- **Backward compatibility**: Old deals with legacy fields still display correctly
 
 ### Step 5: Publish to GitHub Pages
 
@@ -165,7 +176,10 @@ Stores AI-extracted deal information:
 |--------|------|-------------|
 | `company` | String | Company name |
 | `company_description` | Text | What the company does (1 sentence) |
-| `deal_type` | String | VC, M&A, IPO, etc. |
+| `transaction_type` | String | **NEW**: Single-select transaction type |
+| `capital_sources` | Text | **NEW**: Comma-separated capital sources (multi-select) |
+| `sectors` | Text | **NEW**: Comma-separated sectors (multi-select) |
+| `deal_type` | String | **LEGACY**: VC, M&A, IPO, etc. (kept for backward compatibility) |
 | `deal_amount` | String | Investment amount (e.g., "$300M") |
 | `investors` | Text | Key investors/acquirers |
 | `strategic_significance` | Text | Why this matters (2-3 sentences) |
@@ -173,6 +187,26 @@ Stores AI-extracted deal information:
 | `summary_complete` | Boolean | Was extraction successful? |
 | `model_used` | String | Claude model used |
 | `extracted_at` | DateTime | When extracted |
+
+### master_list Table
+
+Stores human-curated deals ready for publication:
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `company` | String | Company name |
+| `investors` | String | Key investors |
+| `investment_amount` | String | Deal amount |
+| `transaction_type` | String | **NEW**: Single-select transaction type |
+| `capital_sources` | Text | **NEW**: Comma-separated capital sources (multi-select) |
+| `sectors` | Text | **NEW**: Comma-separated sectors (multi-select) |
+| `deal_type` | String | **LEGACY**: Kept for backward compatibility |
+| `capital_type` | String | **LEGACY**: Kept for backward compatibility |
+| `sector` | String | **LEGACY**: Kept for backward compatibility |
+| `project_type` | String | **LEGACY**: Kept for backward compatibility |
+| `location` | String | Geographic location |
+| `summary` | Text | Human-curated summary (markdown format) |
+| `published` | Boolean | Ready for publishing |
 
 ## Files Reference
 
@@ -190,17 +224,23 @@ Stores AI-extracted deal information:
 ### Database Migrations
 
 - **`src/database/migrate_ai_fields.py`** - Adds AI summary columns to database
+- **`src/database/migrate_categories.py`** - Adds new category fields (transaction_type, capital_sources, sectors) to master_list table
+- **`src/database/migrate_ai_categories.py`** - Adds new category fields to ai_extractions table
+
+**Note**: These migrations have already been run if you're starting fresh. Old deals with legacy fields will continue to work thanks to backward compatibility fallbacks in the export and display logic.
 
 ## Intelligence Briefing Features
 
 The generated deal feed (`github_site/deals/index.html`) includes:
 
 - **Professional Layout**: Intelligence briefing style, analyst-friendly
-- **Deal Cards**: Clean, scannable cards with AI summaries
+- **Deal Cards**: Clean, scannable cards with human-curated summaries
+- **Human-Curated Content**: Summaries reviewed and edited by analysts, not raw AI output
+- **Structured Insights**: "Why It Matters" and "Market Implications" sections
 - **Search**: Real-time filtering by keywords
 - **Deal Type Filters**: Filter by VC, M&A, IPO, etc.
 - **Badges**: Color-coded deal type indicators
-- **Graceful Fallback**: Shows RSS summary if AI summary unavailable
+- **Graceful Fallback**: Shows RSS summary if no curated summary available
 - **Mobile Responsive**: Works on all devices
 
 ## Cost Management

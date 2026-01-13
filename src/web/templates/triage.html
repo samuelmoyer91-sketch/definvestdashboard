@@ -151,7 +151,7 @@
                     </div>
                 </div>
 
-                <!-- Row 2: Deal Amount & Deal Type -->
+                <!-- Row 2: Deal Amount & Location -->
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
                     <div>
                         <label style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 5px; color: #555;">
@@ -167,84 +167,6 @@
 
                     <div>
                         <label style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 5px; color: #555;">
-                            Deal Type
-                            {% if item.ai_extraction and item.ai_extraction.deal_type %}<span class="ai-badge">AI</span>{% endif %}
-                        </label>
-                        <select name="deal_type"
-                                {% if item.ai_extraction and item.ai_extraction.deal_type %}class="ai-populated"{% endif %}
-                                style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
-                            <option value="">-- Select --</option>
-                            {% set ai_deal = item.ai_extraction.deal_type if item.ai_extraction and item.ai_extraction.deal_type else '' %}
-                            <option value="Acquisition" {% if 'Acquisition' in ai_deal or 'M&A' in ai_deal %}selected{% endif %}>Acquisition</option>
-                            <option value="Funding Round" {% if 'Funding' in ai_deal or 'Investment' in ai_deal %}selected{% endif %}>Funding Round</option>
-                            <option value="IPO" {% if 'IPO' in ai_deal %}selected{% endif %}>IPO</option>
-                            <option value="Merger" {% if 'Merger' in ai_deal %}selected{% endif %}>Merger</option>
-                            <option value="Strategic Investment" {% if 'Strategic' in ai_deal %}selected{% endif %}>Strategic Investment</option>
-                            <option value="Public-Private Partnership" {% if 'Public-Private' in ai_deal or 'PPP' in ai_deal %}selected{% endif %}>Public-Private Partnership</option>
-                            <option value="Other">Other</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Row 3: Capital Type & Project Type -->
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-                    <div>
-                        <label style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 5px; color: #555;">
-                            Capital Type
-                            {% if item.ai_extraction and item.ai_extraction.capital_type %}<span class="ai-badge">AI</span>{% endif %}
-                        </label>
-                        <select name="capital_type"
-                                {% if item.ai_extraction and item.ai_extraction.capital_type %}class="ai-populated"{% endif %}
-                                style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
-                            <option value="">-- Select --</option>
-                            {% set ai_capital = item.ai_extraction.capital_type if item.ai_extraction and item.ai_extraction.capital_type else '' %}
-                            <option value="Venture Capital" {% if 'Venture' in ai_capital or 'VC' in ai_capital %}selected{% endif %}>Venture Capital</option>
-                            <option value="Private Equity" {% if 'Private Equity' in ai_capital or 'PE' in ai_capital %}selected{% endif %}>Private Equity</option>
-                            <option value="Corporate Investment" {% if 'Corporate' in ai_capital %}selected{% endif %}>Corporate Investment</option>
-                            <option value="Public-Private" {% if 'Public-Private' in ai_capital %}selected{% endif %}>Public-Private</option>
-                            <option value="IPO" {% if ai_capital == 'IPO' %}selected{% endif %}>IPO</option>
-                            <option value="Grant/SBIR" {% if 'Grant' in ai_capital or 'SBIR' in ai_capital %}selected{% endif %}>Grant/SBIR</option>
-                            <option value="Other">Other</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 5px; color: #555;">
-                            Project Type
-                            {% if item.ai_extraction and item.ai_extraction.project_type %}<span class="ai-badge">AI</span>{% endif %}
-                        </label>
-                        <select name="project_type"
-                                {% if item.ai_extraction and item.ai_extraction.project_type %}class="ai-populated"{% endif %}
-                                style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
-                            <option value="">-- Select --</option>
-                            {% set ai_project = item.ai_extraction.project_type if item.ai_extraction and item.ai_extraction.project_type else '' %}
-                            <option value="Factory/Manufacturing" {% if 'Factory' in ai_project or 'Manufacturing' in ai_project %}selected{% endif %}>Factory/Manufacturing</option>
-                            <option value="R&D Facility" {% if 'R&D' in ai_project or 'Lab' in ai_project %}selected{% endif %}>R&D Facility</option>
-                            <option value="Test Range" {% if 'Test' in ai_project %}selected{% endif %}>Test Range</option>
-                            <option value="Acquisition" {% if 'Acquisition' in ai_project %}selected{% endif %}>Acquisition</option>
-                            <option value="Funding Round" {% if 'Funding' in ai_project %}selected{% endif %}>Funding Round</option>
-                            <option value="Product Development" {% if 'Product' in ai_project %}selected{% endif %}>Product Development</option>
-                            <option value="Other">Other</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Row 4: Sector & Location -->
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-                    <div>
-                        <label style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 5px; color: #555;">
-                            Sector/Technology
-                            {% if item.ai_extraction and item.ai_extraction.sector %}<span class="ai-badge">AI</span>{% endif %}
-                        </label>
-                        <input type="text" name="sector"
-                               value="{{ item.ai_extraction.sector if item.ai_extraction and item.ai_extraction.sector else '' }}"
-                               {% if item.ai_extraction and item.ai_extraction.sector %}class="ai-populated"{% endif %}
-                               style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
-                               placeholder="e.g., Drones, AI/ML, Semiconductors">
-                    </div>
-
-                    <div>
-                        <label style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 5px; color: #555;">
                             Location
                             {% if item.ai_extraction and item.ai_extraction.location %}<span class="ai-badge">AI</span>{% endif %}
                         </label>
@@ -256,16 +178,192 @@
                     </div>
                 </div>
 
-                <!-- Row 5: Summary -->
+                <!-- Row 3: Transaction Type -->
                 <div style="margin-bottom: 15px;">
                     <label style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 5px; color: #555;">
-                        Summary (2-3 sentences)
+                        Transaction Type
+                        {% if item.ai_extraction and (item.ai_extraction.transaction_type or item.ai_extraction.deal_type) %}<span class="ai-badge">AI</span>{% endif %}
+                    </label>
+                    <select name="transaction_type"
+                            {% if item.ai_extraction and (item.ai_extraction.transaction_type or item.ai_extraction.deal_type) %}class="ai-populated"{% endif %}
+                            style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                        <option value="">-- Select --</option>
+                        {% set ai_trans = item.ai_extraction.transaction_type if item.ai_extraction and item.ai_extraction.transaction_type else '' %}
+                        {% set ai_deal = item.ai_extraction.deal_type if item.ai_extraction and item.ai_extraction.deal_type else '' %}
+                        <option value="Equity Funding Round" {% if ai_trans == 'Equity Funding Round' or 'Funding' in ai_deal or 'Investment' in ai_deal or 'Round' in ai_deal %}selected{% endif %}>Equity Funding Round</option>
+                        <option value="Acquisition" {% if ai_trans == 'Acquisition' or 'Acquisition' in ai_deal or 'M&A' in ai_deal %}selected{% endif %}>Acquisition</option>
+                        <option value="Merger" {% if ai_trans == 'Merger' or 'Merger' in ai_deal %}selected{% endif %}>Merger</option>
+                        <option value="Asset Sale/Divestiture" {% if ai_trans == 'Asset Sale/Divestiture' or 'Sale' in ai_deal or 'Divestiture' in ai_deal %}selected{% endif %}>Asset Sale/Divestiture</option>
+                        <option value="IPO" {% if ai_trans == 'IPO' or 'IPO' in ai_deal %}selected{% endif %}>IPO</option>
+                        <option value="Contract/Award" {% if ai_trans == 'Contract/Award' or 'Contract' in ai_deal or 'Award' in ai_deal or 'Grant' in ai_deal %}selected{% endif %}>Contract/Award</option>
+                        <option value="Joint Venture" {% if ai_trans == 'Joint Venture' or 'Joint' in ai_deal or 'JV' in ai_deal %}selected{% endif %}>Joint Venture</option>
+                        <option value="Strategic Partnership" {% if ai_trans == 'Strategic Partnership' or 'Partnership' in ai_deal or 'Strategic' in ai_deal %}selected{% endif %}>Strategic Partnership</option>
+                        <option value="Internal Investment" {% if ai_trans == 'Internal Investment' or 'Internal' in ai_deal or 'Facility' in ai_deal or 'R&D' in ai_deal %}selected{% endif %}>Internal Investment</option>
+                        <option value="Other">Other</option>
+                    </select>
+                    <!-- Hidden fields for backward compatibility -->
+                    <input type="hidden" name="deal_type" value="">
+                    <input type="hidden" name="capital_type" value="">
+                    <input type="hidden" name="project_type" value="">
+                </div>
+
+                <!-- Row 4: Capital Sources (Multi-select) -->
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 8px; color: #555;">
+                        Capital Sources (select all that apply)
+                        {% if item.ai_extraction and (item.ai_extraction.capital_sources or item.ai_extraction.capital_type) %}<span class="ai-badge">AI</span>{% endif %}
+                    </label>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; padding: 12px; background: #f9f9f9; border-radius: 4px;">
+                        {% set ai_capital_new = item.ai_extraction.capital_sources.split(',') if item.ai_extraction and item.ai_extraction.capital_sources else [] %}
+                        {% set ai_capital = item.ai_extraction.capital_type if item.ai_extraction and item.ai_extraction.capital_type else '' %}
+                        <label style="display: flex; align-items: center; font-size: 13px; cursor: pointer;">
+                            <input type="checkbox" name="capital_sources" value="Venture Capital"
+                                   {% if 'Venture Capital' in ai_capital_new or 'Venture' in ai_capital or 'VC' in ai_capital %}checked{% endif %}
+                                   style="margin-right: 6px; width: 16px; height: 16px;">
+                            Venture Capital
+                        </label>
+                        <label style="display: flex; align-items: center; font-size: 13px; cursor: pointer;">
+                            <input type="checkbox" name="capital_sources" value="Corporate Venture"
+                                   {% if 'Corporate Venture' in ai_capital_new or 'Corporate' in ai_capital %}checked{% endif %}
+                                   style="margin-right: 6px; width: 16px; height: 16px;">
+                            Corporate Venture
+                        </label>
+                        <label style="display: flex; align-items: center; font-size: 13px; cursor: pointer;">
+                            <input type="checkbox" name="capital_sources" value="Private Equity"
+                                   {% if 'Private Equity' in ai_capital_new or 'Private Equity' in ai_capital or 'PE' in ai_capital %}checked{% endif %}
+                                   style="margin-right: 6px; width: 16px; height: 16px;">
+                            Private Equity
+                        </label>
+                        <label style="display: flex; align-items: center; font-size: 13px; cursor: pointer;">
+                            <input type="checkbox" name="capital_sources" value="Government/Contract"
+                                   {% if 'Government/Contract' in ai_capital_new or 'Grant' in ai_capital or 'SBIR' in ai_capital or 'Government' in ai_capital or 'Contract' in ai_capital %}checked{% endif %}
+                                   style="margin-right: 6px; width: 16px; height: 16px;">
+                            Government/Contract
+                        </label>
+                        <label style="display: flex; align-items: center; font-size: 13px; cursor: pointer;">
+                            <input type="checkbox" name="capital_sources" value="Public Markets"
+                                   {% if 'Public Markets' in ai_capital_new or ai_capital == 'IPO' or 'Public' in ai_capital %}checked{% endif %}
+                                   style="margin-right: 6px; width: 16px; height: 16px;">
+                            Public Markets
+                        </label>
+                        <label style="display: flex; align-items: center; font-size: 13px; cursor: pointer;">
+                            <input type="checkbox" name="capital_sources" value="Internal/Self-funded"
+                                   {% if 'Internal/Self-funded' in ai_capital_new or 'Internal' in ai_capital or 'Self' in ai_capital %}checked{% endif %}
+                                   style="margin-right: 6px; width: 16px; height: 16px;">
+                            Internal/Self-funded
+                        </label>
+                        <label style="display: flex; align-items: center; font-size: 13px; cursor: pointer;">
+                            <input type="checkbox" name="capital_sources" value="Strategic Partner"
+                                   {% if 'Strategic Partner' in ai_capital_new or 'Strategic' in ai_capital or 'Partner' in ai_capital %}checked{% endif %}
+                                   style="margin-right: 6px; width: 16px; height: 16px;">
+                            Strategic Partner
+                        </label>
+                        <label style="display: flex; align-items: center; font-size: 13px; cursor: pointer;">
+                            <input type="checkbox" name="capital_sources" value="Family Office"
+                                   {% if 'Family Office' in ai_capital_new or 'Family Office' in ai_capital %}checked{% endif %}
+                                   style="margin-right: 6px; width: 16px; height: 16px;">
+                            Family Office
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Row 5: Sectors (Multi-select) -->
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 8px; color: #555;">
+                        Sectors/Technology (select all that apply)
+                        {% if item.ai_extraction and (item.ai_extraction.sectors or item.ai_extraction.sector) %}<span class="ai-badge">AI</span>{% endif %}
+                    </label>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 12px; background: #f9f9f9; border-radius: 4px;">
+                        {% set ai_sectors_new = item.ai_extraction.sectors.split(',') if item.ai_extraction and item.ai_extraction.sectors else [] %}
+                        {% set ai_sector = item.ai_extraction.sector if item.ai_extraction and item.ai_extraction.sector else '' %}
+                        <label style="display: flex; align-items: center; font-size: 13px; cursor: pointer;">
+                            <input type="checkbox" name="sectors" value="Autonomous Systems/Drones"
+                                   {% if 'Autonomous Systems/Drones' in ai_sectors_new or 'Autonomous' in ai_sector or 'Drone' in ai_sector or 'UAV' in ai_sector %}checked{% endif %}
+                                   style="margin-right: 6px; width: 16px; height: 16px;">
+                            Autonomous/Drones
+                        </label>
+                        <label style="display: flex; align-items: center; font-size: 13px; cursor: pointer;">
+                            <input type="checkbox" name="sectors" value="AI/ML"
+                                   {% if 'AI/ML' in ai_sectors_new or 'AI' in ai_sector or 'ML' in ai_sector or 'Machine Learning' in ai_sector or 'Artificial Intelligence' in ai_sector %}checked{% endif %}
+                                   style="margin-right: 6px; width: 16px; height: 16px;">
+                            AI/ML
+                        </label>
+                        <label style="display: flex; align-items: center; font-size: 13px; cursor: pointer;">
+                            <input type="checkbox" name="sectors" value="Space/Satellites"
+                                   {% if 'Space/Satellites' in ai_sectors_new or 'Space' in ai_sector or 'Satellite' in ai_sector or 'Orbit' in ai_sector %}checked{% endif %}
+                                   style="margin-right: 6px; width: 16px; height: 16px;">
+                            Space/Satellites
+                        </label>
+                        <label style="display: flex; align-items: center; font-size: 13px; cursor: pointer;">
+                            <input type="checkbox" name="sectors" value="Aerospace"
+                                   {% if 'Aerospace' in ai_sectors_new or 'Aerospace' in ai_sector or 'Aircraft' in ai_sector or 'Aviation' in ai_sector %}checked{% endif %}
+                                   style="margin-right: 6px; width: 16px; height: 16px;">
+                            Aerospace
+                        </label>
+                        <label style="display: flex; align-items: center; font-size: 13px; cursor: pointer;">
+                            <input type="checkbox" name="sectors" value="Cybersecurity"
+                                   {% if 'Cybersecurity' in ai_sectors_new or 'Cyber' in ai_sector or 'Security' in ai_sector %}checked{% endif %}
+                                   style="margin-right: 6px; width: 16px; height: 16px;">
+                            Cybersecurity
+                        </label>
+                        <label style="display: flex; align-items: center; font-size: 13px; cursor: pointer;">
+                            <input type="checkbox" name="sectors" value="Advanced Materials"
+                                   {% if 'Advanced Materials' in ai_sectors_new or 'Material' in ai_sector or 'Composite' in ai_sector %}checked{% endif %}
+                                   style="margin-right: 6px; width: 16px; height: 16px;">
+                            Advanced Materials
+                        </label>
+                        <label style="display: flex; align-items: center; font-size: 13px; cursor: pointer;">
+                            <input type="checkbox" name="sectors" value="Semiconductors/Electronics"
+                                   {% if 'Semiconductors/Electronics' in ai_sectors_new or 'Semiconductor' in ai_sector or 'Chip' in ai_sector or 'Electronics' in ai_sector %}checked{% endif %}
+                                   style="margin-right: 6px; width: 16px; height: 16px;">
+                            Semiconductors
+                        </label>
+                        <label style="display: flex; align-items: center; font-size: 13px; cursor: pointer;">
+                            <input type="checkbox" name="sectors" value="Manufacturing/Production"
+                                   {% if 'Manufacturing/Production' in ai_sectors_new or 'Manufacturing' in ai_sector or 'Production' in ai_sector or 'Factory' in ai_sector %}checked{% endif %}
+                                   style="margin-right: 6px; width: 16px; height: 16px;">
+                            Manufacturing
+                        </label>
+                        <label style="display: flex; align-items: center; font-size: 13px; cursor: pointer;">
+                            <input type="checkbox" name="sectors" value="Software/IT"
+                                   {% if 'Software/IT' in ai_sectors_new or 'Software' in ai_sector or 'IT' in ai_sector or 'Cloud' in ai_sector %}checked{% endif %}
+                                   style="margin-right: 6px; width: 16px; height: 16px;">
+                            Software/IT
+                        </label>
+                        <label style="display: flex; align-items: center; font-size: 13px; cursor: pointer;">
+                            <input type="checkbox" name="sectors" value="Munitions/Weapons"
+                                   {% if 'Munitions/Weapons' in ai_sectors_new or 'Munitions' in ai_sector or 'Weapon' in ai_sector or 'Missile' in ai_sector %}checked{% endif %}
+                                   style="margin-right: 6px; width: 16px; height: 16px;">
+                            Munitions/Weapons
+                        </label>
+                        <label style="display: flex; align-items: center; font-size: 13px; cursor: pointer;">
+                            <input type="checkbox" name="sectors" value="Communications"
+                                   {% if 'Communications' in ai_sectors_new or 'Communication' in ai_sector or 'Telecom' in ai_sector or 'Network' in ai_sector %}checked{% endif %}
+                                   style="margin-right: 6px; width: 16px; height: 16px;">
+                            Communications
+                        </label>
+                        <label style="display: flex; align-items: center; font-size: 13px; cursor: pointer;">
+                            <input type="checkbox" name="sectors" value="Other"
+                                   style="margin-right: 6px; width: 16px; height: 16px;">
+                            Other
+                        </label>
+                    </div>
+                    <!-- Hidden field for backward compatibility -->
+                    <input type="hidden" name="sector" value="">
+                </div>
+
+                <!-- Row 6: Summary -->
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 5px; color: #555;">
+                        Summary (Why It Matters + Market Implications)
                         {% if item.ai_extraction and (item.ai_extraction.strategic_significance or item.ai_extraction.market_implications) %}<span class="ai-badge">AI</span>{% endif %}
                     </label>
-                    <textarea name="summary" rows="3"
+                    <textarea name="summary" rows="6"
                               {% if item.ai_extraction and (item.ai_extraction.strategic_significance or item.ai_extraction.market_implications) %}class="ai-populated"{% endif %}
                               style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; font-family: inherit;"
-                              placeholder="Write a concise summary of the deal...">{% if item.ai_extraction %}{% if item.ai_extraction.strategic_significance %}{{ item.ai_extraction.strategic_significance }}{% endif %}{% if item.ai_extraction.market_implications and item.ai_extraction.strategic_significance %} {{ item.ai_extraction.market_implications }}{% elif item.ai_extraction.market_implications %}{{ item.ai_extraction.market_implications }}{% endif %}{% endif %}</textarea>
+                              placeholder="Write a summary with two sections...">{% if item.ai_extraction %}{% if item.ai_extraction.strategic_significance %}**Why It Matters:** {{ item.ai_extraction.strategic_significance }}
+
+{% endif %}{% if item.ai_extraction.market_implications %}**Market Implications:** {{ item.ai_extraction.market_implications }}{% endif %}{% endif %}</textarea>
                 </div>
 
                 <!-- Row 6: Internal Notes -->

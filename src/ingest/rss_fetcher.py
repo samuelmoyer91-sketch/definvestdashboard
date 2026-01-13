@@ -81,7 +81,7 @@ def save_to_database(entries, session):
     return new_count, duplicate_count
 
 
-def fetch_all_feeds(config_path='config/feeds.json', db_path='data/tracker.db'):
+def fetch_all_feeds(config_path='config/feeds.json', db_path='databases/tracker.db'):
     """Fetch all enabled RSS feeds and save to database."""
     print("=" * 60)
     print("Defense Capital Tracker - RSS Ingestion")

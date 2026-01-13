@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 import json
 import time
+from urllib.parse import urlparse, parse_qs, unquote
 
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
@@ -18,8 +19,45 @@ def load_config(config_path='config/feeds.json'):
         return json.load(f)
 
 
+def extract_real_url_from_google_redirect(google_url):
+    """Extract the actual article URL from a Google News redirect URL.
+
+    Google News URLs look like:
+    https://www.google.com/url?rct=j&sa=t&url=https://example.com/article&ct=ga&...
+
+    This function extracts: https://example.com/article
+    """
+    try:
+        parsed = urlparse(google_url)
+
+        # Check if it's a Google redirect URL
+        if 'google.com' in parsed.netloc and '/url' in parsed.path:
+            # Parse query parameters
+            params = parse_qs(parsed.query)
+
+            # Extract the 'url' parameter
+            if 'url' in params:
+                real_url = params['url'][0]
+                return unquote(real_url)  # Decode URL encoding
+
+        # Not a Google redirect, return original URL
+        return google_url
+
+    except Exception as e:
+        print(f"  ⚠ Warning: Could not parse URL: {e}")
+        return google_url
+
+
 def scrape_article(url, config):
     """Scrape full article content from URL."""
+    # Extract real URL from Google redirect if needed
+    original_url = url
+    url = extract_real_url_from_google_redirect(url)
+
+    if url != original_url:
+        print(f"  → Extracted real URL from Google redirect")
+        print(f"     {url[:80]}...")
+
     headers = {
         'User-Agent': config['scraping']['user_agent']
     }

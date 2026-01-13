@@ -1,0 +1,79 @@
+#!/usr/bin/env python3
+"""
+Database migration: Add new category fields to master_list table.
+
+This migration adds:
+- transaction_type (single-select replacement for deal_type)
+- capital_sources (multi-select for capital types)
+- sectors (multi-select for sector/technology)
+
+Old fields are kept for backward compatibility.
+"""
+
+import sqlite3
+from pathlib import Path
+
+def migrate_database(db_path='databases/tracker.db'):
+    """Add new category columns to master_list table."""
+
+    # Resolve path
+    if not Path(db_path).is_absolute():
+        script_dir = Path(__file__).parent
+        db_path = script_dir.parent.parent / db_path
+
+    print(f"Migrating database: {db_path}")
+
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    # Check which columns already exist
+    cursor.execute("PRAGMA table_info(master_list)")
+    existing_columns = {row[1] for row in cursor.fetchall()}
+
+    migrations_applied = []
+
+    # Add transaction_type column (single-select)
+    if 'transaction_type' not in existing_columns:
+        cursor.execute("""
+            ALTER TABLE master_list
+            ADD COLUMN transaction_type TEXT
+        """)
+        migrations_applied.append('transaction_type')
+        print("  ✓ Added transaction_type column")
+    else:
+        print("  ⊘ transaction_type column already exists")
+
+    # Add capital_sources column (multi-select, comma-separated)
+    if 'capital_sources' not in existing_columns:
+        cursor.execute("""
+            ALTER TABLE master_list
+            ADD COLUMN capital_sources TEXT
+        """)
+        migrations_applied.append('capital_sources')
+        print("  ✓ Added capital_sources column")
+    else:
+        print("  ⊘ capital_sources column already exists")
+
+    # Add sectors column (multi-select, comma-separated)
+    if 'sectors' not in existing_columns:
+        cursor.execute("""
+            ALTER TABLE master_list
+            ADD COLUMN sectors TEXT
+        """)
+        migrations_applied.append('sectors')
+        print("  ✓ Added sectors column")
+    else:
+        print("  ⊘ sectors column already exists")
+
+    conn.commit()
+    conn.close()
+
+    if migrations_applied:
+        print(f"\n✅ Migration complete! Added {len(migrations_applied)} new columns")
+        print("   Existing deals will continue to use old fields")
+        print("   New deals will use the new multi-select fields")
+    else:
+        print("\n✅ Database already up to date")
+
+if __name__ == '__main__':
+    migrate_database()

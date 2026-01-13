@@ -49,10 +49,15 @@ This dashboard provides comprehensive visibility into the defense industrial bas
 
 ### Intelligence Briefing Deal Feed:
 - Professional briefing-style layout for government analysts
-- AI-extracted deal information (company, amount, investors, significance)
+- AI-extracted deal information (company, amount, investors)
+- Enhanced category system with multi-select tags:
+  - **Transaction Type**: Equity Funding Round, Acquisition, Merger, Contract/Award, Joint Venture, Internal Investment, etc.
+  - **Capital Sources**: Venture Capital, Corporate Venture, Private Equity, Government/Contract, Public Markets, etc. (multi-select)
+  - **Sectors**: AI/ML, Autonomous Systems/Drones, Space/Satellites, Aerospace, Cybersecurity, etc. (multi-select)
+- Human-curated summaries with "Why It Matters" and "Market Implications" sections
+- AI pre-drafts summaries and category tags for manual review and editing in triage UI
 - Real-time search and filtering by deal type
 - Chronological feed with pagination
-- Graceful fallback to RSS summaries
 
 ---
 
@@ -110,7 +115,7 @@ This dashboard provides comprehensive visibility into the defense industrial bas
 Use the automated workflow script for the full process:
 
 ```bash
-cd ~/Documents/"Claude - Defense PC Dashboard"
+cd ~/Documents/Claude/"Claude - Defense PC Dashboard"
 
 # Step 1: Fetch and prepare data (automated - 2 min)
 ./update_workflow.sh all
@@ -121,7 +126,8 @@ cd ~/Documents/"Claude - Defense PC Dashboard"
 uvicorn src.web.app:app --reload
 # Open http://127.0.0.1:8000
 # Review AI-populated deals with collapsible cards
-# Accept good deals, reject irrelevant articles
+# Edit the "Why It Matters" and "Market Implications" summary sections
+# Accept curated deals, reject irrelevant articles
 
 # Step 3: Publish and deploy (automated - 1 min)
 ./update_workflow.sh publish
@@ -140,7 +146,7 @@ uvicorn src.web.app:app --reload
 
 ```bash
 # Manual update (if workflow script unavailable)
-cd ~/Documents/"Claude - Defense PC Dashboard"
+cd ~/Documents/Claude/"Claude - Defense PC Dashboard"
 python3 generate_site.py
 git add github_site/
 git commit -m "Data update - $(date +%Y-%m-%d)"
@@ -172,8 +178,13 @@ Claude - Defense PC Dashboard/
 │   ├── utils/               # AI summarizer (Claude API)
 │   ├── web/                 # Local triage UI (FastAPI)
 │   └── database/            # SQLite models (includes AIExtraction)
+├── databases/               # SQLite databases (local only, not deployed)
+│   ├── tracker.db           # Deal curation database
+│   └── defense_deals.db     # Legacy database
+├── data/                    # Source data (JSON files for charts)
 ├── docs/
 │   └── AI_WORKFLOW.md       # AI summary setup and usage guide
+├── *.xlsx                   # Excel source files (VC/M&A data)
 ├── generate_site.py         # Site generation script (data + HTML)
 └── requirements.txt         # Python dependencies (includes anthropic)
 ```

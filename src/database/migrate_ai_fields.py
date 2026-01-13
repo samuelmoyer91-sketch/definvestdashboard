@@ -14,7 +14,7 @@ Run this once to update your existing database.
 import sqlite3
 from pathlib import Path
 
-def migrate_database(db_path='data/tracker.db'):
+def migrate_database(db_path='databases/tracker.db'):
     """Add new columns to ai_extractions table."""
 
     # Resolve path

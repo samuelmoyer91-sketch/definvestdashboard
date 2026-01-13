@@ -4,7 +4,7 @@
 
 set -e  # Exit on error
 
-cd ~/Documents/"Claude - Defense PC Dashboard"
+cd ~/Documents/Claude/"Claude - Defense PC Dashboard"
 
 echo "============================================"
 echo "Defense Dashboard - Complete Update Workflow"

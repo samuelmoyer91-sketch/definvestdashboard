@@ -26,11 +26,17 @@ build/
 .DS_Store
 Thumbs.db
 
+# Project-specific
+databases/
+
 # Logs
 *.log
 
 # Environment variables
 .env
+
+# Claude settings with API keys
+.claude/settings.local.json
 
 # Temporary files
 *.tmp

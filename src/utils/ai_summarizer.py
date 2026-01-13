@@ -58,16 +58,21 @@ Extract the following information (use "Unknown" if not found):
 
 1. COMPANY NAME: The company being invested in or acquired
 2. COMPANY DESCRIPTION: One sentence describing what the company does (focus on defense/tech capabilities)
-3. DEAL TYPE: Is this VC funding, M&A acquisition, IPO, or other?
-4. DEAL AMOUNT: Dollar value if mentioned (e.g., "$300M" or "$4.7B")
-5. INVESTORS/ACQUIRERS: Key firms or companies involved
-6. STRATEGIC SIGNIFICANCE: Why does this deal matter for defense sector? (2-3 sentences max)
-7. MARKET IMPLICATIONS: What does this signal about defense tech trends? (1-2 sentences)
+3. TRANSACTION TYPE: Choose ONE from: Equity Funding Round, Acquisition, Merger, Asset Sale/Divestiture, IPO, Contract/Award, Joint Venture, Strategic Partnership, Internal Investment, Other
+4. CAPITAL SOURCES: Choose ALL that apply from: Venture Capital, Corporate Venture, Private Equity, Government/Contract, Public Markets, Internal/Self-funded, Strategic Partner, Family Office (return as array)
+5. SECTORS: Choose ALL that apply from: Autonomous Systems/Drones, AI/ML, Space/Satellites, Aerospace, Cybersecurity, Advanced Materials, Semiconductors/Electronics, Manufacturing/Production, Software/IT, Munitions/Weapons, Communications, Other (return as array)
+6. DEAL AMOUNT: Dollar value if mentioned (e.g., "$300M" or "$4.7B")
+7. INVESTORS/ACQUIRERS: Key firms or companies involved
+8. STRATEGIC SIGNIFICANCE: Why does this deal matter for defense sector? (2-3 sentences max)
+9. MARKET IMPLICATIONS: What does this signal about defense tech trends? (1-2 sentences)
 
 Format your response as JSON:
 {{
   "company_name": "...",
   "company_description": "...",
+  "transaction_type": "...",
+  "capital_sources": ["...", "..."],
+  "sectors": ["...", "..."],
   "deal_type": "...",
   "deal_amount": "...",
   "investors": "...",
@@ -75,7 +80,12 @@ Format your response as JSON:
   "market_implications": "..."
 }}
 
-Be professional and analytical (intelligence briefing tone). If information is missing or unclear, use "Unknown" rather than guessing."""
+Notes:
+- transaction_type, capital_sources, and sectors are new enhanced fields
+- deal_type is legacy field (still include for backward compatibility)
+- For capital_sources: if it's a corporate VC like A16Z investing, include both "Venture Capital" AND "Corporate Venture"
+- For sectors: include all relevant technology areas the company operates in
+- Be professional and analytical (intelligence briefing tone). If information is missing or unclear, use "Unknown" rather than guessing."""
 
     try:
         # Call Claude API

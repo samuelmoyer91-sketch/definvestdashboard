@@ -244,17 +244,57 @@ def generate_deal_card(master, raw, ai):
     # Extract date
     date_str = raw.published_date.strftime('%b %d, %Y') if raw.published_date else 'Date unknown'
 
-    # Deal type badge
+    # Transaction Type badge (with fallback to old deal_type)
     deal_type = 'UNKNOWN'
     deal_type_class = 'badge-secondary'
 
-    if ai and ai.deal_type:
-        dt = ai.deal_type.upper()
-        if 'VC' in dt or 'VENTURE' in dt:
-            deal_type = 'VENTURE CAPITAL'
+    # Prioritize new transaction_type field
+    if master and master.transaction_type:
+        dt = master.transaction_type.upper()
+        if 'FUNDING' in dt or 'EQUITY' in dt:
+            deal_type = 'FUNDING'
+            deal_type_class = 'badge-primary'
+        elif 'ACQUISITION' in dt:
+            deal_type = 'ACQUISITION'
+            deal_type_class = 'badge-success'
+        elif 'MERGER' in dt:
+            deal_type = 'MERGER'
+            deal_type_class = 'badge-success'
+        elif 'IPO' in dt:
+            deal_type = 'IPO'
+            deal_type_class = 'badge-warning'
+        elif 'CONTRACT' in dt or 'AWARD' in dt:
+            deal_type = 'CONTRACT'
+            deal_type_class = 'badge-info'
+        elif 'PARTNERSHIP' in dt or 'JOINT' in dt:
+            deal_type = 'PARTNERSHIP'
+            deal_type_class = 'badge-info'
+        elif 'INTERNAL' in dt:
+            deal_type = 'INTERNAL'
+            deal_type_class = 'badge-secondary'
+        else:
+            deal_type = dt[:20]
+    # Fallback to old deal_type or AI extraction
+    elif master and master.deal_type:
+        dt = master.deal_type.upper()
+        if 'VC' in dt or 'VENTURE' in dt or 'FUNDING' in dt:
+            deal_type = 'FUNDING'
             deal_type_class = 'badge-primary'
         elif 'M&A' in dt or 'ACQUISITION' in dt or 'ACQUIRED' in dt:
-            deal_type = 'M&A'
+            deal_type = 'ACQUISITION'
+            deal_type_class = 'badge-success'
+        elif 'IPO' in dt:
+            deal_type = 'IPO'
+            deal_type_class = 'badge-warning'
+        else:
+            deal_type = dt[:20]
+    elif ai and ai.deal_type:
+        dt = ai.deal_type.upper()
+        if 'VC' in dt or 'VENTURE' in dt or 'FUNDING' in dt:
+            deal_type = 'FUNDING'
+            deal_type_class = 'badge-primary'
+        elif 'M&A' in dt or 'ACQUISITION' in dt or 'ACQUIRED' in dt:
+            deal_type = 'ACQUISITION'
             deal_type_class = 'badge-success'
         elif 'IPO' in dt:
             deal_type = 'IPO'
@@ -287,6 +327,29 @@ def generate_deal_card(master, raw, ai):
             card_html += f"""
             <p class="deal-company-desc">{ai.company_description}</p>"""
 
+    # Category badges (Capital Sources & Sectors)
+    category_badges = []
+
+    # Capital Sources (with fallback to old capital_type)
+    if master and master.capital_sources:
+        for source in master.capital_sources.split(','):
+            category_badges.append(f'<span class="badge badge-info">{source.strip()}</span>')
+    elif master and master.capital_type:
+        category_badges.append(f'<span class="badge badge-info">{master.capital_type}</span>')
+
+    # Sectors (with fallback to old sector)
+    if master and master.sectors:
+        for sector in master.sectors.split(','):
+            category_badges.append(f'<span class="badge badge-success">{sector.strip()}</span>')
+    elif master and master.sector:
+        category_badges.append(f'<span class="badge badge-success">{master.sector}</span>')
+
+    if category_badges:
+        card_html += f"""
+            <div class="deal-categories" style="margin-bottom: 12px;">
+                {' '.join(category_badges)}
+            </div>"""
+
     # Deal details (amount and investors) in compact format
     deal_details = []
     if ai:
@@ -301,8 +364,40 @@ def generate_deal_card(master, raw, ai):
                 {' • '.join(deal_details)}
             </div>"""
 
-    # AI analysis sections
-    if ai and ai.summary_complete:
+    # Use human-reviewed summary from triage (prioritize over AI)
+    if master and master.summary:
+        # Parse summary with markdown-style sections
+        summary_text = master.summary
+
+        # Check if it has markdown-style sections (** headers)
+        if "**Why It Matters:**" in summary_text or "**Market Implications:**" in summary_text:
+            # Split into sections and format as HTML
+            sections = summary_text.split("**")
+            for section in sections:
+                section = section.strip()
+                if section.startswith("Why It Matters:"):
+                    content = section.replace("Why It Matters:", "").strip()
+                    card_html += f"""
+            <div class="deal-insight">
+                <h4>Why It Matters</h4>
+                <p>{content}</p>
+            </div>"""
+                elif section.startswith("Market Implications:"):
+                    content = section.replace("Market Implications:", "").strip()
+                    card_html += f"""
+            <div class="deal-insight">
+                <h4>Market Implications</h4>
+                <p>{content}</p>
+            </div>"""
+        else:
+            # Plain summary without sections
+            card_html += f"""
+            <div class="deal-insight">
+                <p>{summary_text}</p>
+            </div>"""
+
+    # Fallback to AI analysis if no human summary
+    elif ai and ai.summary_complete:
         if ai.strategic_significance:
             card_html += f"""
             <div class="deal-insight">
@@ -317,8 +412,8 @@ def generate_deal_card(master, raw, ai):
                 <p>{ai.market_implications}</p>
             </div>"""
 
+    # Final fallback to RSS summary
     else:
-        # Fallback to RSS summary
         if raw.rss_summary:
             card_html += f"""
             <div class="deal-insight">

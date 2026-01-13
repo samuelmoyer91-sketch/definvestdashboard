@@ -3,12 +3,7 @@
 {% block title %}Accepted Items - Defense Capital Tracker{% endblock %}
 
 {% block content %}
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-    <h2 style="margin: 0;">Accepted Items ({{ items | length }})</h2>
-    {% if items | length > 0 %}
-    <a href="/export/csv" class="btn btn-primary" download>📥 Export to CSV</a>
-    {% endif %}
-</div>
+<h2 style="margin-bottom: 20px;">Accepted Items ({{ items | length }})</h2>
 
 {% if items | length == 0 %}
 <div class="card">
