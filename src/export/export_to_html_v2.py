@@ -318,14 +318,11 @@ def generate_deal_card(master, raw, ai):
 
         <div class="deal-card-body">"""
 
-    # Company headline
-    if company_name:
+    # Company headline (use curated company name from master, fallback to AI)
+    company_display = master.company if master and master.company else company_name
+    if company_display:
         card_html += f"""
-            <h3 class="deal-company-name">{company_name}</h3>"""
-
-        if ai and ai.company_description:
-            card_html += f"""
-            <p class="deal-company-desc">{ai.company_description}</p>"""
+            <h3 class="deal-company-name">{company_display}</h3>"""
 
     # Category badges (Capital Sources & Sectors)
     category_badges = []
@@ -350,13 +347,18 @@ def generate_deal_card(master, raw, ai):
                 {' '.join(category_badges)}
             </div>"""
 
-    # Deal details (amount and investors) in compact format
+    # Deal details (amount and investors) - use CURATED data from master, fallback to AI
     deal_details = []
-    if ai:
-        if ai.deal_amount:
-            deal_details.append(f'<span class="deal-amount">{ai.deal_amount}</span>')
-        if ai.investors:
-            deal_details.append(f'<span class="deal-investors">{ai.investors}</span>')
+
+    # Amount: prioritize master.investment_amount
+    amount = master.investment_amount if master and master.investment_amount else (ai.deal_amount if ai else None)
+    if amount:
+        deal_details.append(f'<span class="deal-amount">{amount}</span>')
+
+    # Investors: prioritize master.investors
+    investors = master.investors if master and master.investors else (ai.investors if ai else None)
+    if investors:
+        deal_details.append(f'<span class="deal-investors">{investors}</span>')
 
     if deal_details:
         card_html += f"""
@@ -364,60 +366,19 @@ def generate_deal_card(master, raw, ai):
                 {' • '.join(deal_details)}
             </div>"""
 
-    # Use human-reviewed summary from triage (prioritize over AI)
+    # Use ONLY human-curated summary from master list
+    # AI data and RSS summaries are NOT shown - only what you approved in triage
     if master and master.summary:
-        # Parse summary with markdown-style sections
-        summary_text = master.summary
-
-        # Check if it has markdown-style sections (** headers)
-        if "**Why It Matters:**" in summary_text or "**Market Implications:**" in summary_text:
-            # Split into sections and format as HTML
-            sections = summary_text.split("**")
-            for section in sections:
-                section = section.strip()
-                if section.startswith("Why It Matters:"):
-                    content = section.replace("Why It Matters:", "").strip()
-                    card_html += f"""
+        # Simply display the curated summary as-is (no section parsing)
+        card_html += f"""
             <div class="deal-insight">
-                <h4>Why It Matters</h4>
-                <p>{content}</p>
+                <p>{master.summary}</p>
             </div>"""
-                elif section.startswith("Market Implications:"):
-                    content = section.replace("Market Implications:", "").strip()
-                    card_html += f"""
-            <div class="deal-insight">
-                <h4>Market Implications</h4>
-                <p>{content}</p>
-            </div>"""
-        else:
-            # Plain summary without sections
-            card_html += f"""
-            <div class="deal-insight">
-                <p>{summary_text}</p>
-            </div>"""
-
-    # Fallback to AI analysis if no human summary
-    elif ai and ai.summary_complete:
-        if ai.strategic_significance:
-            card_html += f"""
-            <div class="deal-insight">
-                <h4>Why It Matters</h4>
-                <p>{ai.strategic_significance}</p>
-            </div>"""
-
-        if ai.market_implications:
-            card_html += f"""
-            <div class="deal-insight">
-                <h4>Market Implications</h4>
-                <p>{ai.market_implications}</p>
-            </div>"""
-
-    # Final fallback to RSS summary
     else:
-        if raw.rss_summary:
-            card_html += f"""
+        # If no curated summary, show a placeholder
+        card_html += f"""
             <div class="deal-insight">
-                <p>{raw.rss_summary}</p>
+                <p style="color: #999; font-style: italic;">No summary provided.</p>
             </div>"""
 
     # Footer with source link
