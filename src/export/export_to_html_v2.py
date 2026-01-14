@@ -3,6 +3,45 @@
 Export deal tracker to intelligence briefing-style HTML.
 
 Generates a professional, paginated feed with AI summaries for government analysts.
+
+VISUAL DESIGN DOCUMENTATION:
+===========================
+
+Deal Card Structure:
+-------------------
+Each card follows a strict visual hierarchy designed for quick scanning:
+
+1. HEADER (gray background):
+   - Transaction type label (0.75rem, uppercase, teal, bold)
+   - Date (0.85rem, gray, right-aligned)
+
+2. BODY:
+   - Company name (1.4rem, bold, near-black) - Most prominent element
+   - Metadata section (labeled fields):
+     * Labels: 0.75rem, uppercase, light gray (#94a3b8), block display
+     * Values: 0.95rem, medium weight, dark (#1e293b), block display
+     * Fields only show if data exists (graceful degradation)
+     * Fields: Amount, Investors, Capital, Sectors
+   - Summary (0.95rem, regular weight, good line height)
+
+3. FOOTER (gray background):
+   - Source link with domain attribution
+
+Design Principles:
+-----------------
+- Labels and values are separate block elements (stack vertically)
+- Small light labels, larger dark values for clear hierarchy
+- Consistent spacing (0.75rem between fields)
+- No badges or colors except for transaction type
+- Clean text-based design that works with missing data
+- Professional intelligence briefing aesthetic
+
+Data Priority:
+-------------
+- Curated data from master_list takes priority
+- AI-extracted data used as fallback for old deals
+- RSS summaries never shown
+- Only human-reviewed content appears on published dashboard
 """
 
 import sys
@@ -308,7 +347,7 @@ def generate_deal_card(master, raw, ai):
             deal_type = 'INTERNAL'
             deal_type_class = 'badge-secondary'
         else:
-            deal_type = dt[:20]
+            deal_type = dt  # Don't truncate, show full transaction type
     # Fallback to old deal_type or AI extraction
     elif master and master.deal_type:
         dt = master.deal_type.upper()
@@ -322,7 +361,7 @@ def generate_deal_card(master, raw, ai):
             deal_type = 'IPO'
             deal_type_class = 'badge-warning'
         else:
-            deal_type = dt[:20]
+            deal_type = dt  # Don't truncate, show full transaction type
     elif ai and ai.deal_type:
         dt = ai.deal_type.upper()
         if 'VC' in dt or 'VENTURE' in dt or 'FUNDING' in dt:
@@ -335,7 +374,7 @@ def generate_deal_card(master, raw, ai):
             deal_type = 'IPO'
             deal_type_class = 'badge-warning'
         else:
-            deal_type = dt[:20]
+            deal_type = dt  # Don't truncate, show full transaction type
 
     # Extract company name from AI or master
     company_name = (ai.company if ai and ai.company else

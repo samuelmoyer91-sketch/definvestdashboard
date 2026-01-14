@@ -50,13 +50,20 @@ This dashboard provides comprehensive visibility into the defense industrial bas
 ### Intelligence Briefing Deal Feed:
 - Professional briefing-style layout for government analysts
 - 100% human-curated content (AI assists but never publishes directly)
-- Enhanced category system with multi-select tags:
+- Clean text-based visual hierarchy:
+  - Transaction type and date in header
+  - Company name prominent (1.4rem, bold)
+  - Labeled metadata fields (Amount, Investors, Capital, Sectors)
+  - Labels uppercase/light gray, values dark/medium weight
+  - Fields only show when data exists (graceful degradation)
+- Enhanced category system:
   - **Transaction Type**: Equity Funding Round, Acquisition, Merger, Contract/Award, Joint Venture, Internal Investment, etc.
   - **Capital Sources**: Venture Capital, Corporate Venture, Private Equity, Government/Contract, Public Markets, etc. (multi-select)
   - **Sectors**: AI/ML, Autonomous Systems/Drones, Space/Satellites, Aerospace, Cybersecurity, etc. (multi-select)
 - AI pre-populates triage form with deal details and draft summaries
 - You review and edit everything before publication
 - Published dashboard shows only your curated content (never raw AI or RSS data)
+- Source attribution on every article link
 - Real-time search and filtering by transaction type
 - Chronological feed with pagination
 
