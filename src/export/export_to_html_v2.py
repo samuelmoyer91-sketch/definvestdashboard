@@ -341,12 +341,12 @@ def generate_deal_card(master, raw, ai):
     company_name = (ai.company if ai and ai.company else
                    master.company if master and master.company else None)
 
-    # Build card with cleaner hierarchy
+    # Build card with clean text-based layout
     card_html = f"""
     <div class="deal-card" data-deal-type="{deal_type.lower()}">
         <div class="deal-card-header">
-            <div class="deal-meta-row">
-                <span class="badge {deal_type_class}">{deal_type}</span>
+            <div class="deal-header-line">
+                <span class="deal-type-label">{deal_type}</span>
                 <span class="deal-date">{date_str}</span>
             </div>
         </div>
@@ -359,46 +359,46 @@ def generate_deal_card(master, raw, ai):
         card_html += f"""
             <h3 class="deal-company-name">{company_display}</h3>"""
 
-    # Category badges (Capital Sources & Sectors)
-    category_badges = []
-
-    # Capital Sources (with fallback to old capital_type)
-    if master and master.capital_sources:
-        for source in master.capital_sources.split(','):
-            category_badges.append(f'<span class="badge badge-info">{source.strip()}</span>')
-    elif master and master.capital_type:
-        category_badges.append(f'<span class="badge badge-info">{master.capital_type}</span>')
-
-    # Sectors (with fallback to old sector)
-    if master and master.sectors:
-        for sector in master.sectors.split(','):
-            category_badges.append(f'<span class="badge badge-success">{sector.strip()}</span>')
-    elif master and master.sector:
-        category_badges.append(f'<span class="badge badge-success">{master.sector}</span>')
-
-    if category_badges:
-        card_html += f"""
-            <div class="deal-categories" style="margin-bottom: 12px;">
-                {' '.join(category_badges)}
-            </div>"""
-
-    # Deal details (amount and investors) - use CURATED data from master, fallback to AI
-    deal_details = []
+    # Start metadata section
+    card_html += """
+            <div class="deal-metadata">"""
 
     # Amount: prioritize master.investment_amount
     amount = master.investment_amount if master and master.investment_amount else (ai.deal_amount if ai else None)
     if amount:
-        deal_details.append(f'<span class="deal-amount">{amount}</span>')
+        card_html += f"""
+                <div class="deal-meta-line"><span class="meta-label">Amount:</span> {amount}</div>"""
 
     # Investors: prioritize master.investors
     investors = master.investors if master and master.investors else (ai.investors if ai else None)
     if investors:
-        deal_details.append(f'<span class="deal-investors">{investors}</span>')
-
-    if deal_details:
         card_html += f"""
-            <div class="deal-meta-info">
-                {' • '.join(deal_details)}
+                <div class="deal-meta-line"><span class="meta-label">Investors:</span> {investors}</div>"""
+
+    # Capital Sources (with fallback to old capital_type)
+    capital_sources = None
+    if master and master.capital_sources:
+        capital_sources = master.capital_sources
+    elif master and master.capital_type:
+        capital_sources = master.capital_type
+
+    if capital_sources:
+        card_html += f"""
+                <div class="deal-meta-line"><span class="meta-label">Capital:</span> {capital_sources}</div>"""
+
+    # Sectors (with fallback to old sector)
+    sectors = None
+    if master and master.sectors:
+        sectors = master.sectors
+    elif master and master.sector:
+        sectors = master.sector
+
+    if sectors:
+        card_html += f"""
+                <div class="deal-meta-line"><span class="meta-label">Sectors:</span> {sectors}</div>"""
+
+    # Close metadata section
+    card_html += """
             </div>"""
 
     # Use ONLY human-curated summary from master list
