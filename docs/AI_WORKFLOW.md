@@ -4,15 +4,29 @@ This document explains how to use the AI-powered intelligence briefing feature f
 
 ## Overview
 
-The dashboard now includes AI-powered summaries for defense investment deals using Claude (Anthropic). The AI analyzes scraped articles and extracts:
+The dashboard includes AI-assisted deal curation using Claude (Anthropic). The AI analyzes scraped articles and **drafts suggestions** for:
 
 - **Company name** and description
 - **Transaction type** (Equity Funding Round, Acquisition, Merger, Contract/Award, etc.)
 - **Capital sources** (multi-select: Venture Capital, Corporate Venture, Private Equity, Government/Contract, etc.)
 - **Sectors** (multi-select: AI/ML, Autonomous Systems/Drones, Space/Satellites, Aerospace, Cybersecurity, etc.)
 - **Deal amount** and investors
-- **Strategic significance** (why it matters)
-- **Market implications** (what it signals)
+- **Summary** combining strategic significance and market implications
+
+**Critical distinction:** AI suggestions are drafts that pre-populate the triage form. You review and edit everything. The published dashboard shows only what you approve - never raw AI output.
+
+## Data Flow
+
+```
+RSS Feed → Scrape Article → AI Drafts Suggestions → YOU REVIEW/EDIT → Publish to Dashboard
+                                                            ↓
+                                                    (What you type here
+                                                     is what publishes)
+```
+
+**AI Role:** Drafting assistant that saves you time
+**Your Role:** Editor and final authority on all published content
+**Published Output:** 100% human-curated (your edits from triage)
 
 ## Prerequisites
 
@@ -116,20 +130,20 @@ uvicorn src.web.app:app --reload
 Open: http://127.0.0.1:8000
 
 **In the triage UI:**
-1. See collapsed cards with AI one-liners (Deal Type • Amount • Sector)
+1. See collapsed cards with AI one-liners (Transaction Type • Amount • Sector)
 2. Click "▼ Review & Accept" to expand inline
 3. Review AI-populated fields (blue backgrounds indicate AI data)
 4. **Edit the category fields:**
    - **Transaction Type**: Single-select dropdown (Equity Funding Round, Acquisition, Merger, etc.)
    - **Capital Sources**: Multi-select checkboxes (Venture Capital, Corporate Venture, Private Equity, etc.)
    - **Sectors**: Multi-select checkboxes (AI/ML, Autonomous Systems/Drones, Space/Satellites, etc.)
-5. **Edit the summary section** - AI pre-drafts two subsections:
-   - **Why It Matters:** Strategic significance (2-3 sentences)
-   - **Market Implications:** What this signals about trends (1-2 sentences)
+5. **Edit the summary section** - AI pre-drafts a summary combining strategic significance and market implications (you can write your own or edit the AI draft)
 6. Edit company name, investors, amounts, or any other field as needed
 7. Expand article preview to validate information
 8. Click "✓ Accept & Add to Master List" to publish
 9. Or click "Reject" for irrelevant articles
+
+**IMPORTANT:** Whatever you type in the triage form is exactly what appears on the published dashboard. AI suggestions are drafts only - they never bypass your review.
 
 **Features:**
 - Collapsible inline expansion (no page navigation)
@@ -234,14 +248,21 @@ Stores human-curated deals ready for publication:
 The generated deal feed (`github_site/deals/index.html`) includes:
 
 - **Professional Layout**: Intelligence briefing style, analyst-friendly
-- **Deal Cards**: Clean, scannable cards with human-curated summaries
-- **Human-Curated Content**: Summaries reviewed and edited by analysts, not raw AI output
-- **Structured Insights**: "Why It Matters" and "Market Implications" sections
+- **Deal Cards**: Clean, scannable cards with human-curated content
+- **100% Human-Curated**: Published content is exactly what you approved in triage
+- **No AI Substitution**: AI drafts are never shown on the public dashboard
+- **Category Badges**: Color-coded transaction type, capital sources, and sector tags
 - **Search**: Real-time filtering by keywords
-- **Deal Type Filters**: Filter by VC, M&A, IPO, etc.
-- **Badges**: Color-coded deal type indicators
-- **Graceful Fallback**: Shows RSS summary if no curated summary available
+- **Transaction Type Filters**: Filter by funding rounds, acquisitions, contracts, etc.
 - **Mobile Responsive**: Works on all devices
+
+### Data Priority in Published Output
+
+The export script follows this priority order:
+
+1. **First Priority - Your Curated Data**: Company name, investors, amount, categories, and summary from the master list (what you approved in triage)
+2. **Fallback for Old Deals**: For deals accepted before the curation system was implemented, shows AI-extracted data
+3. **Never Shown**: RSS feed descriptions, AI company descriptions, or any data you didn't explicitly review
 
 ## Cost Management
 
@@ -314,11 +335,17 @@ python3 src/database/migrate_ai_fields.py
 
 Potential improvements to the AI workflow:
 
-- **🔄 Workflow Optimization (High Priority)**: Change workflow to "Curate First, AI Second" - only generate AI summaries for articles that have been approved in triage. This would save API costs by not analyzing articles that might be rejected. Current workflow: RSS → Scrape → AI → Triage → Publish. Proposed: RSS → Scrape → Triage → AI (only approved) → Publish.
+- **🔄 Workflow Optimization (Potential Cost Savings)**: Change workflow to "Curate First, AI Second" - only generate AI summaries for articles that have been approved in triage. This would save API costs by not analyzing articles that might be rejected.
+
+  **Current workflow:** RSS → Scrape → **AI (costs $$$)** → Triage (50% rejected?) → Publish
+
+  **Proposed workflow:** RSS → Scrape → Triage (quick scan) → **AI only for approved** → Final edit → Publish
+
+  **Potential savings:** If you reject 50% of articles, this cuts your Claude API costs in half. However, it requires an initial quick scan without AI assistance, which may be less efficient for initial filtering.
+
 - **Batch API calls**: Process multiple articles in parallel
 - **Confidence scoring**: Flag low-confidence extractions for review
-- **Custom prompts**: Tailor extraction for specific deal types
-- **Auto-publishing**: Skip triage for high-confidence extractions
+- **Custom prompts**: Tailor extraction for specific transaction types
 - **Email alerts**: Notify on high-priority deals
 - **Trend detection**: AI analysis of market patterns
 

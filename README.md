@@ -33,11 +33,11 @@ This dashboard provides comprehensive visibility into the defense industrial bas
 
 ### Analyst-Focused Tools:
 - **📈 Data Summary Stats** - Latest values, period changes, YoY trends with visual indicators
-- **⬇️ CSV Export** - One-click download of full datasets for custom analysis
+- **⬇️ CSV Export** - One-click download of economic/market datasets for custom analysis
 - **🔍 Key Insights** - Curated context explaining metric relationships
 - **📅 Timestamps** - Data freshness displayed on every page
 - **📱 Mobile Responsive** - Professional design on all devices
-- **🤖 AI Deal Summaries** - Claude-powered analysis of defense investments (optional)
+- **🤖 AI Drafting Assistant** - Claude pre-populates triage form (you review/edit before publishing)
 
 ### Interactive Charts:
 - Hover for exact values with formatted units ($B, $T, %)
@@ -45,18 +45,19 @@ This dashboard provides comprehensive visibility into the defense industrial bas
 - Consistent 2019-present timeframe across all charts
 - Vertical gridlines marking quarters and years
 - Properly scaled y-axes (billions, trillions, percentages)
-- Full historical data available via CSV export
+- Full historical data available via CSV export (for economic/market data only)
 
 ### Intelligence Briefing Deal Feed:
 - Professional briefing-style layout for government analysts
-- AI-extracted deal information (company, amount, investors)
+- 100% human-curated content (AI assists but never publishes directly)
 - Enhanced category system with multi-select tags:
   - **Transaction Type**: Equity Funding Round, Acquisition, Merger, Contract/Award, Joint Venture, Internal Investment, etc.
   - **Capital Sources**: Venture Capital, Corporate Venture, Private Equity, Government/Contract, Public Markets, etc. (multi-select)
   - **Sectors**: AI/ML, Autonomous Systems/Drones, Space/Satellites, Aerospace, Cybersecurity, etc. (multi-select)
-- Human-curated summaries with "Why It Matters" and "Market Implications" sections
-- AI pre-drafts summaries and category tags for manual review and editing in triage UI
-- Real-time search and filtering by deal type
+- AI pre-populates triage form with deal details and draft summaries
+- You review and edit everything before publication
+- Published dashboard shows only your curated content (never raw AI or RSS data)
+- Real-time search and filtering by transaction type
 - Chronological feed with pagination
 
 ---
@@ -126,8 +127,9 @@ cd ~/Documents/Claude/"Claude - Defense PC Dashboard"
 uvicorn src.web.app:app --reload
 # Open http://127.0.0.1:8000
 # Review AI-populated deals with collapsible cards
-# Edit the "Why It Matters" and "Market Implications" summary sections
-# Accept curated deals, reject irrelevant articles
+# Edit company names, amounts, investors, categories, and summaries
+# Accept curated deals (what you approve is what publishes)
+# Reject irrelevant articles
 
 # Step 3: Publish and deploy (automated - 1 min)
 ./update_workflow.sh publish
@@ -256,6 +258,7 @@ python3 generate_site.py
 - Database with curated deals stays on your computer
 - RSS feeds and raw articles processed locally
 - Only approved deals exported to public site
+- AI-generated drafts never appear in published output (only human-curated content)
 
 ---
 
