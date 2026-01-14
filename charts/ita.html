@@ -188,16 +188,6 @@
                                         return '#cccccc';
                                     }
                                     return '#e8e8e8';
-                                },
-                                lineWidth: function(context) {
-                                    const dataPoint = displayData.data[context.index];
-                                    if (!dataPoint) return 1;
-
-                                    const date = new Date(dataPoint.date);
-                                    const month = date.getMonth();
-
-                                    // Thicker line for January
-                                    return (month === 0) ? 2 : 1;
                                 }
                             },
                             ticks: {
