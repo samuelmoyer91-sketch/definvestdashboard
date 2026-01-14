@@ -9,11 +9,46 @@ import sys
 import os
 from pathlib import Path
 from datetime import datetime
+from urllib.parse import urlparse
 
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from database.models import get_session, MasterItem, RawItem, AIExtraction
+
+
+def extract_domain(url):
+    """Extract clean domain from URL for source attribution.
+
+    Handles Google News redirect URLs by extracting the actual destination.
+
+    Examples:
+        'https://www.wsj.com/articles/...' -> 'wsj.com'
+        'https://google.com/url?...&url=https://wsj.com/...' -> 'wsj.com'
+    """
+    try:
+        # Handle Google News redirect URLs
+        if 'google.com/url?' in url:
+            # Extract the actual URL from the redirect
+            from urllib.parse import parse_qs
+            parsed = urlparse(url)
+            params = parse_qs(parsed.query)
+            if 'url' in params:
+                # Use the actual destination URL
+                url = params['url'][0]
+
+        # Extract domain from URL
+        parsed = urlparse(url)
+        domain = parsed.netloc
+
+        # Remove 'www.' prefix if present
+        if domain.startswith('www.'):
+            domain = domain[4:]
+
+        return domain if domain else 'source'
+    except:
+        return 'source'
+
 
 def generate_deals_html(output_file=None, deals_per_page=10):
     """
@@ -381,13 +416,14 @@ def generate_deal_card(master, raw, ai):
                 <p style="color: #999; font-style: italic;">No summary provided.</p>
             </div>"""
 
-    # Footer with source link
+    # Footer with source link (includes domain attribution)
+    source_domain = extract_domain(raw.url)
     card_html += f"""
         </div>
 
         <div class="deal-card-footer">
             <a href="{raw.url}" target="_blank" rel="noopener" class="deal-source-link">
-                Read Full Article →
+                Read Full Article on {source_domain} →
             </a>
         </div>
     </div>"""
