@@ -110,6 +110,9 @@ function createLineChart(canvasId, data, options = {}) {
             },
             subtitle: {
                 display: false
+            },
+            legend: {
+                display: false
             }
         }
     };

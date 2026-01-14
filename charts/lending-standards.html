@@ -33,10 +33,6 @@
         </div>
 
         <div class="card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                <h2 style="margin: 0;">Chart</h2>
-                <button class="btn btn-download" id="downloadBtn">Download CSV</button>
-            </div>
             <div class="chart-container" style="height: 500px;">
                 <canvas id="mainChart"></canvas>
             </div>
@@ -44,6 +40,10 @@
 
         <!-- Data Summary Stats -->
         <div class="data-summary" id="dataSummary" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                <h2 style="margin: 0;">Key Statistics</h2>
+                <button class="btn btn-download" id="downloadBtn">Download CSV</button>
+            </div>
             <div class="summary-grid">
                 <div class="summary-item">
                     <div class="summary-label">Latest Value</div>
