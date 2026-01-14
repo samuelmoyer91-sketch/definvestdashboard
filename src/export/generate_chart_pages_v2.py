@@ -371,6 +371,31 @@ def generate_navigation(current_category=None):
 
     return '\n                '.join(nav_items)
 
+def get_source_url(chart_id):
+    """Get the source URL for a given chart"""
+    # FRED series - use series ID from the chart_id (uppercase)
+    fred_series = ['dgorder', 'fdefx', 'adefno', 'adapno', 'ipb52300s', 'prmfgcons',
+                   'indpro', 'pnfi', 'gpdi', 'drtscilm', 'dgs10']
+
+    # Yahoo Finance tickers - these don't have dedicated series pages
+    yahoo_tickers = ['ita', 'xli', 'pld']
+
+    # Custom data (no external source)
+    custom_data = ['vc_defense', 'ma_defense', 'public_defense_companies']
+
+    if chart_id in fred_series:
+        # FRED URL format: https://fred.stlouisfed.org/series/{SERIES_ID}
+        return f'https://fred.stlouisfed.org/series/{chart_id.upper()}'
+    elif chart_id in yahoo_tickers:
+        # Yahoo Finance ticker page
+        return f'https://finance.yahoo.com/quote/{chart_id.upper()}'
+    elif chart_id in custom_data:
+        # No external source - custom research data
+        return None
+    else:
+        return None
+
+
 def generate_chart_page(chart_id, chart_info):
     """Generate HTML page for a single chart"""
 
@@ -380,6 +405,20 @@ def generate_chart_page(chart_id, chart_info):
     # Determine if this is market data
     is_market = chart_id in ['ita', 'xli', 'pld', 'dgs10']
     data_file = f'../data/{chart_id.lower()}.json'
+
+    # Get source URL
+    source_url = get_source_url(chart_id)
+
+    # Determine source name
+    if chart_id in ['vc_defense', 'ma_defense', 'public_defense_companies']:
+        source_name = 'Custom Research'
+        source_link = source_name  # No link for custom data
+    elif is_market and chart_id != 'dgs10':
+        source_name = 'Yahoo Finance'
+        source_link = f'<a href="{source_url}" target="_blank" rel="noopener" style="color: #226E93; text-decoration: none;">{source_name}</a>' if source_url else source_name
+    else:
+        source_name = 'Federal Reserve Economic Data (FRED)'
+        source_link = f'<a href="{source_url}" target="_blank" rel="noopener" style="color: #226E93; text-decoration: none;">{source_name}</a>' if source_url else source_name
 
     # Find related charts in the same category
     related_charts = [cid for cid, cinfo in CHARTS.items()
@@ -418,7 +457,7 @@ def generate_chart_page(chart_id, chart_info):
             <h1>{chart_info['title']}</h1>
             <p>{chart_info['subtitle']}</p>
             <p style="margin-top: 0.5rem; font-size: 0.9rem; color: #666;">
-                Source: <a href="#" target="_blank" rel="noopener" style="color: #226E93; text-decoration: none;">{'Yahoo Finance' if is_market and chart_id != 'dgs10' else 'Federal Reserve Economic Data (FRED)'}</a>
+                Source: {source_link}
             </p>
             <p class="last-updated" id="lastUpdated"></p>
         </div>
