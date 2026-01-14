@@ -423,6 +423,16 @@ def generate_chart_page(chart_id, chart_info):
             <p class="last-updated" id="lastUpdated"></p>
         </div>
 
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2 style="margin: 0;">Chart</h2>
+                <button class="btn btn-download" id="downloadBtn">Download CSV</button>
+            </div>
+            <div class="chart-container" style="height: 500px;">
+                <canvas id="mainChart"></canvas>
+            </div>
+        </div>
+
         <!-- Data Summary Stats -->
         <div class="data-summary" id="dataSummary" style="display: none;">
             <div class="summary-grid">
@@ -446,16 +456,6 @@ def generate_chart_page(chart_id, chart_info):
                     <div class="summary-value"><span id="trendIndicator" class="trend-indicator">→</span></div>
                     <div class="summary-change">Recent direction</div>
                 </div>
-            </div>
-        </div>
-
-        <div class="card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                <h2 style="margin: 0;">Chart</h2>
-                <button class="btn btn-download" id="downloadBtn">Download CSV</button>
-            </div>
-            <div class="chart-container" style="height: 500px;">
-                <canvas id="mainChart"></canvas>
             </div>
         </div>
 

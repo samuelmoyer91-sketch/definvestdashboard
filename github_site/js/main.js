@@ -106,21 +106,10 @@ function createLineChart(canvasId, data, options = {}) {
             ...chartDefaults.plugins,
             ...(options.plugins || {}),
             title: {
-                display: true,
-                text: data.name || data.series_id,
-                font: {
-                    size: 16,
-                    weight: 'bold'
-                },
-                color: '#1a5573'
+                display: false
             },
             subtitle: {
-                display: !!data.description,
-                text: data.description || '',
-                font: {
-                    size: 12
-                },
-                color: '#666666'
+                display: false
             }
         }
     };
