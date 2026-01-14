@@ -67,8 +67,8 @@ function createLineChart(canvasId, data, options = {}) {
     }
 
     // Prepare chart data
-    // Use quarterly labels if provided, otherwise use dates
-    const labels = data.quarterlyLabels || data.data.map(d => d.date);
+    // Use year labels if provided, otherwise use dates
+    const labels = data.yearLabels || data.data.map(d => d.date);
 
     const chartData = {
         labels: labels,

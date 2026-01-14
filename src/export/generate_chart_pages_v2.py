@@ -531,22 +531,20 @@ def generate_chart_page(chart_id, chart_info):
                     }}
                 }}
 
-                // Create quarterly labels from the filtered data
-                const quarterlyLabels = displayData.data.map(d => {{
+                // Create year labels from the filtered data
+                const yearLabels = displayData.data.map(d => {{
                     const date = new Date(d.date);
                     const year = date.getFullYear();
-                    const month = date.getMonth();
-                    const quarter = Math.floor(month / 3) + 1;
-                    return `${{year}} Q${{quarter}}`;
+                    return `${{year}}`;
                 }});
 
-                // Modify displayData to include quarterly labels
+                // Modify displayData to include year labels
                 displayData = {{
                     ...displayData,
-                    quarterlyLabels: quarterlyLabels
+                    yearLabels: yearLabels
                 }};
 
-                // Render chart with quarterly labels and gridlines
+                // Render chart with year labels and gridlines
                 const chartOptions = {{
                     fill: true,
                     scales: {{
@@ -661,19 +659,17 @@ def generate_category_page(cat_id, cat_info):
                         displayData = data.data.filter(d => new Date(d.date) >= new Date('{DEFAULT_START_DATE}'));
                     }}
 
-                    // Create quarterly labels
-                    const quarterlyLabels = displayData.map(d => {{
+                    // Create year labels
+                    const yearLabels = displayData.map(d => {{
                         const date = new Date(d.date);
                         const year = date.getFullYear();
-                        const month = date.getMonth();
-                        const quarter = Math.floor(month / 3) + 1;
-                        return `${{year}} Q${{quarter}}`;
+                        return `${{year}}`;
                     }});
 
                     new Chart(ctx, {{
                         type: 'line',
                         data: {{
-                            labels: quarterlyLabels,
+                            labels: yearLabels,
                             datasets: [{{
                                 label: data.name,
                                 data: displayData.map(d => d.value || d.close),
