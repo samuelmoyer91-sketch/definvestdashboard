@@ -570,16 +570,6 @@ def generate_chart_page(chart_id, chart_info):
                                         return '#cccccc';
                                     }}
                                     return '#e8e8e8';
-                                }},
-                                lineWidth: function(context) {{
-                                    const dataPoint = displayData.data[context.index];
-                                    if (!dataPoint) return 1;
-
-                                    const date = new Date(dataPoint.date);
-                                    const month = date.getMonth();
-
-                                    // Thicker line for January
-                                    return (month === 0) ? 2 : 1;
                                 }}
                             }},
                             ticks: {{
@@ -733,12 +723,6 @@ def generate_category_page(cat_id, cat_info):
                                             // Quarter lines
                                             if (month % 3 === 0) return '#cccccc';
                                             return '#e8e8e8';
-                                        }},
-                                        lineWidth: function(context) {{
-                                            const dataPoint = displayData[context.index];
-                                            if (!dataPoint) return 1;
-                                            const date = new Date(dataPoint.date);
-                                            return (date.getMonth() === 0) ? 2 : 1;
                                         }}
                                     }},
                                     ticks: {{
