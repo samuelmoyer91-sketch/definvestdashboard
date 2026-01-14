@@ -367,13 +367,19 @@ def generate_deal_card(master, raw, ai):
     amount = master.investment_amount if master and master.investment_amount else (ai.deal_amount if ai else None)
     if amount:
         card_html += f"""
-                <div class="deal-meta-line"><span class="meta-label">Amount:</span> {amount}</div>"""
+                <div class="deal-meta-line">
+                    <span class="meta-label">Amount</span>
+                    <span>{amount}</span>
+                </div>"""
 
     # Investors: prioritize master.investors
     investors = master.investors if master and master.investors else (ai.investors if ai else None)
     if investors:
         card_html += f"""
-                <div class="deal-meta-line"><span class="meta-label">Investors:</span> {investors}</div>"""
+                <div class="deal-meta-line">
+                    <span class="meta-label">Investors</span>
+                    <span>{investors}</span>
+                </div>"""
 
     # Capital Sources (with fallback to old capital_type)
     capital_sources = None
@@ -384,7 +390,10 @@ def generate_deal_card(master, raw, ai):
 
     if capital_sources:
         card_html += f"""
-                <div class="deal-meta-line"><span class="meta-label">Capital:</span> {capital_sources}</div>"""
+                <div class="deal-meta-line">
+                    <span class="meta-label">Capital</span>
+                    <span>{capital_sources}</span>
+                </div>"""
 
     # Sectors (with fallback to old sector)
     sectors = None
@@ -395,7 +404,10 @@ def generate_deal_card(master, raw, ai):
 
     if sectors:
         card_html += f"""
-                <div class="deal-meta-line"><span class="meta-label">Sectors:</span> {sectors}</div>"""
+                <div class="deal-meta-line">
+                    <span class="meta-label">Sectors</span>
+                    <span>{sectors}</span>
+                </div>"""
 
     # Close metadata section
     card_html += """
