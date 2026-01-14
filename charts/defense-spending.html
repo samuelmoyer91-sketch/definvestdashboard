@@ -172,24 +172,7 @@
                         x: {
                             grid: {
                                 display: true,
-                                color: function(context) {
-                                    // Get the date for this gridline
-                                    const dataPoint = displayData.data[context.index];
-                                    if (!dataPoint) return '#e0e0e0';
-
-                                    const date = new Date(dataPoint.date);
-                                    const month = date.getMonth();
-
-                                    // Heavier line for January (start of year)
-                                    if (month === 0) {
-                                        return '#999999';
-                                    }
-                                    // Lighter lines for quarters
-                                    if (month % 3 === 0) {
-                                        return '#cccccc';
-                                    }
-                                    return '#e8e8e8';
-                                }
+                                color: '#e0e0e0'
                             },
                             ticks: {
                                 autoSkip: true,
