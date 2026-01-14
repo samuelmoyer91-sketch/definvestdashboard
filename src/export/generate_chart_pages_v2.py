@@ -553,24 +553,7 @@ def generate_chart_page(chart_id, chart_info):
                         x: {{
                             grid: {{
                                 display: true,
-                                color: function(context) {{
-                                    // Get the date for this gridline
-                                    const dataPoint = displayData.data[context.index];
-                                    if (!dataPoint) return '#e0e0e0';
-
-                                    const date = new Date(dataPoint.date);
-                                    const month = date.getMonth();
-
-                                    // Heavier line for January (start of year)
-                                    if (month === 0) {{
-                                        return '#999999';
-                                    }}
-                                    // Lighter lines for quarters
-                                    if (month % 3 === 0) {{
-                                        return '#cccccc';
-                                    }}
-                                    return '#e8e8e8';
-                                }}
+                                color: '#e0e0e0'
                             }},
                             ticks: {{
                                 autoSkip: true,
@@ -713,17 +696,7 @@ def generate_category_page(cat_id, cat_info):
                                     display: true,
                                     grid: {{
                                         display: true,
-                                        color: function(context) {{
-                                            const dataPoint = displayData[context.index];
-                                            if (!dataPoint) return '#e0e0e0';
-                                            const date = new Date(dataPoint.date);
-                                            const month = date.getMonth();
-                                            // Heavier line for January
-                                            if (month === 0) return '#999999';
-                                            // Quarter lines
-                                            if (month % 3 === 0) return '#cccccc';
-                                            return '#e8e8e8';
-                                        }}
+                                        color: '#e0e0e0'
                                     }},
                                     ticks: {{
                                         maxRotation: 45,
