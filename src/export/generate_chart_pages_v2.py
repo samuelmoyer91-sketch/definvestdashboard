@@ -80,7 +80,7 @@ CHARTS = {
         'title': 'Defense Capital Goods Orders',
         'subtitle': "Manufacturers' new orders for defense capital goods",
         'description': """
-            <strong>Manufacturers' New Orders: Defense Capital Goods</strong> is a data set released monthly by the US Census Bureau.
+            Manufacturers' New Orders: Defense Capital Goods is a data set released monthly by the US Census Bureau.
             This data set tracks how much money US manufacturers are receiving in new orders for military equipment and technology,
             from aircraft and missiles to small arms and communication systems. It gives us a snapshot of how active the defense
             industry is at any given time.
@@ -98,7 +98,7 @@ CHARTS = {
         'title': 'Venture Capital Investment in Defense',
         'subtitle': 'Annual VC investment in defense and dual-use companies',
         'description': """
-            <strong>Venture Capital Investment in Defense</strong> tracks the volume of venture capital dollars flowing into U.S.
+            Venture Capital Investment in Defense tracks the volume of venture capital dollars flowing into U.S.
             defense-focused and dual-use companies. This data is updated annually and reflects early-stage investment activity
             in defense technology and innovation.
         """,
@@ -115,7 +115,7 @@ CHARTS = {
         'title': 'Public Defense Companies - Capex & R&D',
         'subtitle': 'Capital expenditures and R&D investment by publicly traded defense companies',
         'description': """
-            <strong>Public Defense Companies - Capex & R&D</strong> tracks the annual capital expenditures and research & development
+            Public Defense Companies - Capex & R&D tracks the annual capital expenditures and research & development
             investment by publicly traded defense and aerospace companies. This measures how much these companies are investing in
             facilities, equipment, and innovation to support future growth and capabilities.
         """,
@@ -132,7 +132,7 @@ CHARTS = {
         'title': 'M&A Activity in Defense',
         'subtitle': 'Annual merger and acquisition activity in aerospace and defense',
         'description': """
-            <strong>M&A Activity in Defense</strong> tracks the dollar value of mergers and acquisitions in the U.S. aerospace and
+            M&A Activity in Defense tracks the dollar value of mergers and acquisitions in the U.S. aerospace and
             defense sector. This includes private equity buyouts, strategic acquisitions by defense primes, and consolidation activity
             across the defense industrial base.
         """,
@@ -149,7 +149,7 @@ CHARTS = {
         'title': 'Defense Aircraft Orders',
         'subtitle': "Manufacturers' new orders for defense aircraft",
         'description': """
-            <strong>Defense Aircraft Orders (ADEFNO)</strong> tracks new orders for complete military aircraft from manufacturers.
+            Defense Aircraft Orders (ADEFNO) tracks new orders for complete military aircraft from manufacturers.
             This includes fighter jets, transport aircraft, helicopters, and other defense aviation platforms. These are typically
             large, multi-year contracts that represent major defense procurement programs.
         """,
@@ -165,7 +165,7 @@ CHARTS = {
         'title': 'Defense Aircraft Parts Orders',
         'subtitle': "Manufacturers' new orders for defense aircraft parts and components",
         'description': """
-            <strong>Defense Aircraft Parts Orders (ADAPNO)</strong> measures orders for aircraft components, subassemblies, and
+            Defense Aircraft Parts Orders (ADAPNO) measures orders for aircraft components, subassemblies, and
             replacement parts used in military aviation. This includes everything from engines and avionics to structural components
             and weapons systems integration.
         """,
@@ -181,7 +181,7 @@ CHARTS = {
         'title': 'Industrial Production: Defense Equipment',
         'subtitle': 'Production output of defense and space equipment',
         'description': """
-            The data set <strong>"Equipment: Defense and Space Equipment"</strong> measures how much the U.S. is producing in terms
+            The data set "Equipment: Defense and Space Equipment" measures how much the U.S. is producing in terms
             of military and space-related technology and machinery. Tracked monthly by the Federal Reserve, this index reflects the
             real output of U.S.-based manufacturers that build everything from weapons systems and armored vehicles to satellites
             and space launch components.
@@ -198,7 +198,7 @@ CHARTS = {
         'title': 'National Defense Spending',
         'subtitle': 'Federal defense consumption expenditures and procurement',
         'description': """
-            <strong>National Defense Consumption Expenditures (FDEFX)</strong> measures the total federal government spending
+            National Defense Consumption Expenditures (FDEFX) measures the total federal government spending
             on defense goods and services. This includes military personnel, operations, procurement of weapons systems,
             and research & development.
         """,
@@ -214,7 +214,7 @@ CHARTS = {
         'title': 'Manufacturing Construction',
         'subtitle': 'Construction spending in the manufacturing sector',
         'description': """
-            <strong>Manufacturing Construction Spending (PRMFGCONS)</strong> tracks expenditures on new manufacturing
+            Manufacturing Construction Spending (PRMFGCONS) tracks expenditures on new manufacturing
             facilities, expansions, and renovations. This includes both defense-specific manufacturing facilities and
             the broader industrial base that supports defense production.
         """,
@@ -230,7 +230,7 @@ CHARTS = {
         'title': 'Aerospace & Defense ETF (ITA)',
         'subtitle': 'iShares U.S. Aerospace & Defense ETF investor sentiment',
         'description': """
-            The <strong>iShares U.S. Aerospace & Defense ETF (ITA)</strong> tracks ETFs focused on the aerospace and defense
+            The iShares U.S. Aerospace & Defense ETF (ITA) tracks ETFs focused on the aerospace and defense
             sectors, reflecting investor sentiment. It is a basket of stocks of companies in the defense industrial base.
         """,
         'context': """
@@ -245,7 +245,7 @@ CHARTS = {
         'title': 'Industrial Production Index',
         'subtitle': 'Overall U.S. industrial production output',
         'description': """
-            <strong>Industrial Production Index (INDPRO)</strong> measures the real output of manufacturing, mining, and
+            Industrial Production Index (INDPRO) measures the real output of manufacturing, mining, and
             electric and gas utilities industries. The index is benchmarked to 2017=100 and provides a broad measure of
             industrial activity across the entire U.S. economy.
         """,
@@ -261,7 +261,7 @@ CHARTS = {
         'title': 'Business Investment Trends',
         'subtitle': 'Private nonresidential fixed investment in structures and equipment',
         'description': """
-            <strong>Private Nonresidential Fixed Investment (PNFI)</strong> measures business investment in structures, equipment,
+            Private Nonresidential Fixed Investment (PNFI) measures business investment in structures, equipment,
             and intellectual property. This excludes residential construction and focuses on productive capital investments
             by businesses.
         """,
@@ -277,7 +277,7 @@ CHARTS = {
         'title': 'GDP Investment Component',
         'subtitle': 'Gross private domestic investment',
         'description': """
-            <strong>Gross Private Domestic Investment (GPDI)</strong> measures business investment, residential
+            Gross Private Domestic Investment (GPDI) measures business investment, residential
             investment, and changes in private inventories. This is a major component of GDP
             and represents the total investment activity in the economy.
         """,
@@ -293,7 +293,7 @@ CHARTS = {
         'title': 'Bank Lending Standards',
         'subtitle': 'Net percentage of banks tightening standards for commercial loans',
         'description': """
-            <strong>Lending Standards (DRTSCILM)</strong> measures the net percentage of domestic banks reporting tightened
+            Lending Standards (DRTSCILM) measures the net percentage of domestic banks reporting tightened
             lending standards for commercial and industrial loans. Positive values indicate tightening (harder to get loans),
             while negative values indicate loosening (easier to get loans).
         """,
@@ -310,7 +310,7 @@ CHARTS = {
         'title': 'Industrial Sector ETF (XLI)',
         'subtitle': 'Industrial Select Sector SPDR Fund performance',
         'description': """
-            <strong>XLI ETF</strong> tracks the Industrial sector of the S&P 500, including aerospace, defense,
+            XLI ETF tracks the Industrial sector of the S&P 500, including aerospace, defense,
             construction, engineering, machinery companies, and industrial conglomerates. It provides a broader view
             of industrial sector performance beyond just defense.
         """,
@@ -327,7 +327,7 @@ CHARTS = {
         'title': 'Prologis Inc. (PLD)',
         'subtitle': 'Industrial real estate REIT performance',
         'description': """
-            <strong>Prologis (PLD)</strong> is the world's largest owner and operator of logistics real estate, including
+            Prologis (PLD) is the world's largest owner and operator of logistics real estate, including
             warehouses, distribution centers, and industrial facilities. Their properties support industrial and manufacturing
             activities across supply chains.
         """,
@@ -343,7 +343,7 @@ CHARTS = {
         'title': '10-Year Treasury Yield',
         'subtitle': 'U.S. Treasury 10-year constant maturity rate',
         'description': """
-            <strong>10-Year Treasury Yield (DGS10)</strong> is the yield on U.S. Treasury securities with a
+            10-Year Treasury Yield (DGS10) is the yield on U.S. Treasury securities with a
             10-year maturity. This is a key benchmark interest rate that influences borrowing costs across the economy.
         """,
         'context': """
@@ -417,6 +417,9 @@ def generate_chart_page(chart_id, chart_info):
         <div class="page-header">
             <h1>{chart_info['title']}</h1>
             <p>{chart_info['subtitle']}</p>
+            <p style="margin-top: 0.5rem; font-size: 0.9rem; color: #666;">
+                Source: <a href="#" target="_blank" rel="noopener" style="color: #226E93; text-decoration: none;">{'Yahoo Finance' if is_market and chart_id != 'dgs10' else 'Federal Reserve Economic Data (FRED)'}</a>
+            </p>
             <p class="last-updated" id="lastUpdated"></p>
         </div>
 
@@ -460,8 +463,7 @@ def generate_chart_page(chart_id, chart_info):
             <h2>About This Metric</h2>
             <p>{chart_info['description']}</p>
             <p>{chart_info['context']}</p>
-            <p><strong>Units:</strong> {chart_info['units']}</p>
-            <p><strong>Source:</strong> {'Yahoo Finance' if is_market and chart_id != 'dgs10' else 'Federal Reserve Economic Data (FRED)'}</p>
+            <p style="margin-top: 1rem; color: #666; font-size: 0.9rem;">Units: {chart_info['units']}</p>
         </div>
 
         <div class="card">
