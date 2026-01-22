@@ -3,7 +3,7 @@
   "name": "Gross Private Domestic Investment",
   "description": "GDP investment component",
   "units": "Billions of Dollars",
-  "last_updated": "2026-01-19 20:55:10",
+  "last_updated": "2026-01-22 13:00:29",
   "data_points": 315,
   "data": [
     {
@@ -1264,7 +1264,7 @@
     },
     {
       "date": "2025-07-01",
-      "value": 5418.578
+      "value": 5419.029
     }
   ]
 }

@@ -3,7 +3,7 @@
   "name": "Private Nonresidential Fixed Investment",
   "description": "Business investment in structures and equipment",
   "units": "Billions of Dollars",
-  "last_updated": "2026-01-19 20:55:09",
+  "last_updated": "2026-01-22 13:00:28",
   "data_points": 315,
   "data": [
     {
@@ -1264,7 +1264,7 @@
     },
     {
       "date": "2025-07-01",
-      "value": 4291.558
+      "value": 4293.474
     }
   ]
 }
