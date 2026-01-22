@@ -3,8 +3,8 @@
   "name": "Manufacturing Construction Spending",
   "description": "Construction spending in manufacturing sector",
   "units": "Millions of Dollars",
-  "last_updated": "2026-01-19 20:55:10",
-  "data_points": 392,
+  "last_updated": "2026-01-22 13:00:29",
+  "data_points": 394,
   "data": [
     {
       "date": "1993-01-01",
@@ -1568,11 +1568,19 @@
     },
     {
       "date": "2025-07-01",
-      "value": 221230.0
+      "value": 219381.0
     },
     {
       "date": "2025-08-01",
-      "value": 218947.0
+      "value": 217731.0
+    },
+    {
+      "date": "2025-09-01",
+      "value": 215048.0
+    },
+    {
+      "date": "2025-10-01",
+      "value": 213052.0
     }
   ]
 }
