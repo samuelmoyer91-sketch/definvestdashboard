@@ -6,6 +6,12 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 import os
 
+# Import sqlalchemy_libsql to register the libsql dialect
+try:
+    import sqlalchemy_libsql
+except ImportError:
+    pass  # Not required for local SQLite
+
 Base = declarative_base()
 
 # Turso/LibSQL connection cache
@@ -172,20 +178,21 @@ def get_engine(db_path='databases/tracker.db'):
         if _turso_engine is not None:
             return _turso_engine
 
-        # Convert libsql:// URL to the format sqlalchemy-libsql expects
-        # libsql://db-name.turso.io -> libsql+sqlite://db-name.turso.io
-        if turso_url.startswith('libsql://'):
-            connection_url = turso_url.replace('libsql://', 'libsql+sqlite://')
-        else:
-            connection_url = turso_url
+        import libsql_experimental as libsql
 
-        # Add auth token to URL
-        if '?' in connection_url:
-            connection_url += f'&authToken={turso_token}'
-        else:
-            connection_url += f'?authToken={turso_token}'
+        # Create connection factory for SQLAlchemy
+        def get_libsql_connection():
+            return libsql.connect(
+                'defense-tracker',
+                sync_url=turso_url,
+                auth_token=turso_token
+            )
 
-        _turso_engine = create_engine(connection_url, echo=False)
+        _turso_engine = create_engine(
+            'sqlite+libsql://',
+            creator=get_libsql_connection,
+            echo=False
+        )
         Base.metadata.create_all(_turso_engine)
         return _turso_engine
     else:
