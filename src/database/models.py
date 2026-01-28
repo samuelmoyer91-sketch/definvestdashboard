@@ -1,7 +1,7 @@
 """Database models for the Defense Capital Tracker."""
 
 from datetime import datetime
-from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, Boolean, Float, ForeignKey
+from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, Boolean, Float, ForeignKey, text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 import os
@@ -180,27 +180,42 @@ def get_engine(db_path='databases/tracker.db'):
 
         import libsql_experimental as libsql
 
-        # Convert libsql:// to https:// for HTTP-based connection (more compatible)
+        # Clean up URL - remove any whitespace that might have been copied
+        turso_url = turso_url.strip()
+        turso_token = turso_token.strip()
+
+        # Try libsql:// first, fall back to https:// if it fails
+        urls_to_try = [turso_url]
         if turso_url.startswith('libsql://'):
-            http_url = turso_url.replace('libsql://', 'https://')
-        else:
-            http_url = turso_url
+            urls_to_try.append(turso_url.replace('libsql://', 'https://'))
 
-        # Create connection factory for SQLAlchemy
-        def get_libsql_connection():
-            return libsql.connect(
-                'defense-tracker',
-                sync_url=http_url,
-                auth_token=turso_token
-            )
+        last_error = None
+        for url in urls_to_try:
+            try:
+                def get_libsql_connection(sync_url=url):
+                    return libsql.connect(
+                        'defense-tracker',
+                        sync_url=sync_url,
+                        auth_token=turso_token
+                    )
 
-        _turso_engine = create_engine(
-            'sqlite+libsql://',
-            creator=get_libsql_connection,
-            echo=False
-        )
-        Base.metadata.create_all(_turso_engine)
-        return _turso_engine
+                _turso_engine = create_engine(
+                    'sqlite+libsql://',
+                    creator=get_libsql_connection,
+                    echo=False
+                )
+                # Test the connection
+                with _turso_engine.connect() as conn:
+                    conn.execute(text("SELECT 1"))
+                Base.metadata.create_all(_turso_engine)
+                return _turso_engine
+            except Exception as e:
+                last_error = e
+                _turso_engine = None
+                continue
+
+        # If all URLs failed, raise the last error
+        raise last_error
     else:
         # Fall back to local SQLite
         os.makedirs(os.path.dirname(db_path), exist_ok=True)
