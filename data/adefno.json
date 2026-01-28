@@ -3,8 +3,8 @@
   "name": "Manufacturers' New Orders: Defense Aircraft",
   "description": "Defense aircraft orders",
   "units": "Millions of Dollars",
-  "last_updated": "2026-01-22 13:00:28",
-  "data_points": 405,
+  "last_updated": "2026-01-27 20:37:57",
+  "data_points": 406,
   "data": [
     {
       "date": "1992-02-01",
@@ -1624,7 +1624,11 @@
     },
     {
       "date": "2025-10-01",
-      "value": 17663.0
+      "value": 17282.0
+    },
+    {
+      "date": "2025-11-01",
+      "value": 14815.0
     }
   ]
 }
