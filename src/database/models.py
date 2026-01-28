@@ -180,11 +180,17 @@ def get_engine(db_path='databases/tracker.db'):
 
         import libsql_experimental as libsql
 
+        # Convert libsql:// to https:// for HTTP-based connection (more compatible)
+        if turso_url.startswith('libsql://'):
+            http_url = turso_url.replace('libsql://', 'https://')
+        else:
+            http_url = turso_url
+
         # Create connection factory for SQLAlchemy
         def get_libsql_connection():
             return libsql.connect(
                 'defense-tracker',
-                sync_url=turso_url,
+                sync_url=http_url,
                 auth_token=turso_token
             )
 
