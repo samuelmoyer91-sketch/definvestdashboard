@@ -3,9 +3,9 @@
   "name": "10-Year Treasury Constant Maturity Rate",
   "description": "10-Year Treasury Yield",
   "units": "Percent",
-  "last_updated": "2026-01-22 13:00:32",
-  "data_points": 15996,
-  "latest_value": 4.3,
+  "last_updated": "2026-01-27 20:38:00",
+  "data_points": 16000,
+  "latest_value": 4.22,
   "data": [
     {
       "date": "1962-01-02",
@@ -63990,6 +63990,22 @@
     {
       "date": "2026-01-20",
       "value": 4.3
+    },
+    {
+      "date": "2026-01-21",
+      "value": 4.26
+    },
+    {
+      "date": "2026-01-22",
+      "value": 4.26
+    },
+    {
+      "date": "2026-01-23",
+      "value": 4.24
+    },
+    {
+      "date": "2026-01-26",
+      "value": 4.22
     }
   ]
 }

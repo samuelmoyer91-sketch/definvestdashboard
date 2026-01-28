@@ -1,14 +1,14 @@
 {
-  "last_updated": "2026-01-22 13:00:29",
+  "last_updated": "2026-01-27 20:37:57",
   "series_count": 10,
   "series": {
     "FDEFX": 315,
     "DRTSCILM": 143,
-    "DGORDER": 405,
+    "DGORDER": 406,
     "INDPRO": 1284,
     "PNFI": 315,
-    "ADEFNO": 405,
-    "ADAPNO": 405,
+    "ADEFNO": 406,
+    "ADAPNO": 406,
     "GPDI": 315,
     "PRMFGCONS": 394,
     "IPB52300S": 948
