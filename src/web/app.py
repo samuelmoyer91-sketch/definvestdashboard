@@ -22,17 +22,9 @@ app = FastAPI(title="Defense Capital Tracker")
 @app.get("/health")
 async def health_check():
     """Health check endpoint for Railway/container orchestration."""
-    try:
-        session = get_session()
-        # Quick DB connectivity test
-        session.execute("SELECT 1")
-        session.close()
-        return {"status": "healthy", "database": "connected"}
-    except Exception as e:
-        return JSONResponse(
-            status_code=503,
-            content={"status": "unhealthy", "error": str(e)}
-        )
+    # Simple health check - just verify the app is running
+    # Database connectivity is checked on actual requests
+    return {"status": "healthy"}
 
 
 @app.get("/api/action")
