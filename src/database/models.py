@@ -8,6 +8,9 @@ import os
 
 Base = declarative_base()
 
+# Turso/LibSQL connection cache
+_turso_engine = None
+
 
 class RawItem(Base):
     """Raw RSS feed items."""
@@ -20,7 +23,11 @@ class RawItem(Base):
     published_date = Column(DateTime)
     feed_source = Column(String)  # Which Google Alert feed
     date_found = Column(DateTime, default=datetime.utcnow)
-    status = Column(String, default='new')  # new, scraped, failed
+    status = Column(String, default='new')  # new, scraped, failed, auto_rejected
+
+    # Relevance scoring (added 2026-01-22)
+    relevance_score = Column(Float)  # 0.0-1.0, based on keyword matching
+    relevance_flags = Column(Text)   # Comma-separated list of matched keywords
 
     # Relationships
     article = relationship("ArticleContent", back_populates="raw_item", uselist=False)
@@ -150,13 +157,43 @@ class RejectedItem(Base):
 
 # Database setup
 def get_engine(db_path='databases/tracker.db'):
-    """Create and return database engine."""
-    # Ensure data directory exists
-    os.makedirs(os.path.dirname(db_path), exist_ok=True)
+    """Create and return database engine.
 
-    engine = create_engine(f'sqlite:///{db_path}', echo=False)
-    Base.metadata.create_all(engine)
-    return engine
+    Supports both local SQLite and cloud Turso database.
+    Set TURSO_DATABASE_URL and TURSO_AUTH_TOKEN env vars for cloud mode.
+    """
+    global _turso_engine
+
+    turso_url = os.environ.get('TURSO_DATABASE_URL')
+    turso_token = os.environ.get('TURSO_AUTH_TOKEN')
+
+    if turso_url and turso_token:
+        # Use Turso cloud database
+        if _turso_engine is not None:
+            return _turso_engine
+
+        # Convert libsql:// URL to the format sqlalchemy-libsql expects
+        # libsql://db-name.turso.io -> libsql+sqlite://db-name.turso.io
+        if turso_url.startswith('libsql://'):
+            connection_url = turso_url.replace('libsql://', 'libsql+sqlite://')
+        else:
+            connection_url = turso_url
+
+        # Add auth token to URL
+        if '?' in connection_url:
+            connection_url += f'&authToken={turso_token}'
+        else:
+            connection_url += f'?authToken={turso_token}'
+
+        _turso_engine = create_engine(connection_url, echo=False)
+        Base.metadata.create_all(_turso_engine)
+        return _turso_engine
+    else:
+        # Fall back to local SQLite
+        os.makedirs(os.path.dirname(db_path), exist_ok=True)
+        engine = create_engine(f'sqlite:///{db_path}', echo=False)
+        Base.metadata.create_all(engine)
+        return engine
 
 
 def get_session(db_path='databases/tracker.db'):

@@ -1,0 +1,82 @@
+name: Process RSS Feeds & Send Digest
+
+on:
+  # Run Tuesday and Friday at 9am UTC (adjust for your timezone)
+  schedule:
+    - cron: '0 9 * * 2,5'  # Tuesday and Friday at 9:00 UTC
+
+  # Allow manual trigger
+  workflow_dispatch:
+
+jobs:
+  process-feeds:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Stage 1 - Fetch RSS feeds
+        env:
+          TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+        run: |
+          echo "📥 Fetching RSS feeds..."
+          python src/ingest/rss_fetcher.py
+          echo "✓ RSS fetch complete"
+
+      - name: Stage 2 - Scrape article content
+        env:
+          TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+        run: |
+          echo "🌐 Scraping article content..."
+          python src/scraper/article_scraper.py
+          echo "✓ Scraping complete"
+
+      - name: Stage 3 - Generate AI summaries
+        env:
+          TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          echo "🤖 Generating AI summaries..."
+          python src/scraper/generate_ai_summaries.py --limit 20
+          echo "✓ AI summaries complete"
+
+      - name: Stage 4 - Send email digest
+        env:
+          TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+          GMAIL_ADDRESS: ${{ secrets.GMAIL_ADDRESS }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          EMAIL_ACTION_SECRET: ${{ secrets.EMAIL_ACTION_SECRET }}
+          DIGEST_RECIPIENT: ${{ secrets.DIGEST_RECIPIENT }}
+          APP_BASE_URL: ${{ secrets.APP_BASE_URL }}
+        run: |
+          echo "📧 Sending email digest..."
+          python -m src.notifications.send_digest --limit 20
+          echo "✓ Email digest sent"
+
+      - name: Summary
+        run: |
+          echo ""
+          echo "============================================"
+          echo "✅ Feed processing complete!"
+          echo "============================================"
+          echo ""
+          echo "Next steps:"
+          echo "  1. Check your email for the digest"
+          echo "  2. Approve/reject items via email links"
+          echo "  3. Or open the triage UI for detailed review"

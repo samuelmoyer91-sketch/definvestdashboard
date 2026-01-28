@@ -1,7 +1,7 @@
 """FastAPI web application for triage and dashboard."""
 
-from fastapi import FastAPI, Request, Form
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi import FastAPI, Request, Form, Query
+from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 import sys
@@ -13,6 +13,156 @@ sys.path.append(str(Path(__file__).parent.parent.parent))
 from src.database import RawItem, ArticleContent, AIExtraction, MasterItem, RejectedItem, get_session
 
 app = FastAPI(title="Defense Capital Tracker")
+
+
+# =============================================================================
+# Health & API Endpoints for Cloud Deployment
+# =============================================================================
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for Railway/container orchestration."""
+    try:
+        session = get_session()
+        # Quick DB connectivity test
+        session.execute("SELECT 1")
+        session.close()
+        return {"status": "healthy", "database": "connected"}
+    except Exception as e:
+        return JSONResponse(
+            status_code=503,
+            content={"status": "unhealthy", "error": str(e)}
+        )
+
+
+@app.get("/api/action")
+async def email_action(request: Request, token: str = Query(...)):
+    """Handle approve/reject actions from email links.
+
+    Token format: {item_id}:{action}:{timestamp}:{signature}
+    """
+    from src.notifications.email_sender import verify_action_token
+
+    valid, item_id, action, error = verify_action_token(token)
+
+    if not valid:
+        return HTMLResponse(
+            content=f"""
+            <html>
+            <head><title>Action Failed</title></head>
+            <body style="font-family:sans-serif;text-align:center;padding:50px;">
+                <h1 style="color:#f44336;">❌ Action Failed</h1>
+                <p>{error or 'Invalid token'}</p>
+                <p><a href="/">Return to triage interface</a></p>
+            </body>
+            </html>
+            """,
+            status_code=400
+        )
+
+    session = get_session()
+
+    try:
+        # Check item exists
+        item = session.query(RawItem).filter_by(id=item_id).first()
+        if not item:
+            return HTMLResponse(
+                content="""
+                <html>
+                <head><title>Item Not Found</title></head>
+                <body style="font-family:sans-serif;text-align:center;padding:50px;">
+                    <h1 style="color:#ff9800;">⚠️ Item Not Found</h1>
+                    <p>This item may have already been processed.</p>
+                    <p><a href="/">Return to triage interface</a></p>
+                </body>
+                </html>
+                """,
+                status_code=404
+            )
+
+        if action == 'approve':
+            # Check if already approved
+            existing = session.query(MasterItem).filter_by(item_id=item_id).first()
+            if not existing:
+                # Get AI extraction for default values
+                extraction = session.query(AIExtraction).filter_by(item_id=item_id).first()
+
+                master = MasterItem(
+                    item_id=item_id,
+                    company=extraction.company if extraction else None,
+                    investors=extraction.investors if extraction else None,
+                    investment_amount=extraction.deal_amount if extraction else None,
+                    transaction_type=extraction.transaction_type if extraction else None,
+                    capital_sources=extraction.capital_sources if extraction else None,
+                    sectors=extraction.sectors if extraction else None,
+                    summary=extraction.strategic_significance if extraction else None,
+                    human_notes="Approved via email",
+                    published=False
+                )
+                session.add(master)
+                session.commit()
+
+            return HTMLResponse(
+                content=f"""
+                <html>
+                <head><title>Approved</title></head>
+                <body style="font-family:sans-serif;text-align:center;padding:50px;">
+                    <h1 style="color:#4caf50;">✅ Approved</h1>
+                    <p><strong>{item.title[:80]}...</strong></p>
+                    <p>Added to master list for publication.</p>
+                    <p><a href="/item/{item_id}">View details</a> | <a href="/">Return to triage</a></p>
+                </body>
+                </html>
+                """
+            )
+
+        elif action == 'reject':
+            # Check if already rejected
+            existing = session.query(RejectedItem).filter_by(item_id=item_id).first()
+            if not existing:
+                rejected = RejectedItem(
+                    item_id=item_id,
+                    rejection_reason="Rejected via email"
+                )
+                session.add(rejected)
+                session.commit()
+
+            return HTMLResponse(
+                content=f"""
+                <html>
+                <head><title>Rejected</title></head>
+                <body style="font-family:sans-serif;text-align:center;padding:50px;">
+                    <h1 style="color:#f44336;">❌ Rejected</h1>
+                    <p><strong>{item.title[:80]}...</strong></p>
+                    <p>Removed from triage queue.</p>
+                    <p><a href="/">Return to triage</a></p>
+                </body>
+                </html>
+                """
+            )
+
+    finally:
+        session.close()
+
+
+@app.post("/api/telegram-webhook")
+async def telegram_webhook(request: Request):
+    """Handle incoming Telegram bot updates."""
+    from src.notifications.telegram_bot import handle_telegram_update
+
+    try:
+        update = await request.json()
+        response = handle_telegram_update(update)
+
+        # If response has a method, it's a Telegram API response format
+        if response.get('method'):
+            return JSONResponse(content=response)
+        else:
+            return JSONResponse(content={'ok': True})
+
+    except Exception as e:
+        print(f"Telegram webhook error: {e}")
+        return JSONResponse(content={'ok': True})
 
 # Setup templates
 templates_dir = Path(__file__).parent / "templates"
