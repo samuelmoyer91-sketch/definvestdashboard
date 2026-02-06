@@ -1,5 +1,7 @@
 """FastAPI web application for triage and dashboard."""
 
+import logging
+import os
 from fastapi import FastAPI, Request, Form, Query
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -7,6 +9,9 @@ from fastapi.templating import Jinja2Templates
 import sys
 from pathlib import Path
 from datetime import datetime
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
@@ -16,15 +21,73 @@ app = FastAPI(title="Defense Capital Tracker")
 
 
 # =============================================================================
+# Global Exception Handler
+# =============================================================================
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    """Return a styled error page instead of raw 500."""
+    logger.error(f"Unhandled error on {request.url.path}: {type(exc).__name__}: {exc}")
+    return HTMLResponse(
+        content=f"""
+        <html>
+        <head><title>Server Error</title></head>
+        <body style="font-family:sans-serif;text-align:center;padding:50px;">
+            <h1 style="color:#f44336;">Server Error</h1>
+            <p><strong>{type(exc).__name__}</strong>: {exc}</p>
+            <p style="color:#666;font-size:0.9em;">Check Railway logs for full traceback.</p>
+            <p><a href="/">Return to home</a></p>
+        </body>
+        </html>
+        """,
+        status_code=500
+    )
+
+
+# =============================================================================
 # Health & API Endpoints for Cloud Deployment
 # =============================================================================
 
 @app.get("/health")
 async def health_check():
     """Health check endpoint for Railway/container orchestration."""
-    # Simple health check - just verify the app is running
-    # Database connectivity is checked on actual requests
     return {"status": "healthy"}
+
+
+@app.get("/api/diagnostics")
+async def diagnostics():
+    """Diagnostics endpoint to check env vars, DB connection, and record counts."""
+    required_vars = ["TURSO_DATABASE_URL", "TURSO_AUTH_TOKEN", "EMAIL_ACTION_SECRET"]
+    env_status = {var: bool(os.environ.get(var)) for var in required_vars}
+
+    db_ok = False
+    db_error = None
+    counts = {}
+    try:
+        session = get_session()
+        try:
+            counts = {
+                "raw_items": session.query(RawItem).count(),
+                "articles": session.query(ArticleContent).count(),
+                "ai_extractions": session.query(AIExtraction).count(),
+                "master_list": session.query(MasterItem).count(),
+                "rejected": session.query(RejectedItem).count(),
+            }
+            db_ok = True
+        finally:
+            session.close()
+    except Exception as e:
+        db_error = f"{type(e).__name__}: {e}"
+        logger.error(f"Diagnostics DB check failed: {db_error}")
+
+    overall = "healthy" if db_ok and all(env_status.values()) else "unhealthy"
+
+    return {
+        "overall": overall,
+        "env_vars": env_status,
+        "database": {"connected": db_ok, "error": db_error},
+        "counts": counts,
+    }
 
 
 @app.get("/api/action")
@@ -43,7 +106,7 @@ async def email_action(request: Request, token: str = Query(...)):
             <html>
             <head><title>Action Failed</title></head>
             <body style="font-family:sans-serif;text-align:center;padding:50px;">
-                <h1 style="color:#f44336;">❌ Action Failed</h1>
+                <h1 style="color:#f44336;">Action Failed</h1>
                 <p>{error or 'Invalid token'}</p>
                 <p><a href="/">Return to triage interface</a></p>
             </body>
@@ -52,7 +115,23 @@ async def email_action(request: Request, token: str = Query(...)):
             status_code=400
         )
 
-    session = get_session()
+    try:
+        session = get_session()
+    except Exception as e:
+        logger.error(f"Database connection failed in /api/action: {e}")
+        return HTMLResponse(
+            content=f"""
+            <html>
+            <head><title>Database Error</title></head>
+            <body style="font-family:sans-serif;text-align:center;padding:50px;">
+                <h1 style="color:#f44336;">Database Connection Error</h1>
+                <p>Could not connect to the database. Please try again later.</p>
+                <p style="color:#666;font-size:0.9em;">{type(e).__name__}: {e}</p>
+            </body>
+            </html>
+            """,
+            status_code=503
+        )
 
     try:
         # Check item exists
@@ -63,7 +142,7 @@ async def email_action(request: Request, token: str = Query(...)):
                 <html>
                 <head><title>Item Not Found</title></head>
                 <body style="font-family:sans-serif;text-align:center;padding:50px;">
-                    <h1 style="color:#ff9800;">⚠️ Item Not Found</h1>
+                    <h1 style="color:#ff9800;">Item Not Found</h1>
                     <p>This item may have already been processed.</p>
                     <p><a href="/">Return to triage interface</a></p>
                 </body>
@@ -99,7 +178,7 @@ async def email_action(request: Request, token: str = Query(...)):
                 <html>
                 <head><title>Approved</title></head>
                 <body style="font-family:sans-serif;text-align:center;padding:50px;">
-                    <h1 style="color:#4caf50;">✅ Approved</h1>
+                    <h1 style="color:#4caf50;">Approved</h1>
                     <p><strong>{item.title[:80]}...</strong></p>
                     <p>Added to master list for publication.</p>
                     <p><a href="/item/{item_id}">View details</a> | <a href="/">Return to triage</a></p>
@@ -124,7 +203,7 @@ async def email_action(request: Request, token: str = Query(...)):
                 <html>
                 <head><title>Rejected</title></head>
                 <body style="font-family:sans-serif;text-align:center;padding:50px;">
-                    <h1 style="color:#f44336;">❌ Rejected</h1>
+                    <h1 style="color:#f44336;">Rejected</h1>
                     <p><strong>{item.title[:80]}...</strong></p>
                     <p>Removed from triage queue.</p>
                     <p><a href="/">Return to triage</a></p>
@@ -153,7 +232,7 @@ async def telegram_webhook(request: Request):
             return JSONResponse(content={'ok': True})
 
     except Exception as e:
-        print(f"Telegram webhook error: {e}")
+        logger.error(f"Telegram webhook error: {e}")
         return JSONResponse(content={'ok': True})
 
 # Setup templates
@@ -167,40 +246,41 @@ async def home(request: Request):
     """Home page showing triage queue."""
     session = get_session()
 
-    # Get items that:
-    # 1. Have been successfully scraped
-    # 2. Are not yet in master list
-    # 3. Have not been rejected
-    items = session.query(RawItem).join(
-        ArticleContent, RawItem.id == ArticleContent.item_id
-    ).filter(
-        ArticleContent.scrape_success == True,
-        ~RawItem.id.in_(
-            session.query(MasterItem.item_id)
-        ),
-        ~RawItem.id.in_(
-            session.query(RejectedItem.item_id)
-        )
-    ).order_by(
-        RawItem.published_date.desc()
-    ).limit(50).all()
+    try:
+        # Get items that:
+        # 1. Have been successfully scraped
+        # 2. Are not yet in master list
+        # 3. Have not been rejected
+        items = session.query(RawItem).join(
+            ArticleContent, RawItem.id == ArticleContent.item_id
+        ).filter(
+            ArticleContent.scrape_success == True,
+            ~RawItem.id.in_(
+                session.query(MasterItem.item_id)
+            ),
+            ~RawItem.id.in_(
+                session.query(RejectedItem.item_id)
+            )
+        ).order_by(
+            RawItem.published_date.desc()
+        ).limit(50).all()
 
-    # Add article content and AI extraction to each item
-    for item in items:
-        item.article_content = session.query(ArticleContent).filter_by(item_id=item.id).first()
-        item.ai_extraction = session.query(AIExtraction).filter_by(item_id=item.id).first()
+        # Add article content and AI extraction to each item
+        for item in items:
+            item.article_content = session.query(ArticleContent).filter_by(item_id=item.id).first()
+            item.ai_extraction = session.query(AIExtraction).filter_by(item_id=item.id).first()
 
-    total_items = len(items)
-    master_count = session.query(MasterItem).count()
+        total_items = len(items)
+        master_count = session.query(MasterItem).count()
 
-    session.close()
-
-    return templates.TemplateResponse("triage.html", {
-        "request": request,
-        "items": items,
-        "total_items": total_items,
-        "master_count": master_count
-    })
+        return templates.TemplateResponse("triage.html", {
+            "request": request,
+            "items": items,
+            "total_items": total_items,
+            "master_count": master_count
+        })
+    finally:
+        session.close()
 
 
 @app.get("/item/{item_id}", response_class=HTMLResponse)
@@ -208,20 +288,21 @@ async def view_item(request: Request, item_id: int):
     """View full item details."""
     session = get_session()
 
-    item = session.query(RawItem).filter_by(id=item_id).first()
-    article = session.query(ArticleContent).filter_by(item_id=item_id).first()
-    ai_extraction = session.query(AIExtraction).filter_by(item_id=item_id).first()
-    master = session.query(MasterItem).filter_by(item_id=item_id).first()
+    try:
+        item = session.query(RawItem).filter_by(id=item_id).first()
+        article = session.query(ArticleContent).filter_by(item_id=item_id).first()
+        ai_extraction = session.query(AIExtraction).filter_by(item_id=item_id).first()
+        master = session.query(MasterItem).filter_by(item_id=item_id).first()
 
-    session.close()
-
-    return templates.TemplateResponse("item_detail.html", {
-        "request": request,
-        "item": item,
-        "article": article,
-        "ai_extraction": ai_extraction,
-        "master": master
-    })
+        return templates.TemplateResponse("item_detail.html", {
+            "request": request,
+            "item": item,
+            "article": article,
+            "ai_extraction": ai_extraction,
+            "master": master
+        })
+    finally:
+        session.close()
 
 
 @app.post("/accept/{item_id}")
@@ -245,35 +326,36 @@ async def accept_item(
     """Accept item and add to master list."""
     session = get_session()
 
-    # Check if already in master
-    existing = session.query(MasterItem).filter_by(item_id=item_id).first()
+    try:
+        # Check if already in master
+        existing = session.query(MasterItem).filter_by(item_id=item_id).first()
 
-    if not existing:
-        master = MasterItem(
-            item_id=item_id,
-            company=company if company else None,
-            investors=investors if investors else None,
-            investment_amount=investment_amount if investment_amount else None,
-            # NEW fields
-            transaction_type=transaction_type if transaction_type else None,
-            capital_sources=",".join(capital_sources) if capital_sources else None,
-            sectors=",".join(sectors) if sectors else None,
-            # OLD fields (for backward compatibility)
-            deal_type=deal_type if deal_type else None,
-            capital_type=capital_type if capital_type else None,
-            sector=sector if sector else None,
-            project_type=project_type if project_type else None,
-            location=location if location else None,
-            summary=summary if summary else None,
-            human_notes=notes if notes else None,
-            published=False
-        )
-        session.add(master)
-        session.commit()
+        if not existing:
+            master = MasterItem(
+                item_id=item_id,
+                company=company if company else None,
+                investors=investors if investors else None,
+                investment_amount=investment_amount if investment_amount else None,
+                # NEW fields
+                transaction_type=transaction_type if transaction_type else None,
+                capital_sources=",".join(capital_sources) if capital_sources else None,
+                sectors=",".join(sectors) if sectors else None,
+                # OLD fields (for backward compatibility)
+                deal_type=deal_type if deal_type else None,
+                capital_type=capital_type if capital_type else None,
+                sector=sector if sector else None,
+                project_type=project_type if project_type else None,
+                location=location if location else None,
+                summary=summary if summary else None,
+                human_notes=notes if notes else None,
+                published=False
+            )
+            session.add(master)
+            session.commit()
 
-    session.close()
-
-    return RedirectResponse(url="/", status_code=303)
+        return RedirectResponse(url="/", status_code=303)
+    finally:
+        session.close()
 
 
 @app.post("/reject/{item_id}")
@@ -281,44 +363,44 @@ async def reject_item(item_id: int):
     """Reject item and remove from triage queue."""
     session = get_session()
 
-    # Check if already rejected
-    existing = session.query(RejectedItem).filter_by(item_id=item_id).first()
+    try:
+        # Check if already rejected
+        existing = session.query(RejectedItem).filter_by(item_id=item_id).first()
 
-    if not existing:
-        rejected = RejectedItem(item_id=item_id)
-        session.add(rejected)
-        session.commit()
+        if not existing:
+            rejected = RejectedItem(item_id=item_id)
+            session.add(rejected)
+            session.commit()
 
-    session.close()
-
-    return RedirectResponse(url="/", status_code=303)
+        return RedirectResponse(url="/", status_code=303)
+    finally:
+        session.close()
 
 
 @app.get("/master", response_class=HTMLResponse)
 async def master_list(request: Request):
     """View master list of accepted items."""
-    from src.database import AIExtraction
-
     session = get_session()
 
-    master_items = session.query(MasterItem).join(
-        RawItem, MasterItem.item_id == RawItem.id
-    ).order_by(
-        MasterItem.curated_at.desc()
-    ).all()
+    try:
+        master_items = session.query(MasterItem).join(
+            RawItem, MasterItem.item_id == RawItem.id
+        ).order_by(
+            MasterItem.curated_at.desc()
+        ).all()
 
-    # Add raw item data and pipeline status
-    for master in master_items:
-        master.raw_item = session.query(RawItem).filter_by(id=master.item_id).first()
-        master.article_content = session.query(ArticleContent).filter_by(item_id=master.item_id).first()
-        master.ai_extraction = session.query(AIExtraction).filter_by(item_id=master.item_id).first()
+        # Add raw item data and pipeline status
+        for master in master_items:
+            master.raw_item = session.query(RawItem).filter_by(id=master.item_id).first()
+            master.article_content = session.query(ArticleContent).filter_by(item_id=master.item_id).first()
+            master.ai_extraction = session.query(AIExtraction).filter_by(item_id=master.item_id).first()
 
-    session.close()
-
-    return templates.TemplateResponse("master.html", {
-        "request": request,
-        "items": master_items
-    })
+        return templates.TemplateResponse("master.html", {
+            "request": request,
+            "items": master_items
+        })
+    finally:
+        session.close()
 
 
 @app.get("/rejected", response_class=HTMLResponse)
@@ -326,23 +408,24 @@ async def rejected_list(request: Request):
     """View rejected items."""
     session = get_session()
 
-    rejected_items = session.query(RejectedItem).join(
-        RawItem, RejectedItem.item_id == RawItem.id
-    ).order_by(
-        RejectedItem.rejected_at.desc()
-    ).all()
+    try:
+        rejected_items = session.query(RejectedItem).join(
+            RawItem, RejectedItem.item_id == RawItem.id
+        ).order_by(
+            RejectedItem.rejected_at.desc()
+        ).all()
 
-    # Add raw item data and pipeline status
-    for rejected in rejected_items:
-        rejected.raw_item = session.query(RawItem).filter_by(id=rejected.item_id).first()
-        rejected.article_content = session.query(ArticleContent).filter_by(item_id=rejected.item_id).first()
+        # Add raw item data and pipeline status
+        for rejected in rejected_items:
+            rejected.raw_item = session.query(RawItem).filter_by(id=rejected.item_id).first()
+            rejected.article_content = session.query(ArticleContent).filter_by(item_id=rejected.item_id).first()
 
-    session.close()
-
-    return templates.TemplateResponse("rejected.html", {
-        "request": request,
-        "items": rejected_items
-    })
+        return templates.TemplateResponse("rejected.html", {
+            "request": request,
+            "items": rejected_items
+        })
+    finally:
+        session.close()
 
 
 @app.get("/stats", response_class=HTMLResponse)
@@ -352,31 +435,31 @@ async def stats(request: Request):
 
     session = get_session()
 
-    total_raw = session.query(RawItem).count()
-    total_scraped = session.query(ArticleContent).filter_by(scrape_success=True).count()
-    total_master = session.query(MasterItem).count()
+    try:
+        total_raw = session.query(RawItem).count()
+        total_scraped = session.query(ArticleContent).filter_by(scrape_success=True).count()
+        total_master = session.query(MasterItem).count()
 
-    feed_counts = session.query(
-        RawItem.feed_source,
-        func.count(RawItem.id)
-    ).group_by(RawItem.feed_source).all()
+        feed_counts = session.query(
+            RawItem.feed_source,
+            func.count(RawItem.id)
+        ).group_by(RawItem.feed_source).all()
 
-    session.close()
-
-    return templates.TemplateResponse("stats.html", {
-        "request": request,
-        "total_raw": total_raw,
-        "total_scraped": total_scraped,
-        "total_master": total_master,
-        "feed_counts": feed_counts
-    })
+        return templates.TemplateResponse("stats.html", {
+            "request": request,
+            "total_raw": total_raw,
+            "total_scraped": total_scraped,
+            "total_master": total_master,
+            "feed_counts": feed_counts
+        })
+    finally:
+        session.close()
 
 
 
 
 if __name__ == "__main__":
     import uvicorn
-    import os
 
     # Change to project root
     os.chdir(Path(__file__).parent.parent.parent)

@@ -12,10 +12,15 @@ sys.path.append(str(Path(__file__).parent.parent.parent))
 
 from src.database import RawItem, ArticleContent, get_session
 
+PROJECT_ROOT = Path(__file__).parent.parent.parent
+
 
 def load_config(config_path='config/feeds.json'):
     """Load scraping configuration."""
-    with open(config_path, 'r') as f:
+    path = Path(config_path)
+    if not path.is_absolute():
+        path = PROJECT_ROOT / path
+    with open(path, 'r') as f:
         return json.load(f)
 
 

@@ -1,10 +1,13 @@
 """Database models for the Defense Capital Tracker."""
 
+import logging
 from datetime import datetime
 from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, Boolean, Float, ForeignKey, text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 import os
+
+logger = logging.getLogger(__name__)
 
 # Import sqlalchemy_libsql to register the libsql dialect
 try:
@@ -192,9 +195,11 @@ def get_engine(db_path='databases/tracker.db'):
         last_error = None
         for url in urls_to_try:
             try:
+                logger.info(f"Attempting Turso connection to {url[:30]}...")
+
                 def get_libsql_connection(sync_url=url):
                     return libsql.connect(
-                        'defense-tracker',
+                        ':memory:',
                         sync_url=sync_url,
                         auth_token=turso_token
                     )
@@ -208,13 +213,16 @@ def get_engine(db_path='databases/tracker.db'):
                 with _turso_engine.connect() as conn:
                     conn.execute(text("SELECT 1"))
                 Base.metadata.create_all(_turso_engine)
+                logger.info("Turso connection established successfully")
                 return _turso_engine
             except Exception as e:
+                logger.warning(f"Turso connection failed with {url[:30]}...: {e}")
                 last_error = e
                 _turso_engine = None
                 continue
 
         # If all URLs failed, raise the last error
+        logger.error(f"All Turso connection attempts failed: {last_error}")
         raise last_error
     else:
         # Fall back to local SQLite

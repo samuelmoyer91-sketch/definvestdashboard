@@ -13,9 +13,15 @@ from src.database import RawItem, get_session
 from src.utils.relevance_scorer import calculate_relevance_score, should_auto_reject
 
 
+PROJECT_ROOT = Path(__file__).parent.parent.parent
+
+
 def load_config(config_path='config/feeds.json'):
     """Load RSS feed configuration."""
-    with open(config_path, 'r') as f:
+    path = Path(config_path)
+    if not path.is_absolute():
+        path = PROJECT_ROOT / path
+    with open(path, 'r') as f:
         return json.load(f)
 
 

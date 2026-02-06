@@ -9,10 +9,15 @@ import re
 import json
 from pathlib import Path
 
+PROJECT_ROOT = Path(__file__).parent.parent.parent
+
 
 def load_scoring_config(config_path='config/feeds.json'):
     """Load keyword configuration for scoring."""
-    with open(config_path, 'r') as f:
+    path = Path(config_path)
+    if not path.is_absolute():
+        path = PROJECT_ROOT / path
+    with open(path, 'r') as f:
         return json.load(f)
 
 
