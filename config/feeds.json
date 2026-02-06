@@ -1,19 +1,25 @@
 {
   "rss_feeds": [
     {
-      "name": "Defense Manufacturing",
+      "name": "Raising Capital Defense",
       "url": "https://www.google.com/alerts/feeds/09025431128020683164/4830815519505009728",
-      "enabled": true
+      "enabled": true,
+      "google_alert_query": "raising capital defense",
+      "notes": "Good feed - captures M&A deals, acquisitions, capital partners well (83% keep rate)"
     },
     {
       "name": "Private Equity Defense",
       "url": "https://www.google.com/alerts/feeds/09025431128020683164/3776232429289321661",
-      "enabled": true
+      "enabled": true,
+      "google_alert_query": "(user updated 2026-01-22)",
+      "notes": "Recently updated by user to reduce noise"
     },
     {
-      "name": "Dual-Use Tech Investments",
+      "name": "New Factory Defense Products",
       "url": "https://www.google.com/alerts/feeds/09025431128020683164/2552550775473449917",
-      "enabled": true
+      "enabled": true,
+      "google_alert_query": "new factory for defense products",
+      "notes": "Low volume (only 8 items) - query may be too narrow. Consider: (\"factory\" OR \"facility\" OR \"plant\") AND (\"defense\" OR \"aerospace\" OR \"munitions\")"
     }
   ],
   "keywords": {
@@ -22,24 +28,90 @@
       "venture capital",
       "investment",
       "funding",
+      "acquisition",
+      "merger",
+      "acquires",
+      "acquired",
+      "deal",
       "factory",
       "manufacturing",
       "facility",
       "plant",
-      "defense",
+      "defense contractor",
+      "aerospace",
       "dual-use",
       "pentagon",
       "dod",
-      "national security"
+      "national security",
+      "defense tech",
+      "space",
+      "satellite",
+      "munitions",
+      "weapons",
+      "military"
+    ],
+    "deal_indicators": [
+      "million",
+      "billion",
+      "$",
+      "series a",
+      "series b",
+      "series c",
+      "series d",
+      "ipo",
+      "spac",
+      "stake",
+      "portfolio",
+      "capital partners",
+      "backs",
+      "backed",
+      "invests",
+      "raises",
+      "raised",
+      "closes",
+      "closed",
+      "secures"
     ],
     "exclude": [
       "obituary",
       "wedding",
-      "sports"
+      "sports",
+      "maduro",
+      "venezuela",
+      "captured",
+      "arrest",
+      "trial",
+      "criminal",
+      "lawsuit",
+      "lawsuit",
+      "indictment",
+      "sentenced",
+      "pleads guilty",
+      "attorney general",
+      "self-defense",
+      "legal defense",
+      "public defender",
+      "defense attorney",
+      "criminal defense",
+      "fantasy sports",
+      "fantasy football"
     ]
+  },
+  "scoring": {
+    "auto_reject_threshold": 0.15,
+    "title_keyword_weight": 0.15,
+    "summary_keyword_weight": 0.08,
+    "deal_indicator_weight": 0.12,
+    "exclude_penalty": 0.25
   },
   "scraping": {
     "timeout_seconds": 10,
     "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
+  },
+  "google_alert_suggestions": {
+    "defense_pe_improved": "\"private equity\" AND (\"defense contractor\" OR \"aerospace\" OR \"military\") AND (\"acquisition\" OR \"investment\" OR \"million\" OR \"billion\")",
+    "defense_ma": "(\"acquisition\" OR \"merger\" OR \"acquires\") AND (\"defense\" OR \"aerospace\") AND (\"million\" OR \"billion\")",
+    "defense_vc": "\"venture capital\" AND (\"defense tech\" OR \"dual-use\" OR \"national security\") AND (\"raises\" OR \"funding\" OR \"series\")",
+    "defense_manufacturing": "(\"factory\" OR \"facility\" OR \"plant\" OR \"manufacturing\") AND (\"defense\" OR \"aerospace\" OR \"munitions\")"
   }
 }

@@ -3,6 +3,36 @@
 A professional dashboard tracking defense sector investments, industrial health, and economic indicators - designed for defense analysts, think tankers, and industry researchers.
 
 **[🔗 View Live Dashboard](https://samuelmoyer91-sketch.github.io/definvestdashboard/)**
+---
+
+## 🔄 Weekly Update Workflow
+
+Use the automated workflow script for the full process:
+
+```bash
+cd ~/Documents/Claude/"Claude - Defense PC Dashboard"
+
+# Step 1: Fetch and prepare data (automated - 2 min)
+./update_workflow.sh all
+# Fetches RSS → scrapes articles → generates AI summaries
+# Then pauses for your manual triage
+
+# Step 2: Manual triage (10-15 min)
+uvicorn src.web.app:app --reload
+# Open http://127.0.0.1:8000
+# Review AI-populated deals with collapsible cards
+# Edit company names, amounts, investors, categories, and summaries
+# Accept curated deals (what you approve is what publishes)
+# Reject irrelevant articles
+
+# Step 3: Publish and deploy (automated - 1 min)
+./update_workflow.sh publish
+# Refreshes ALL data (FRED, Yahoo Finance)
+# Generates website with new deals
+# Auto-commits and deploys to GitHub Pages
+```
+
+**Total time: ~15 minutes** (vs. 2-3 hours manual)
 
 ---
 
@@ -113,39 +143,6 @@ This dashboard provides comprehensive visibility into the defense industrial bas
 - **GitHub Pages** - Free, fast, reliable
 - **Git Version Control** - Full change history
 - **Automated Deployment** - Push to update in 30 seconds
-
----
-
-## 🔄 Weekly Update Workflow
-
-### ⭐ Recommended: Complete Update with New Deals
-
-Use the automated workflow script for the full process:
-
-```bash
-cd ~/Documents/Claude/"Claude - Defense PC Dashboard"
-
-# Step 1: Fetch and prepare data (automated - 2 min)
-./update_workflow.sh all
-# Fetches RSS → scrapes articles → generates AI summaries
-# Then pauses for your manual triage
-
-# Step 2: Manual triage (10-15 min)
-uvicorn src.web.app:app --reload
-# Open http://127.0.0.1:8000
-# Review AI-populated deals with collapsible cards
-# Edit company names, amounts, investors, categories, and summaries
-# Accept curated deals (what you approve is what publishes)
-# Reject irrelevant articles
-
-# Step 3: Publish and deploy (automated - 1 min)
-./update_workflow.sh publish
-# Refreshes ALL data (FRED, Yahoo Finance)
-# Generates website with new deals
-# Auto-commits and deploys to GitHub Pages
-```
-
-**Total time: ~15 minutes** (vs. 2-3 hours manual)
 
 ---
 

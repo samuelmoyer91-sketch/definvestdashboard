@@ -10,6 +10,7 @@ import sys
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
 from src.database import RawItem, get_session
+from src.utils.relevance_scorer import calculate_relevance_score, should_auto_reject
 
 
 def load_config(config_path='config/feeds.json'):
@@ -49,10 +50,11 @@ def parse_feed(feed_url, feed_name):
     return entries
 
 
-def save_to_database(entries, session):
-    """Save RSS entries to database (skip duplicates)."""
+def save_to_database(entries, session, config=None):
+    """Save RSS entries to database with relevance scoring (skip duplicates)."""
     new_count = 0
     duplicate_count = 0
+    auto_rejected_count = 0
 
     for entry in entries:
         # Check if URL already exists
@@ -62,27 +64,47 @@ def save_to_database(entries, session):
             duplicate_count += 1
             continue
 
-        # Create new item
+        # Calculate relevance score
+        score, matched_keywords, exclude_matched = calculate_relevance_score(
+            entry['title'],
+            entry['summary'],
+            config
+        )
+
+        # Check if should auto-reject
+        reject, reject_reason = should_auto_reject(score, matched_keywords, exclude_matched)
+
+        if reject:
+            status = 'auto_rejected'
+            auto_rejected_count += 1
+            print(f"  ⊘ Auto-rejected: {entry['title'][:50]}...")
+            print(f"    Reason: {reject_reason}")
+        else:
+            status = 'new'
+
+        # Create new item with relevance data
         raw_item = RawItem(
             url=entry['url'],
             title=entry['title'],
             rss_summary=entry['summary'],
             published_date=entry['published'],
             feed_source=entry['feed_source'],
-            status='new'
+            status=status,
+            relevance_score=score,
+            relevance_flags=','.join(matched_keywords) if matched_keywords else None
         )
 
         session.add(raw_item)
         new_count += 1
 
     session.commit()
-    print(f"Saved {new_count} new items, skipped {duplicate_count} duplicates")
+    print(f"Saved {new_count} new items ({auto_rejected_count} auto-rejected), skipped {duplicate_count} duplicates")
 
-    return new_count, duplicate_count
+    return new_count, duplicate_count, auto_rejected_count
 
 
 def fetch_all_feeds(config_path='config/feeds.json', db_path='databases/tracker.db'):
-    """Fetch all enabled RSS feeds and save to database."""
+    """Fetch all enabled RSS feeds and save to database with relevance filtering."""
     print("=" * 60)
     print("Defense Capital Tracker - RSS Ingestion")
     print("=" * 60)
@@ -96,6 +118,7 @@ def fetch_all_feeds(config_path='config/feeds.json', db_path='databases/tracker.
 
     total_new = 0
     total_duplicates = 0
+    total_auto_rejected = 0
 
     # Fetch each feed
     for feed_config in config['rss_feeds']:
@@ -105,19 +128,20 @@ def fetch_all_feeds(config_path='config/feeds.json', db_path='databases/tracker.
 
         print()
         entries = parse_feed(feed_config['url'], feed_config['name'])
-        new, dupes = save_to_database(entries, session)
+        new, dupes, rejected = save_to_database(entries, session, config)
 
         total_new += new
         total_duplicates += dupes
+        total_auto_rejected += rejected
 
     print()
     print("=" * 60)
-    print(f"SUMMARY: {total_new} new items, {total_duplicates} duplicates")
+    print(f"SUMMARY: {total_new} new items ({total_auto_rejected} auto-rejected), {total_duplicates} duplicates")
     print("=" * 60)
 
     session.close()
 
-    return total_new, total_duplicates
+    return total_new, total_duplicates, total_auto_rejected
 
 
 if __name__ == '__main__':
