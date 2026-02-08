@@ -12,12 +12,19 @@ build/
 
 # Database
 *.db
+*.db-info
+*.db-shm
+*.db-wal
+*-client_wal_index
 *.sqlite
 *.sqlite3
 defense-tracker
 defense-tracker-info
 defense-tracker-shm
 defense-tracker-wal
+:memory:
+:memory:-client_wal_index
+:memory:-info
 
 # IDE
 .vscode/

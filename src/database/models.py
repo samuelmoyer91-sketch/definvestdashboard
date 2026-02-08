@@ -177,53 +177,49 @@ def get_engine(db_path='databases/tracker.db'):
     turso_token = os.environ.get('TURSO_AUTH_TOKEN')
 
     if turso_url and turso_token:
-        # Use Turso cloud database
+        # Use Turso cloud database via embedded replica
         if _turso_engine is not None:
             return _turso_engine
 
-        import libsql_experimental as libsql
+        import libsql
 
-        # Clean up URL - remove any whitespace that might have been copied
         turso_url = turso_url.strip()
         turso_token = turso_token.strip()
 
-        # Try libsql:// first, fall back to https:// if it fails
-        urls_to_try = [turso_url]
-        if turso_url.startswith('libsql://'):
-            urls_to_try.append(turso_url.replace('libsql://', 'https://'))
+        try:
+            logger.info(f"Attempting Turso connection to {turso_url[:30]}...")
 
-        last_error = None
-        for url in urls_to_try:
-            try:
-                logger.info(f"Attempting Turso connection to {url[:30]}...")
+            class LibsqlConnectionWrapper:
+                """Wraps libsql connection to add DBAPI methods SQLAlchemy expects."""
+                def __init__(self, conn):
+                    self._conn = conn
+                def create_function(self, *args, **kwargs):
+                    pass  # SQLAlchemy calls this for REGEXP; not needed
+                def __getattr__(self, name):
+                    return getattr(self._conn, name)
 
-                def get_libsql_connection(sync_url=url):
-                    return libsql.connect(
-                        ':memory:',
-                        sync_url=sync_url,
-                        auth_token=turso_token
-                    )
+            def get_libsql_connection():
+                conn = libsql.connect('turso_replica.db',
+                    sync_url=turso_url,
+                    auth_token=turso_token)
+                conn.sync()
+                return LibsqlConnectionWrapper(conn)
 
-                _turso_engine = create_engine(
-                    'sqlite+libsql://',
-                    creator=get_libsql_connection,
-                    echo=False
-                )
-                # Test the connection
-                with _turso_engine.connect() as conn:
-                    conn.execute(text("SELECT 1"))
-                Base.metadata.create_all(_turso_engine)
-                logger.info("Turso connection established successfully")
-                return _turso_engine
-            except Exception as e:
-                logger.warning(f"Turso connection failed with {url[:30]}...: {e}")
-                last_error = e
-                _turso_engine = None
-                continue
-
-        # If all URLs failed, raise the last error
-        logger.error(f"All Turso connection attempts failed: {last_error}")
-        raise last_error
+            _turso_engine = create_engine(
+                'sqlite+libsql://',
+                creator=get_libsql_connection,
+                echo=False
+            )
+            # Test the connection
+            with _turso_engine.connect() as conn:
+                conn.execute(text("SELECT 1"))
+            Base.metadata.create_all(_turso_engine)
+            logger.info("Turso connection established successfully")
+            return _turso_engine
+        except Exception as e:
+            logger.error(f"Turso connection failed: {e}")
+            _turso_engine = None
+            raise
     else:
         # Fall back to local SQLite
         os.makedirs(os.path.dirname(db_path), exist_ok=True)
