@@ -105,11 +105,16 @@
                 Investment Amount
                 {% if ai_extraction and ai_extraction.deal_amount %}<span class="ai-badge">AI</span>{% endif %}
             </label>
-            <input type="text" name="investment_amount"
-                   value="{{ ai_extraction.deal_amount if ai_extraction and ai_extraction.deal_amount else '' }}"
-                   {% if ai_extraction and ai_extraction.deal_amount %}class="ai-populated"{% endif %}
-                   style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;"
-                   placeholder="e.g., $100M, $1.5B, Not disclosed">
+            <div style="display: flex; align-items: center;">
+                <span style="padding: 8px 12px; background: #e9ecef; border: 1px solid #ddd; border-right: none; border-radius: 4px 0 0 4px; font-size: 14px; font-weight: 600; color: #333;">$</span>
+                <input type="text" name="investment_amount" inputmode="decimal"
+                       value="{{ ai_extraction.deal_amount if ai_extraction and ai_extraction.deal_amount else '' }}"
+                       {% if ai_extraction and ai_extraction.deal_amount %}class="ai-populated"{% endif %}
+                       style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 0 4px 4px 0;"
+                       placeholder="e.g., 100,000,000"
+                       oninput="formatCurrencyInput(this)"
+                       onfocus="formatCurrencyInput(this)">
+            </div>
         </div>
 
         <div style="margin-bottom: 15px;">
@@ -192,4 +197,52 @@
         </div>
     </form>
 </div>
+
+<script>
+function parseDealAmount(value) {
+    value = value.replace(/^\$/, '').trim();
+    const shorthandMatch = value.match(/^([\d,.]+)\s*([KMBT])/i);
+    if (shorthandMatch) {
+        let num = parseFloat(shorthandMatch[1].replace(/,/g, ''));
+        const suffix = shorthandMatch[2].toUpperCase();
+        const multipliers = { 'K': 1e3, 'M': 1e6, 'B': 1e9, 'T': 1e12 };
+        if (multipliers[suffix]) num *= multipliers[suffix];
+        return num;
+    }
+    const cleaned = value.replace(/[^0-9.]/g, '');
+    const num = parseFloat(cleaned);
+    return isNaN(num) ? null : num;
+}
+
+function formatNumberWithCommas(num) {
+    const parts = num.toString().split('.');
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    return parts.join('.');
+}
+
+function formatCurrencyInput(input) {
+    let value = input.value;
+    if (/[KMBT]/i.test(value)) {
+        const parsed = parseDealAmount(value);
+        if (parsed !== null) { input.value = formatNumberWithCommas(parsed); return; }
+    }
+    let cleaned = value.replace(/[^0-9.,]/g, '');
+    let raw = cleaned.replace(/,/g, '');
+    if (raw === '' || raw === '.') { input.value = raw; return; }
+    const decimalIndex = raw.indexOf('.');
+    if (decimalIndex !== -1) {
+        const intPart = raw.substring(0, decimalIndex);
+        const decPart = raw.substring(decimalIndex);
+        input.value = (intPart ? formatNumberWithCommas(parseInt(intPart)) : '0') + decPart;
+    } else {
+        input.value = formatNumberWithCommas(parseInt(raw));
+    }
+}
+
+// Parse AI-populated value on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const amountInput = document.querySelector('input[name="investment_amount"]');
+    if (amountInput && amountInput.value) formatCurrencyInput(amountInput);
+});
+</script>
 {% endblock %}

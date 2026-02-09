@@ -331,11 +331,18 @@ async def accept_item(
         existing = session.query(MasterItem).filter_by(item_id=item_id).first()
 
         if not existing:
+            # Format investment amount with $ prefix
+            formatted_amount = None
+            if investment_amount:
+                clean = investment_amount.replace(',', '').strip()
+                if clean:
+                    formatted_amount = f"${investment_amount.strip()}"
+
             master = MasterItem(
                 item_id=item_id,
                 company=company if company else None,
                 investors=investors if investors else None,
-                investment_amount=investment_amount if investment_amount else None,
+                investment_amount=formatted_amount,
                 # NEW fields
                 transaction_type=transaction_type if transaction_type else None,
                 capital_sources=",".join(capital_sources) if capital_sources else None,
