@@ -42,11 +42,11 @@ const chartDefaults = {
     }
 };
 
-// Chart color scheme (teal theme)
+// Chart color scheme (navy & green theme)
 const chartColors = {
-    primary: '#226E93',
-    primaryLight: '#2a87b3',
-    accent: '#88c0d0',
+    primary: '#1e456e',
+    primaryLight: '#5d7890',
+    accent: '#88c540',
     success: '#4caf50',
     warning: '#ff9800',
     error: '#f44336',
@@ -76,7 +76,7 @@ function createLineChart(canvasId, data, options = {}) {
             label: data.name || data.series_id,
             data: data.data.map(d => d.value || d.close),
             borderColor: options.color || chartColors.primary,
-            backgroundColor: options.fillColor || 'rgba(34, 110, 147, 0.1)',
+            backgroundColor: options.fillColor || 'rgba(93, 120, 144, 0.12)',
             borderWidth: 2,
             fill: options.fill !== false,
             tension: 0.1,

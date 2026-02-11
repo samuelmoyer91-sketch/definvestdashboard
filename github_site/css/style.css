@@ -1,12 +1,12 @@
 /* Defense Capital Dashboard - Main Stylesheet */
-/* Teal theme based on user's Google Site (#226E93) */
+/* Navy & green theme aligned with company branding */
 
 :root {
   /* Color palette */
-  --primary-teal: #226E93;
-  --primary-teal-dark: #1a5573;
-  --primary-teal-light: #2a87b3;
-  --accent-teal: #88c0d0;
+  --primary-blue: #1e456e;
+  --primary-blue-dark: #162f4d;
+  --primary-blue-light: #5d7890;
+  --accent-green: #88c540;
   --bg-light: #f5f5f5;
   --bg-white: #ffffff;
   --text-primary: #333333;
@@ -58,7 +58,7 @@ body {
 h1, h2, h3, h4, h5, h6 {
   margin-bottom: var(--spacing-md);
   font-weight: 600;
-  color: var(--primary-teal-dark);
+  color: var(--primary-blue-dark);
 }
 
 h1 { font-size: var(--font-size-xxl); }
@@ -66,19 +66,19 @@ h2 { font-size: var(--font-size-xl); }
 h3 { font-size: var(--font-size-lg); }
 
 a {
-  color: var(--primary-teal);
+  color: var(--primary-blue);
   text-decoration: none;
   transition: color 0.2s ease;
 }
 
 a:hover {
-  color: var(--primary-teal-light);
+  color: var(--accent-green);
   text-decoration: underline;
 }
 
 /* Navigation */
 nav {
-  background-color: var(--primary-teal);
+  background-color: var(--primary-blue);
   color: white;
   height: var(--nav-height);
   box-shadow: 0 2px 4px var(--shadow);
@@ -105,7 +105,7 @@ nav .logo {
 }
 
 nav .logo:hover {
-  color: var(--accent-teal);
+  color: var(--accent-green);
   text-decoration: none;
 }
 
@@ -116,20 +116,23 @@ nav ul {
 }
 
 nav ul li a {
-  color: white;
+  color: rgba(255, 255, 255, 0.85);
   font-weight: 500;
   padding: var(--spacing-xs) var(--spacing-sm);
   border-radius: var(--border-radius);
-  transition: background-color 0.2s ease;
+  transition: color 0.2s ease;
 }
 
 nav ul li a:hover {
-  background-color: var(--primary-teal-dark);
+  color: var(--accent-green);
   text-decoration: none;
 }
 
 nav ul li a.active {
-  background-color: var(--primary-teal-dark);
+  color: white;
+  border-bottom: 2px solid var(--accent-green);
+  border-radius: 0;
+  padding-bottom: calc(var(--spacing-xs) - 2px);
 }
 
 /* Mobile navigation */
@@ -153,7 +156,7 @@ nav ul li a.active {
     top: var(--nav-height);
     left: 0;
     right: 0;
-    background-color: var(--primary-teal);
+    background-color: var(--primary-blue);
     flex-direction: column;
     padding: var(--spacing-md);
     gap: var(--spacing-sm);
@@ -179,6 +182,7 @@ nav ul li a.active {
   margin-bottom: var(--spacing-lg);
   border-radius: var(--border-radius);
   box-shadow: 0 2px 4px var(--shadow);
+  border-top: 3px solid var(--accent-green);
 }
 
 .page-header h1 {
@@ -207,7 +211,7 @@ nav ul li a.active {
 .card h2 {
   margin-bottom: var(--spacing-md);
   padding-bottom: var(--spacing-sm);
-  border-bottom: 2px solid var(--primary-teal);
+  border-bottom: 2px solid var(--accent-green);
 }
 
 /* Grid layouts */
@@ -240,7 +244,7 @@ nav ul li a.active {
 .stat-card .stat-value {
   font-size: var(--font-size-xxl);
   font-weight: 700;
-  color: var(--primary-teal);
+  color: var(--primary-blue-light);
   margin-bottom: var(--spacing-xs);
 }
 
@@ -262,7 +266,7 @@ table {
 }
 
 thead {
-  background-color: var(--primary-teal);
+  background-color: var(--primary-blue);
   color: white;
 }
 
@@ -275,7 +279,7 @@ th {
 }
 
 th:hover {
-  background-color: var(--primary-teal-dark);
+  background-color: var(--primary-blue-dark);
 }
 
 td {
@@ -314,8 +318,8 @@ tr:last-child td {
 
 .search-box input:focus {
   outline: none;
-  border-color: var(--primary-teal);
-  box-shadow: 0 0 0 3px rgba(34, 110, 147, 0.1);
+  border-color: var(--accent-green);
+  box-shadow: 0 0 0 3px rgba(136, 197, 64, 0.15);
 }
 
 .filter-group {
@@ -347,22 +351,27 @@ tr:last-child td {
 }
 
 .btn-primary {
-  background-color: var(--primary-teal);
+  background-color: var(--primary-blue);
   color: white;
+  font-weight: 600;
 }
 
 .btn-primary:hover {
-  background-color: var(--primary-teal-dark);
+  background-color: var(--primary-blue-light);
   text-decoration: none;
 }
 
 .btn-secondary {
-  background-color: var(--accent-teal);
-  color: var(--text-primary);
+  background-color: white;
+  color: var(--primary-blue);
+  border: 1.5px solid var(--primary-blue);
+  font-weight: 600;
 }
 
 .btn-secondary:hover {
-  background-color: #70a8c0;
+  background-color: var(--primary-blue);
+  color: white;
+  border-color: var(--primary-blue);
 }
 
 /* Charts */
@@ -382,7 +391,7 @@ tr:last-child td {
 
 .chart-card h3 {
   margin-bottom: var(--spacing-md);
-  color: var(--primary-teal-dark);
+  color: var(--primary-blue-dark);
 }
 
 .chart-card .chart-description {
@@ -430,7 +439,7 @@ tr:last-child td {
 
 /* Footer */
 footer {
-  background-color: var(--primary-teal-dark);
+  background-color: var(--primary-blue-dark);
   color: white;
   padding: var(--spacing-lg);
   margin-top: var(--spacing-xl);
@@ -442,7 +451,7 @@ footer p {
 }
 
 footer a {
-  color: var(--accent-teal);
+  color: var(--accent-green);
 }
 
 /* Badges */
@@ -454,13 +463,13 @@ footer a {
   font-weight: 500;
 }
 
-.badge-primary { background-color: var(--primary-teal); color: white; }
+.badge-primary { background-color: var(--primary-blue); color: white; }
 .badge-success { background-color: var(--success); color: white; }
 .badge-warning { background-color: var(--warning); color: white; }
 
 /* Data Summary Stats */
 .data-summary {
-  background: linear-gradient(135deg, var(--primary-teal) 0%, var(--primary-teal-dark) 100%);
+  background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-blue-dark) 100%);
   color: white;
   padding: var(--spacing-lg);
   border-radius: var(--border-radius);
@@ -510,15 +519,17 @@ footer a {
 /* Download button */
 .btn-download {
   background-color: white;
-  color: var(--primary-teal);
-  border: 2px solid var(--primary-teal);
+  color: var(--primary-blue-light);
+  border: 2px solid var(--primary-blue-light);
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
+  font-weight: 600;
 }
 
 .btn-download:hover {
-  background-color: var(--bg-light);
+  background-color: var(--primary-blue-light);
+  color: white;
   text-decoration: none;
 }
 
@@ -529,15 +540,15 @@ footer a {
 
 /* Key Insights */
 .key-insights {
-  background-color: #f0f8ff;
-  border-left: 4px solid var(--primary-teal);
+  background-color: #f4faf0;
+  border-left: 4px solid var(--accent-green);
   padding: var(--spacing-lg);
   margin-bottom: var(--spacing-lg);
   border-radius: var(--border-radius);
 }
 
 .key-insights h3 {
-  color: var(--primary-teal-dark);
+  color: var(--primary-blue-dark);
   margin-bottom: var(--spacing-md);
   font-size: var(--font-size-lg);
 }
@@ -555,7 +566,7 @@ footer a {
 
 .key-insights li::before {
   content: '▸';
-  color: var(--primary-teal);
+  color: var(--accent-green);
   position: absolute;
   left: 0;
   font-weight: bold;
@@ -581,7 +592,7 @@ footer a {
 .briefing-stats {
   display: flex;
   gap: var(--spacing-lg);
-  background: linear-gradient(135deg, var(--primary-teal) 0%, var(--primary-teal-dark) 100%);
+  background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-blue-dark) 100%);
   padding: var(--spacing-lg);
   border-radius: var(--border-radius);
   margin-bottom: var(--spacing-lg);
@@ -627,8 +638,8 @@ footer a {
 
 .search-input:focus {
   outline: none;
-  border-color: var(--primary-teal);
-  box-shadow: 0 0 0 3px rgba(34, 110, 147, 0.1);
+  border-color: var(--accent-green);
+  box-shadow: 0 0 0 3px rgba(136, 197, 64, 0.15);
 }
 
 .filter-select {
@@ -643,7 +654,7 @@ footer a {
 
 .filter-select:focus {
   outline: none;
-  border-color: var(--primary-teal);
+  border-color: var(--accent-green);
 }
 
 .briefing-feed {
@@ -685,7 +696,7 @@ footer a {
 .deal-title {
   font-size: var(--font-size-lg);
   font-weight: 600;
-  color: var(--primary-teal-dark);
+  color: var(--primary-blue-dark);
   margin: 0;
   line-height: 1.4;
 }
@@ -712,14 +723,14 @@ footer a {
 .deal-analysis {
   margin-bottom: var(--spacing-md);
   padding: var(--spacing-md);
-  background-color: #f0f8ff;
-  border-left: 3px solid var(--primary-teal);
+  background-color: #f4faf0;
+  border-left: 3px solid var(--accent-green);
   border-radius: 4px;
   line-height: 1.6;
 }
 
 .deal-analysis strong {
-  color: var(--primary-teal-dark);
+  color: var(--primary-blue-dark);
   display: block;
   margin-bottom: 0.25rem;
   font-size: var(--font-size-sm);
@@ -758,7 +769,7 @@ footer a {
 }
 
 .source-link {
-  color: var(--primary-teal);
+  color: var(--primary-blue);
   font-weight: 500;
   text-decoration: none;
   display: inline-flex;
@@ -768,7 +779,7 @@ footer a {
 }
 
 .source-link:hover {
-  color: var(--primary-teal-dark);
+  color: var(--accent-green);
   text-decoration: underline;
 }
 
@@ -789,7 +800,7 @@ footer a {
   padding: var(--spacing-sm) var(--spacing-md);
   border: 1px solid var(--border-color);
   background-color: white;
-  color: var(--primary-teal);
+  color: var(--primary-blue);
   border-radius: var(--border-radius);
   cursor: pointer;
   font-weight: 500;
@@ -797,9 +808,9 @@ footer a {
 }
 
 .pagination button:hover:not(:disabled) {
-  background-color: var(--primary-teal);
+  background-color: var(--primary-blue);
   color: white;
-  border-color: var(--primary-teal);
+  border-color: var(--primary-blue);
 }
 
 /* Redesigned Deal Cards with Strong Visual Hierarchy */
@@ -820,7 +831,7 @@ footer a {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1px;
-  color: var(--primary-teal);
+  color: #5a9a2a;
 }
 
 .deal-date {
@@ -882,7 +893,7 @@ footer a {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: var(--primary-teal-dark);
+  color: var(--primary-blue-dark);
   margin: 0 0 0.5rem 0;
 }
 
@@ -901,7 +912,7 @@ footer a {
 }
 
 .deal-source-link {
-  color: var(--primary-teal);
+  color: var(--primary-blue);
   font-weight: 500;
   font-size: 0.9rem;
   text-decoration: none;
@@ -912,7 +923,7 @@ footer a {
 }
 
 .deal-source-link:hover {
-  color: var(--primary-teal-dark);
+  color: var(--accent-green);
   text-decoration: underline;
 }
 
@@ -929,7 +940,7 @@ footer a {
   padding: 0.75rem 1.5rem;
   border: 1px solid var(--border-color);
   background-color: white;
-  color: var(--primary-teal);
+  color: var(--primary-blue);
   border-radius: var(--border-radius);
   cursor: pointer;
   font-weight: 600;
@@ -938,11 +949,11 @@ footer a {
 }
 
 .page-btn:hover {
-  background-color: var(--primary-teal);
+  background-color: var(--primary-blue);
   color: white;
-  border-color: var(--primary-teal);
+  border-color: var(--primary-blue);
   transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(34, 110, 147, 0.2);
+  box-shadow: 0 2px 8px rgba(30, 69, 110, 0.2);
 }
 
 .page-info {
@@ -957,9 +968,9 @@ footer a {
 }
 
 .pagination button.active {
-  background-color: var(--primary-teal);
+  background-color: var(--primary-blue);
   color: white;
-  border-color: var(--primary-teal);
+  border-color: var(--primary-blue);
 }
 
 .empty-state {

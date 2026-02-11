@@ -415,10 +415,10 @@ def generate_chart_page(chart_id, chart_info):
         source_link = source_name  # No link for custom data
     elif is_market and chart_id != 'dgs10':
         source_name = 'Yahoo Finance'
-        source_link = f'<a href="{source_url}" target="_blank" rel="noopener" style="color: #226E93; text-decoration: none;">{source_name}</a>' if source_url else source_name
+        source_link = f'<a href="{source_url}" target="_blank" rel="noopener" style="color: #1e456e; text-decoration: none;">{source_name}</a>' if source_url else source_name
     else:
         source_name = 'Federal Reserve Economic Data (FRED)'
-        source_link = f'<a href="{source_url}" target="_blank" rel="noopener" style="color: #226E93; text-decoration: none;">{source_name}</a>' if source_url else source_name
+        source_link = f'<a href="{source_url}" target="_blank" rel="noopener" style="color: #1e456e; text-decoration: none;">{source_name}</a>' if source_url else source_name
 
     # Find related charts in the same category
     related_charts = [cid for cid, cinfo in CHARTS.items()
@@ -714,8 +714,8 @@ def generate_category_page(cat_id, cat_info):
                             datasets: [{{
                                 label: data.name,
                                 data: displayData.map(d => d.value || d.close),
-                                borderColor: '#226E93',
-                                backgroundColor: 'rgba(34, 110, 147, 0.1)',
+                                borderColor: '#1e456e',
+                                backgroundColor: 'rgba(93, 120, 144, 0.12)',
                                 borderWidth: 2,
                                 fill: true,
                                 tension: 0.1,
