@@ -251,19 +251,26 @@ async def home(request: Request):
         # 1. Have been successfully scraped
         # 2. Are not yet in master list
         # 3. Have not been rejected
+        # 4. Were not screened out by AI title filter
+        # 5. Are not Contract/Award transaction type (auto-filtered)
         items = session.query(RawItem).join(
             ArticleContent, RawItem.id == ArticleContent.item_id
+        ).outerjoin(
+            AIExtraction, RawItem.id == AIExtraction.item_id
         ).filter(
             ArticleContent.scrape_success == True,
+            RawItem.status != 'ai_screened_out',
             ~RawItem.id.in_(
                 session.query(MasterItem.item_id)
             ),
             ~RawItem.id.in_(
                 session.query(RejectedItem.item_id)
-            )
+            ),
+            # Exclude items where AI classified as Contract/Award
+            ~((AIExtraction.transaction_type != None) & (AIExtraction.transaction_type == 'Contract/Award'))
         ).order_by(
             RawItem.published_date.desc()
-        ).limit(50).all()
+        ).limit(200).all()
 
         # Add article content and AI extraction to each item
         for item in items:
@@ -303,6 +310,67 @@ async def view_item(request: Request, item_id: int):
         })
     finally:
         session.close()
+
+
+def _find_next_triage_item(session, current_item_id):
+    """Find the next item in the triage queue after the current one.
+
+    Returns the ID of the next item, or None if there isn't one.
+    Queue is ordered by published_date desc, so "next" means the item
+    that appears after the current one in that ordering.
+    """
+    current = session.query(RawItem).filter_by(id=current_item_id).first()
+    if not current:
+        return None
+
+    # Get triage queue in same order as the home page, excluding current item
+    queue = session.query(RawItem.id).join(
+        ArticleContent, RawItem.id == ArticleContent.item_id
+    ).outerjoin(
+        AIExtraction, RawItem.id == AIExtraction.item_id
+    ).filter(
+        ArticleContent.scrape_success == True,
+        RawItem.status != 'ai_screened_out',
+        RawItem.id != current_item_id,
+        ~RawItem.id.in_(session.query(MasterItem.item_id)),
+        ~RawItem.id.in_(session.query(RejectedItem.item_id)),
+        # Exclude Contract/Award items
+        ~((AIExtraction.transaction_type != None) & (AIExtraction.transaction_type == 'Contract/Award'))
+    ).order_by(
+        RawItem.published_date.desc()
+    ).limit(200).all()
+
+    if not queue:
+        return None
+
+    # The queue is ordered by published_date desc (same as the page).
+    # The "next" item is the first one that would appear below the current item,
+    # i.e., with a date <= the current item's date.
+    # If current was already at the bottom, just return the top of the queue.
+    current_date = current.published_date
+    if current_date:
+        # Query directly for the next item after current in the ordering
+        next_item = session.query(RawItem.id).join(
+            ArticleContent, RawItem.id == ArticleContent.item_id
+        ).outerjoin(
+            AIExtraction, RawItem.id == AIExtraction.item_id
+        ).filter(
+            ArticleContent.scrape_success == True,
+            RawItem.status != 'ai_screened_out',
+            RawItem.id != current_item_id,
+            RawItem.published_date <= current_date,
+            ~RawItem.id.in_(session.query(MasterItem.item_id)),
+            ~RawItem.id.in_(session.query(RejectedItem.item_id)),
+            ~((AIExtraction.transaction_type != None) & (AIExtraction.transaction_type == 'Contract/Award'))
+        ).order_by(
+            RawItem.published_date.desc()
+        ).first()
+
+        if next_item:
+            return next_item[0]
+
+    # Fallback: return first item in queue
+    return queue[0][0]
 
 
 @app.post("/accept/{item_id}")
@@ -360,7 +428,9 @@ async def accept_item(
             session.add(master)
             session.commit()
 
-        return RedirectResponse(url="/", status_code=303)
+        next_id = _find_next_triage_item(session, item_id)
+        redirect_url = f"/?open={next_id}" if next_id else "/"
+        return RedirectResponse(url=redirect_url, status_code=303)
     finally:
         session.close()
 
@@ -371,6 +441,9 @@ async def reject_item(item_id: int):
     session = get_session()
 
     try:
+        # Find next item BEFORE rejecting (current item is still in queue)
+        next_id = _find_next_triage_item(session, item_id)
+
         # Check if already rejected
         existing = session.query(RejectedItem).filter_by(item_id=item_id).first()
 
@@ -379,7 +452,8 @@ async def reject_item(item_id: int):
             session.add(rejected)
             session.commit()
 
-        return RedirectResponse(url="/", status_code=303)
+        redirect_url = f"/?open={next_id}" if next_id else "/"
+        return RedirectResponse(url=redirect_url, status_code=303)
     finally:
         session.close()
 

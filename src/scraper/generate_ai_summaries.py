@@ -89,6 +89,7 @@ def generate_summaries(limit=5, force_regenerate=False):
                 extraction.transaction_type = summary.get('transaction_type')
                 extraction.capital_sources = ','.join(summary.get('capital_sources', [])) if summary.get('capital_sources') else None
                 extraction.sectors = ','.join(summary.get('sectors', [])) if summary.get('sectors') else None
+                extraction.location = summary.get('location')
                 extraction.strategic_significance = summary.get('strategic_significance')
                 extraction.market_implications = summary.get('market_implications')
                 extraction.summary_complete = summary.get('summary_complete', False)
@@ -106,6 +107,7 @@ def generate_summaries(limit=5, force_regenerate=False):
                     transaction_type=summary.get('transaction_type'),
                     capital_sources=','.join(summary.get('capital_sources', [])) if summary.get('capital_sources') else None,
                     sectors=','.join(summary.get('sectors', [])) if summary.get('sectors') else None,
+                    location=summary.get('location'),
                     strategic_significance=summary.get('strategic_significance'),
                     market_implications=summary.get('market_implications'),
                     summary_complete=summary.get('summary_complete', False),

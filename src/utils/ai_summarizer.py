@@ -63,8 +63,9 @@ Extract the following information (use "Unknown" if not found):
 5. SECTORS: Choose ALL that apply from: Autonomous Systems/Drones, AI/ML, Space/Satellites, Aerospace, Cybersecurity, Advanced Materials, Semiconductors/Electronics, Manufacturing/Production, Software/IT, Munitions/Weapons, Communications, Other (return as array)
 6. DEAL AMOUNT: Dollar value if mentioned (e.g., "$300M" or "$4.7B")
 7. INVESTORS/ACQUIRERS: Key firms or companies involved
-8. STRATEGIC SIGNIFICANCE: Why does this deal matter for defense sector? (2-3 sentences max)
-9. MARKET IMPLICATIONS: What does this signal about defense tech trends? (1-2 sentences)
+8. LOCATION: Where the company is headquartered or where the deal/project is located. Format as "City, State, Country" for US locations (e.g., "San Diego, CA, USA") or "City, Country" for international (e.g., "London, UK"). Use null if not mentioned.
+9. STRATEGIC SIGNIFICANCE: Why does this deal matter for defense sector? (2-3 sentences max)
+10. MARKET IMPLICATIONS: What does this signal about defense tech trends? (1-2 sentences)
 
 Format your response as JSON:
 {{
@@ -76,6 +77,7 @@ Format your response as JSON:
   "deal_type": "...",
   "deal_amount": "...",
   "investors": "...",
+  "location": "City, State, Country",
   "strategic_significance": "...",
   "market_implications": "..."
 }}

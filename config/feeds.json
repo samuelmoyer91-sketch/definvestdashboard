@@ -1,25 +1,25 @@
 {
   "rss_feeds": [
     {
-      "name": "Raising Capital Defense",
-      "url": "https://www.google.com/alerts/feeds/09025431128020683164/4830815519505009728",
-      "enabled": true,
-      "google_alert_query": "raising capital defense",
-      "notes": "Good feed - captures M&A deals, acquisitions, capital partners well (83% keep rate)"
-    },
-    {
       "name": "Private Equity Defense",
       "url": "https://www.google.com/alerts/feeds/09025431128020683164/3776232429289321661",
       "enabled": true,
-      "google_alert_query": "(user updated 2026-01-22)",
-      "notes": "Recently updated by user to reduce noise"
+      "google_alert_query": "\"private equity\" AND (\"defense contractor\" OR \"aerospace\" OR \"military\") AND (\"acquisition\" OR \"investment\" OR \"million\" OR \"billion\")",
+      "notes": "Highest volume feed. 9% accept rate as of 2026-02 — main source of false positives."
+    },
+    {
+      "name": "Raising Capital Defense",
+      "url": "https://www.google.com/alerts/feeds/09025431128020683164/4830815519505009728",
+      "enabled": true,
+      "google_alert_query": "(\"acquisition\" OR \"merger\" OR \"acquires\" OR \"funding\" OR \"investment\" OR \"raises\" OR \"Series A\" OR \"Series B\") AND (\"defense\" OR \"aerospace\" OR \"military\" OR \"defense contractor\")",
+      "notes": "Broad deal-focused feed. 0% accept rate so far (low volume, 22 items)."
     },
     {
       "name": "New Factory Defense Products",
       "url": "https://www.google.com/alerts/feeds/09025431128020683164/2552550775473449917",
       "enabled": true,
-      "google_alert_query": "new factory for defense products",
-      "notes": "Low volume (only 8 items) - query may be too narrow. Consider: (\"factory\" OR \"facility\" OR \"plant\") AND (\"defense\" OR \"aerospace\" OR \"munitions\")"
+      "google_alert_query": "(\"factory\" OR \"facility\" OR \"manufacturing plant\" OR \"production site\" OR \"breaks ground\" OR \"expansion\") AND (\"defense\" OR \"aerospace\" OR \"munitions\" OR \"military\")",
+      "notes": "Manufacturing/facility feed. 17% accept rate. 'facility' and 'expansion' generate noise (base closings, geopolitical articles)."
     }
   ],
   "keywords": {

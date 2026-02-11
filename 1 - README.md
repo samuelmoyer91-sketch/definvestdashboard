@@ -10,7 +10,7 @@ A professional dashboard tracking defense sector investments, industrial health,
 Use the automated workflow script for the full process:
 
 ```bash
-cd ~/Documents/Claude/"Claude - Defense PC Dashboard"
+cd ~/Documents/Claude/"PC Dashboard"
 
 # Step 1: Fetch and prepare data (automated - 2 min)
 ./update_workflow.sh all

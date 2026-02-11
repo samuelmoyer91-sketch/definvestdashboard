@@ -32,7 +32,7 @@ class RawItem(Base):
     published_date = Column(DateTime)
     feed_source = Column(String)  # Which Google Alert feed
     date_found = Column(DateTime, default=datetime.utcnow)
-    status = Column(String, default='new')  # new, scraped, failed, auto_rejected
+    status = Column(String, default='new')  # new, ai_screened_out, scraped, failed, auto_rejected
 
     # Relevance scoring (added 2026-01-22)
     relevance_score = Column(Float)  # 0.0-1.0, based on keyword matching

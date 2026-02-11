@@ -21,13 +21,18 @@ if [ "$STAGE" = "all" ]; then
   echo "✓ RSS fetch complete"
   echo ""
 
-  echo "🌐 STAGE 2: Scraping article content..."
+  echo "🔍 STAGE 2: AI title screening (filtering noise)..."
+  python3 src/scraper/run_title_screen.py
+  echo "✓ Title screening complete"
+  echo ""
+
+  echo "🌐 STAGE 3: Scraping article content..."
   python3 src/scraper/article_scraper.py
   echo "✓ Scraping complete"
   echo ""
 
-  echo "🤖 STAGE 3: Generating AI summaries..."
-  python3 src/scraper/generate_ai_summaries.py --limit 20
+  echo "🤖 STAGE 4: Generating AI summaries..."
+  python3 src/scraper/generate_ai_summaries.py --limit 100
   echo "✓ AI summaries complete"
   echo ""
 
@@ -39,6 +44,8 @@ if [ "$STAGE" = "all" ]; then
   echo "   3. Review and accept/reject deals"
   echo "   4. When done, run: ./update_workflow.sh publish"
   echo ""
+  echo "   Tip: Run ./update_workflow.sh screen --dry-run to preview title filtering"
+  echo ""
   exit 0
 
 elif [ "$STAGE" = "fetch" ]; then
@@ -46,14 +53,19 @@ elif [ "$STAGE" = "fetch" ]; then
   python3 src/ingest/rss_fetcher.py
   echo "✓ RSS fetch complete"
 
+elif [ "$STAGE" = "screen" ]; then
+  echo "🔍 STAGE 2: AI title screening..."
+  python3 src/scraper/run_title_screen.py
+  echo "✓ Title screening complete"
+
 elif [ "$STAGE" = "scrape" ]; then
-  echo "🌐 STAGE 2: Scraping article content..."
+  echo "🌐 STAGE 3: Scraping article content..."
   python3 src/scraper/article_scraper.py
   echo "✓ Scraping complete"
 
 elif [ "$STAGE" = "ai" ]; then
-  echo "🤖 STAGE 3: Generating AI summaries..."
-  python3 src/scraper/generate_ai_summaries.py --limit 20
+  echo "🤖 STAGE 4: Generating AI summaries..."
+  python3 src/scraper/generate_ai_summaries.py --limit 100
   echo "✓ AI summaries complete"
 
 elif [ "$STAGE" = "publish" ]; then
@@ -123,11 +135,12 @@ else
   echo ""
   echo "Stages:"
   echo "  fetch   - Fetch RSS feeds (deal articles)"
+  echo "  screen  - AI title screening (filter noise before scraping)"
   echo "  scrape  - Scrape article content"
   echo "  ai      - Generate AI summaries for deals"
   echo "  publish - Refresh ALL data (FRED, Yahoo Finance, deals) & generate site + deploy"
   echo "  deploy  - Deploy to GitHub Pages only"
-  echo "  all     - Run fetch→scrape→ai, then pause for triage"
+  echo "  all     - Run fetch→screen→scrape→ai, then pause for triage"
   echo ""
   echo "Complete workflow:"
   echo "  1. ./update_workflow.sh all      # Fetch deal data, pause for triage"
