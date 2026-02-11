@@ -202,7 +202,7 @@
                         <option value="IPO" {% if ai_trans == 'IPO' or 'IPO' in ai_deal %}selected{% endif %}>IPO</option>
                         <option value="Contract/Award" {% if ai_trans == 'Contract/Award' or 'Contract' in ai_deal or 'Award' in ai_deal or 'Grant' in ai_deal %}selected{% endif %}>Contract/Award</option>
                         <option value="Joint Venture" {% if ai_trans == 'Joint Venture' or 'Joint' in ai_deal or 'JV' in ai_deal %}selected{% endif %}>Joint Venture</option>
-                        <option value="Strategic Partnership" {% if ai_trans == 'Strategic Partnership' or 'Partnership' in ai_deal or 'Strategic' in ai_deal %}selected{% endif %}>Strategic Partnership</option>
+                        <option value="Strategic" {% if ai_trans == 'Strategic' or ai_trans == 'Strategic Partnership' or 'Partnership' in ai_deal or 'Strategic' in ai_deal %}selected{% endif %}>Strategic</option>
                         <option value="Internal Investment" {% if ai_trans == 'Internal Investment' or 'Internal' in ai_deal or 'Facility' in ai_deal or 'R&D' in ai_deal %}selected{% endif %}>Internal Investment</option>
                         <option value="Other">Other</option>
                     </select>

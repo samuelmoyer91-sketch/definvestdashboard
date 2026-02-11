@@ -58,7 +58,7 @@ Extract the following information (use "Unknown" if not found):
 
 1. COMPANY NAME: The company being invested in or acquired
 2. COMPANY DESCRIPTION: One sentence describing what the company does (focus on defense/tech capabilities)
-3. TRANSACTION TYPE: Choose ONE from: Equity Funding Round, Acquisition, Merger, Asset Sale/Divestiture, IPO, Contract/Award, Joint Venture, Strategic Partnership, Internal Investment, Other
+3. TRANSACTION TYPE: Choose ONE from: Equity Funding Round, Acquisition, Merger, Asset Sale/Divestiture, IPO, Contract/Award, Joint Venture, Strategic, Internal Investment, Other
 4. CAPITAL SOURCES: Choose ALL that apply from: Venture Capital, Corporate Venture, Private Equity, Government/Contract, Public Markets, Internal/Self-funded, Strategic Partner, Family Office (return as array)
 5. SECTORS: Choose ALL that apply from: Autonomous Systems/Drones, AI/ML, Space/Satellites, Aerospace, Cybersecurity, Advanced Materials, Semiconductors/Electronics, Manufacturing/Production, Software/IT, Munitions/Weapons, Communications, Other (return as array)
 6. DEAL AMOUNT: Dollar value if mentioned (e.g., "$300M" or "$4.7B")
@@ -87,7 +87,15 @@ Notes:
 - deal_type is legacy field (still include for backward compatibility)
 - For capital_sources: if it's a corporate VC like A16Z investing, include both "Venture Capital" AND "Corporate Venture"
 - For sectors: include all relevant technology areas the company operates in
-- Be professional and analytical (intelligence briefing tone). If information is missing or unclear, use "Unknown" rather than guessing."""
+- Be professional and analytical (intelligence briefing tone). If information is missing or unclear, use "Unknown" rather than guessing.
+
+Special handling for EARNINGS CALLS, ANNUAL REPORTS, and INVESTOR PRESENTATIONS:
+- These are about a company's own spending, not an external deal. Use transaction_type "Internal Investment".
+- For deal_amount: use the single most significant capex or R&D figure mentioned. If multiple figures, pick the headline number (total R&D budget or largest single investment). It's OK to leave this null if no clear figure stands out.
+- For investors: leave null. Capital sources may be blank too if financing details aren't discussed.
+- For strategic_significance: focus on WHERE the company is directing spending — which programs, capabilities, or facilities are getting investment. Summarize the 2-3 most important spending signals.
+- For market_implications: what does this spending posture signal about defense sector trends?
+- Treat the article as ONE card for the company, not separate cards per spending line item."""
 
     try:
         # Call Claude API

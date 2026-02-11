@@ -340,8 +340,8 @@ def generate_deal_card(master, raw, ai):
         elif 'CONTRACT' in dt or 'AWARD' in dt:
             deal_type = 'CONTRACT'
             deal_type_class = 'badge-info'
-        elif 'PARTNERSHIP' in dt or 'JOINT' in dt:
-            deal_type = 'PARTNERSHIP'
+        elif 'STRATEGIC' in dt or 'PARTNERSHIP' in dt or 'JOINT' in dt:
+            deal_type = 'STRATEGIC'
             deal_type_class = 'badge-info'
         elif 'INTERNAL' in dt:
             deal_type = 'INTERNAL'

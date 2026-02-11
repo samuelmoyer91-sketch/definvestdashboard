@@ -106,7 +106,7 @@ def build_email_html(items: List[DigestItem], base_url: str) -> str:
 
     Args:
         items: List of DigestItem objects to include
-        base_url: Base URL for action links (e.g., https://app.railway.app)
+        base_url: Base URL for action links (e.g., https://capitalfordefense.up.railway.app)
 
     Returns:
         HTML string for email body
