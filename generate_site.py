@@ -69,6 +69,11 @@ def check_api_key():
         print("3. Set it: export FRED_API_KEY='your_key_here'")
         print("\nYou can still proceed to generate the site with existing data.")
 
+        # In CI (no TTY), auto-continue without prompting
+        if not sys.stdin.isatty():
+            print("\nNon-interactive environment detected — continuing without FRED data.")
+            return False
+
         response = input("\nContinue without fetching new data? (y/n): ")
         if response.lower() != 'y':
             sys.exit(0)

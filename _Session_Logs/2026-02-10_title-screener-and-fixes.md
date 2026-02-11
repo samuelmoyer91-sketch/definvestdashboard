@@ -70,3 +70,5 @@
 - 69 items in queue still need AI extraction — next `./update_workflow.sh ai` run will cover them with the new limit of 100
 - Could consider adding pagination to triage UI if queue grows beyond 200
 - Monitor screener accuracy over next few runs to tune if needed
+- **Custom domain for GitHub Pages** — buy a domain (capitalfordefense.com or similar, ~$10/yr on Cloudflare/Namecheap), then add CNAME record + configure in repo settings. Claude can handle steps 2-3 once domain is purchased.
+- Backfill the 25 untagged master list items (pre-taxonomy, no transaction_type/sectors)

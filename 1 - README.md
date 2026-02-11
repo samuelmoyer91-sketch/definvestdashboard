@@ -5,34 +5,19 @@ A professional dashboard tracking defense sector investments, industrial health,
 **[🔗 View Live Dashboard](https://samuelmoyer91-sketch.github.io/definvestdashboard/)**
 ---
 
-## 🔄 Weekly Update Workflow
+## 🔄 Automated Pipeline
 
-Use the automated workflow script for the full process:
+The entire pipeline runs automatically via GitHub Actions — the only manual step is triaging deals.
 
-```bash
-cd ~/Documents/Claude/"PC Dashboard"
+| Stage | Schedule | How |
+|-------|----------|-----|
+| **Ingest** (fetch → screen → scrape → AI) | Daily 6 AM ET | GitHub Actions (`ingest.yml`), automatic |
+| **Triage** (review/accept/reject deals) | Whenever you want | Railway web app (`capitalfordefense.up.railway.app`) |
+| **Publish** (economic data + deal export + deploy) | Daily 8 PM ET | GitHub Actions (`publish.yml`), automatic |
 
-# Step 1: Fetch and prepare data (automated - 2 min)
-./update_workflow.sh all
-# Fetches RSS → scrapes articles → generates AI summaries
-# Then pauses for your manual triage
+Both workflows can also be triggered manually from the GitHub Actions tab.
 
-# Step 2: Manual triage (10-15 min)
-uvicorn src.web.app:app --reload
-# Open http://127.0.0.1:8000
-# Review AI-populated deals with collapsible cards
-# Edit company names, amounts, investors, categories, and summaries
-# Accept curated deals (what you approve is what publishes)
-# Reject irrelevant articles
-
-# Step 3: Publish and deploy (automated - 1 min)
-./update_workflow.sh publish
-# Refreshes ALL data (FRED, Yahoo Finance)
-# Generates website with new deals
-# Auto-commits and deploys to GitHub Pages
-```
-
-**Total time: ~15 minutes** (vs. 2-3 hours manual)
+**Your only task: triage deals** at `capitalfordefense.up.railway.app` from any device.
 
 ---
 
@@ -146,21 +131,18 @@ This dashboard provides comprehensive visibility into the defense industrial bas
 
 ---
 
-### Quick Data Update (Charts Only, No New Deals)
+### Manual Data Update (Charts Only, No New Deals)
 
-**Note:** The automated workflow (`./update_workflow.sh publish`) is recommended as it refreshes all data automatically. Manual updates below are for advanced use only.
+The publish pipeline runs automatically daily. For an immediate update:
 
 ```bash
-# Manual update (if workflow script unavailable)
-cd ~/Documents/Claude/"Claude - Defense PC Dashboard"
-python3 generate_site.py
-git add github_site/
-git commit -m "Data update - $(date +%Y-%m-%d)"
-git push origin main
-git subtree push --prefix github_site origin gh-pages
-```
+# Option 1: Trigger from GitHub Actions tab (recommended)
+# Go to Actions → "Publish Site" → "Run workflow"
 
-**Time required:** 2 minutes
+# Option 2: Run locally
+cd ~/Documents/Claude/"PC Dashboard"
+python3 generate_site.py
+```
 
 **See [docs/AI_WORKFLOW.md](docs/AI_WORKFLOW.md) for detailed AI setup instructions.**
 
@@ -223,13 +205,13 @@ python3 generate_site.py
 
 ---
 
-## 📈 What Gets Updated Weekly
+## 📈 What Gets Updated Daily (Automated)
 
-- **Economic Indicators** - Latest FRED data (monthly releases)
-- **Market Prices** - Current ETF/stock prices
-- **Deal Tracker** - Newly curated M&A announcements
-- **Chart Pages** - Regenerated with fresh data
-- **Summary Statistics** - Auto-calculated from new data
+- **Deal Pipeline** - New articles ingested, screened, scraped, and AI-processed every morning
+- **Economic Indicators** - Latest FRED data fetched every evening
+- **Market Prices** - Current ETF/stock prices refreshed every evening
+- **Chart Pages** - Regenerated with fresh data every evening
+- **Deal Tracker** - Accepted deals published to site every evening
 
 ---
 
@@ -255,11 +237,31 @@ python3 generate_site.py
 
 ---
 
+## 🏗️ Architecture
+
+This project has four components that work together:
+
+| Component | What It Does | Where It Runs | Access |
+|-----------|-------------|---------------|--------|
+| **Turso Database** | Cloud database — single source of truth for all deal data | Turso cloud | All components connect to it |
+| **Triage App** (Railway) | Web UI for reviewing and accepting/rejecting deals | `capitalfordefense.up.railway.app` (24/7) | Accessible from anywhere — phone, laptop, any browser |
+| **Ingest Pipeline** | Fetches RSS → screens titles → scrapes articles → AI extraction | GitHub Actions, daily 6 AM ET | Automatic (or manual trigger) |
+| **Publish Pipeline** | Fetches economic/market data → generates site → deploys to GitHub Pages | GitHub Actions, daily 8 PM ET | Automatic (or manual trigger) |
+
+**What this means in practice:**
+- You can **triage deals anytime, anywhere** — Railway keeps the app running 24/7
+- **New articles flow in automatically** every morning via GitHub Actions
+- **Accepted deals publish automatically** every evening via GitHub Actions
+- The Telegram bot also connects to the same Turso database, so submissions from Telegram appear in triage immediately
+- To trigger either pipeline manually, go to the GitHub Actions tab and click "Run workflow"
+
+---
+
 ## 🔐 Privacy & Security
 
 - Main dashboard is public (for portfolio/sharing)
-- Deal triage tool runs locally (not on internet)
-- Database with curated deals stays on your computer
+- Triage tool is hosted on Railway (private, not indexed)
+- All data flows through Turso cloud database
 - RSS feeds and raw articles processed locally
 - Only approved deals exported to public site
 - AI-generated drafts never appear in published output (only human-curated content)
@@ -299,5 +301,5 @@ Created for personal portfolio and professional use.
 
 ---
 
-**Last Updated:** January 2026
-**Status:** ✅ Live and Auto-Updating
+**Last Updated:** February 2026
+**Status:** ✅ Live — fully automated via GitHub Actions
