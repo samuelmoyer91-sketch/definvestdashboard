@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Deal - Defense Capital Tracker{% endblock %}
+
+{% block content %}
+<h2 style="margin-bottom: 20px;">Edit Deal</h2>
+
+<div class="card" style="border-left: 4px solid #5e81ac;">
+    <div class="item-header" style="margin-bottom: 15px;">
+        <div>
+            <div class="item-meta">
+                <span class="badge badge-info">{{ raw_item.feed_source }}</span>
+                {% if raw_item.published_date %}
+                <span style="margin-left: 10px; color: #666;">{{ raw_item.published_date.strftime('%Y-%m-%d') }}</span>
+                {% endif %}
+            </div>
+            <div style="margin-top: 8px;">
+                <a href="{{ raw_item.url }}" target="_blank" class="btn btn-link" style="padding: 0;">View Original Article</a>
+            </div>
+        </div>
+    </div>
+
+    <form method="post" action="/edit/{{ master.id }}">
+        <div style="background: #f8f9fa; padding: 14px; border-radius: 6px; margin-bottom: 10px;">
+
+            <!-- Title -->
+            <div style="margin-bottom: 10px;">
+                <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #555;">
+                    Title
+                </label>
+                <input type="text" name="title"
+                       value="{{ master.title if master.title else raw_item.title }}"
+                       style="width: 100%; padding: 7px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;"
+                       placeholder="Deal title">
+            </div>
+
+            <!-- Row 1: Company & Investors -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 10px;">
+                <div>
+                    <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #555;">Company</label>
+                    <input type="text" name="company"
+                           value="{{ master.company or '' }}"
+                           style="width: 100%; padding: 7px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;"
+                           placeholder="e.g., Anduril, Shield AI">
+                </div>
+                <div>
+                    <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #555;">Investors / Acquirer</label>
+                    <input type="text" name="investors"
+                           value="{{ master.investors or '' }}"
+                           style="width: 100%; padding: 7px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;"
+                           placeholder="e.g., McNally Capital, Andreessen Horowitz">
+                </div>
+            </div>
+
+            <!-- Row 2: Deal Amount & Location -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 10px;">
+                <div>
+                    <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #555;">Deal Amount</label>
+                    <div style="display: flex; align-items: center;">
+                        <span style="padding: 7px 10px; background: #e9ecef; border: 1px solid #ddd; border-right: none; border-radius: 4px 0 0 4px; font-size: 13px; font-weight: 600; color: #333;">$</span>
+                        <input type="text" name="investment_amount" inputmode="decimal"
+                               value="{{ master.investment_amount.replace('$', '') if master.investment_amount else '' }}"
+                               style="width: 100%; padding: 7px; border: 1px solid #ddd; border-radius: 0 4px 4px 0; font-size: 13px;"
+                               placeholder="e.g., 100,000,000">
+                    </div>
+                </div>
+                <div>
+                    <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #555;">Location</label>
+                    <input type="text" name="location"
+                           value="{{ master.location or '' }}"
+                           style="width: 100%; padding: 7px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;"
+                           placeholder="e.g., Austin, TX, USA">
+                </div>
+            </div>
+
+            <!-- Row 3: Transaction Type -->
+            <div style="margin-bottom: 10px;">
+                <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #555;">Transaction Type</label>
+                <select name="transaction_type"
+                        style="width: 100%; padding: 7px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;">
+                    <option value="">-- Select --</option>
+                    {% set current_trans = master.transaction_type or '' %}
+                    <option value="Equity Funding Round" {% if current_trans == 'Equity Funding Round' %}selected{% endif %}>Equity Funding Round</option>
+                    <option value="Acquisition" {% if current_trans == 'Acquisition' %}selected{% endif %}>Acquisition</option>
+                    <option value="Merger" {% if current_trans == 'Merger' %}selected{% endif %}>Merger</option>
+                    <option value="Asset Sale/Divestiture" {% if current_trans == 'Asset Sale/Divestiture' %}selected{% endif %}>Asset Sale/Divestiture</option>
+                    <option value="IPO" {% if current_trans == 'IPO' %}selected{% endif %}>IPO</option>
+                    <option value="Contract/Award" {% if current_trans == 'Contract/Award' %}selected{% endif %}>Contract/Award</option>
+                    <option value="Joint Venture" {% if current_trans == 'Joint Venture' %}selected{% endif %}>Joint Venture</option>
+                    <option value="Strategic" {% if current_trans == 'Strategic' %}selected{% endif %}>Strategic</option>
+                    <option value="Internal Investment" {% if current_trans == 'Internal Investment' %}selected{% endif %}>Internal Investment</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+
+            <!-- Row 4: Capital Sources (Multi-select) -->
+            <div style="margin-bottom: 10px;">
+                <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #555;">Capital Sources (select all that apply)</label>
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px 8px; padding: 6px 10px; background: #f9f9f9; border-radius: 4px;">
+                    {% set current_capital = master.capital_sources.split(',') if master.capital_sources else [] %}
+                    {% for source in ['Venture Capital', 'Corporate Venture', 'Private Equity', 'Government/Contract', 'Public Markets', 'Internal/Self-funded', 'Strategic Partner', 'Family Office'] %}
+                    <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                        <input type="checkbox" name="capital_sources" value="{{ source }}"
+                               {% if source in current_capital %}checked{% endif %}
+                               style="margin-right: 5px; width: 14px; height: 14px;">
+                        {{ source }}
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Row 5: Sectors (Multi-select) -->
+            <div style="margin-bottom: 10px;">
+                <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #555;">Sectors/Technology (select all that apply)</label>
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px 8px; padding: 6px 10px; background: #f9f9f9; border-radius: 4px;">
+                    {% set current_sectors = master.sectors.split(',') if master.sectors else [] %}
+                    {% set sector_options = ['Autonomous Systems/Drones', 'AI/ML', 'Space/Satellites', 'Aerospace', 'Cybersecurity', 'Advanced Materials', 'Semiconductors/Electronics', 'Manufacturing/Production', 'Software/IT', 'Munitions/Weapons', 'Communications', 'Other'] %}
+                    {% set sector_labels = ['Autonomous/Drones', 'AI/ML', 'Space/Satellites', 'Aerospace', 'Cybersecurity', 'Advanced Materials', 'Semiconductors', 'Manufacturing', 'Software/IT', 'Munitions/Weapons', 'Communications', 'Other'] %}
+                    {% for i in range(sector_options|length) %}
+                    <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                        <input type="checkbox" name="sectors" value="{{ sector_options[i] }}"
+                               {% if sector_options[i] in current_sectors %}checked{% endif %}
+                               style="margin-right: 5px; width: 14px; height: 14px;">
+                        {{ sector_labels[i] }}
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Row 6: Summary -->
+            <div style="margin-bottom: 10px;">
+                <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #555;">Summary</label>
+                <textarea name="summary" rows="2"
+                          style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; font-family: inherit;"
+                          placeholder="Brief summary of the deal...">{{ master.summary or '' }}</textarea>
+            </div>
+
+            <!-- Row 7: Internal Notes -->
+            <div>
+                <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #555;">Internal Notes</label>
+                <textarea name="notes" rows="1"
+                          style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; font-family: inherit;"
+                          placeholder="Any notes for yourself (not public)...">{{ master.human_notes or '' }}</textarea>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 8px; align-items: center;">
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <a href="/master" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

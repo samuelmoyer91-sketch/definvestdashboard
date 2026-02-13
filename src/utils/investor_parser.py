@@ -1,0 +1,70 @@
+"""Parse free-text investor strings into structured data."""
+
+import re
+import unicodedata
+
+
+def slugify(name):
+    """Convert investor name to URL-safe slug.
+
+    Examples:
+        'Andreessen Horowitz' -> 'andreessen-horowitz'
+        'L3Harris Technologies' -> 'l3harris-technologies'
+    """
+    # Normalize unicode characters
+    name = unicodedata.normalize('NFKD', name).encode('ascii', 'ignore').decode('ascii')
+    # Lowercase
+    name = name.lower()
+    # Replace non-alphanumeric with hyphens
+    name = re.sub(r'[^a-z0-9]+', '-', name)
+    # Strip leading/trailing hyphens
+    name = name.strip('-')
+    return name
+
+
+def parse_investors(text):
+    """Parse a free-text investors string into structured list.
+
+    Handles comma-separated lists, parenthetical annotations like "(lead)",
+    and common formatting variations.
+
+    Args:
+        text: Free-text investors string, e.g. "Andreessen Horowitz (lead), General Catalyst, Lux Capital"
+
+    Returns:
+        List of tuples: [(name, is_lead), ...]
+        Deduplicated by slugified name, preserving first occurrence.
+    """
+    if not text or not text.strip():
+        return []
+
+    results = []
+    seen_slugs = set()
+
+    # Split on commas
+    parts = text.split(',')
+
+    for part in parts:
+        part = part.strip()
+        if not part:
+            continue
+
+        # Check for (lead) annotation
+        is_lead = False
+        lead_match = re.search(r'\s*\(lead\)\s*', part, re.IGNORECASE)
+        if lead_match:
+            is_lead = True
+            part = part[:lead_match.start()] + part[lead_match.end():]
+
+        # Strip other parentheticals (e.g., "(co-lead)", "(existing investor)")
+        part = re.sub(r'\s*\([^)]*\)\s*', '', part).strip()
+
+        if not part:
+            continue
+
+        slug = slugify(part)
+        if slug and slug not in seen_slugs:
+            seen_slugs.add(slug)
+            results.append((part, is_lead))
+
+    return results

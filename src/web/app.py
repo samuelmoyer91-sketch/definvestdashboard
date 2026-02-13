@@ -15,9 +15,36 @@ logger = logging.getLogger(__name__)
 
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
-from src.database import RawItem, ArticleContent, AIExtraction, MasterItem, RejectedItem, get_session
+from src.database import RawItem, ArticleContent, AIExtraction, MasterItem, RejectedItem, Investor, DealInvestor, get_session
+from src.utils.investor_parser import parse_investors, slugify
 
 app = FastAPI(title="Defense Capital Tracker")
+
+
+# =============================================================================
+# Startup Migration — ensures schema is current on deploy
+# =============================================================================
+
+@app.on_event("startup")
+async def run_startup_migrations():
+    """Check for and apply any missing schema changes.
+
+    SQLAlchemy's create_all() handles new tables (investors, deal_investors)
+    but won't ALTER existing tables. This adds missing columns.
+    """
+    from sqlalchemy import text as sa_text
+    from src.database.models import get_engine
+
+    engine = get_engine()
+    with engine.connect() as conn:
+        # Check if title column exists on master_list
+        try:
+            conn.execute(sa_text("SELECT title FROM master_list LIMIT 1"))
+        except Exception:
+            logger.info("Adding title column to master_list...")
+            conn.execute(sa_text("ALTER TABLE master_list ADD COLUMN title TEXT"))
+            conn.commit()
+            logger.info("title column added successfully")
 
 
 # =============================================================================
@@ -376,6 +403,7 @@ def _find_next_triage_item(session, current_item_id):
 @app.post("/accept/{item_id}")
 async def accept_item(
     item_id: int,
+    title: str = Form(""),
     company: str = Form(""),
     investors: str = Form(""),
     investment_amount: str = Form(""),
@@ -408,6 +436,7 @@ async def accept_item(
 
             master = MasterItem(
                 item_id=item_id,
+                title=title if title else None,
                 company=company if company else None,
                 investors=investors if investors else None,
                 investment_amount=formatted_amount,
@@ -426,6 +455,11 @@ async def accept_item(
                 published=False
             )
             session.add(master)
+            session.flush()  # Get master.id for investor links
+
+            # Parse investors and create links
+            _sync_investor_links(session, master)
+
             session.commit()
 
         next_id = _find_next_triage_item(session, item_id)
@@ -537,6 +571,143 @@ async def stats(request: Request):
         session.close()
 
 
+
+
+def _sync_investor_links(session, master):
+    """Parse master.investors text, get-or-create Investor records, create DealInvestor links.
+
+    Deletes existing links first (for edit use case), then recreates.
+    """
+    # Delete old links
+    session.query(DealInvestor).filter_by(master_item_id=master.id).delete()
+
+    if not master.investors:
+        return
+
+    parsed = parse_investors(master.investors)
+    now = datetime.utcnow()
+
+    for name, is_lead in parsed:
+        slug = slugify(name)
+        investor = session.query(Investor).filter_by(slug=slug).first()
+        if not investor:
+            investor = Investor(
+                name=name,
+                slug=slug,
+                deal_count=0,
+                first_seen=now,
+                last_seen=now,
+            )
+            session.add(investor)
+            session.flush()
+
+        if now > (investor.last_seen or now):
+            investor.last_seen = now
+
+        link = DealInvestor(
+            master_item_id=master.id,
+            investor_id=investor.id,
+            is_lead=is_lead,
+        )
+        session.add(link)
+
+    # Update deal counts for all investors
+    for investor in session.query(Investor).all():
+        investor.deal_count = session.query(DealInvestor).filter_by(
+            investor_id=investor.id
+        ).count()
+
+
+@app.get("/edit/{master_id}", response_class=HTMLResponse)
+async def edit_item(request: Request, master_id: int):
+    """Edit form for an accepted deal."""
+    session = get_session()
+
+    try:
+        master = session.query(MasterItem).filter_by(id=master_id).first()
+        if not master:
+            return HTMLResponse(content="<h1>Not Found</h1>", status_code=404)
+
+        raw_item = session.query(RawItem).filter_by(id=master.item_id).first()
+        ai_extraction = session.query(AIExtraction).filter_by(item_id=master.item_id).first()
+
+        return templates.TemplateResponse("edit.html", {
+            "request": request,
+            "master": master,
+            "raw_item": raw_item,
+            "ai_extraction": ai_extraction,
+        })
+    finally:
+        session.close()
+
+
+@app.post("/edit/{master_id}")
+async def save_edit(
+    master_id: int,
+    title: str = Form(""),
+    company: str = Form(""),
+    investors: str = Form(""),
+    investment_amount: str = Form(""),
+    transaction_type: str = Form(""),
+    capital_sources: list[str] = Form([]),
+    sectors: list[str] = Form([]),
+    location: str = Form(""),
+    summary: str = Form(""),
+    notes: str = Form(""),
+):
+    """Save edits to an accepted deal."""
+    session = get_session()
+
+    try:
+        master = session.query(MasterItem).filter_by(id=master_id).first()
+        if not master:
+            return HTMLResponse(content="<h1>Not Found</h1>", status_code=404)
+
+        # Format investment amount with $ prefix
+        formatted_amount = None
+        if investment_amount:
+            clean = investment_amount.replace(',', '').strip()
+            if clean:
+                formatted_amount = f"${investment_amount.strip()}"
+
+        master.title = title if title else None
+        master.company = company if company else None
+        master.investors = investors if investors else None
+        master.investment_amount = formatted_amount
+        master.transaction_type = transaction_type if transaction_type else None
+        master.capital_sources = ",".join(capital_sources) if capital_sources else None
+        master.sectors = ",".join(sectors) if sectors else None
+        master.location = location if location else None
+        master.summary = summary if summary else None
+        master.human_notes = notes if notes else None
+
+        # Re-sync investor links
+        _sync_investor_links(session, master)
+
+        session.commit()
+
+        return RedirectResponse(url="/master", status_code=303)
+    finally:
+        session.close()
+
+
+@app.get("/investors", response_class=HTMLResponse)
+async def investors_list(request: Request):
+    """View all investors sorted by deal count."""
+    session = get_session()
+
+    try:
+        investors = session.query(Investor).order_by(
+            Investor.deal_count.desc(),
+            Investor.name.asc()
+        ).all()
+
+        return templates.TemplateResponse("investors.html", {
+            "request": request,
+            "investors": investors,
+        })
+    finally:
+        session.close()
 
 
 if __name__ == "__main__":

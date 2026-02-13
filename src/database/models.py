@@ -117,6 +117,7 @@ class MasterItem(Base):
     item_id = Column(Integer, ForeignKey('raw_items.id'), unique=True, nullable=False)
 
     # Human-verified fields (can override AI extractions)
+    title = Column(String)  # Editable title (overrides RawItem.title)
     company = Column(String)
     investors = Column(String)
     investment_amount = Column(String)
@@ -146,9 +147,45 @@ class MasterItem(Base):
 
     # Relationships
     raw_item = relationship("RawItem", back_populates="master")
+    investor_links = relationship("DealInvestor", back_populates="master_item", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<MasterItem(id={self.id}, company='{self.company}')>"
+
+
+class Investor(Base):
+    """Normalized investor entity."""
+    __tablename__ = 'investors'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String, unique=True, nullable=False, index=True)
+    slug = Column(String, unique=True, nullable=False, index=True)
+    deal_count = Column(Integer, default=0)  # Cached count
+    first_seen = Column(DateTime, default=datetime.utcnow)
+    last_seen = Column(DateTime, default=datetime.utcnow)
+
+    # Relationships
+    deal_links = relationship("DealInvestor", back_populates="investor")
+
+    def __repr__(self):
+        return f"<Investor(id={self.id}, name='{self.name}')>"
+
+
+class DealInvestor(Base):
+    """Join table linking deals to investors."""
+    __tablename__ = 'deal_investors'
+
+    id = Column(Integer, primary_key=True)
+    master_item_id = Column(Integer, ForeignKey('master_list.id'), nullable=False)
+    investor_id = Column(Integer, ForeignKey('investors.id'), nullable=False)
+    is_lead = Column(Boolean, default=False)
+
+    # Relationships
+    master_item = relationship("MasterItem", back_populates="investor_links")
+    investor = relationship("Investor", back_populates="deal_links")
+
+    def __repr__(self):
+        return f"<DealInvestor(master_item_id={self.master_item_id}, investor_id={self.investor_id})>"
 
 
 class RejectedItem(Base):

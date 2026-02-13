@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Investors - Defense Capital Tracker{% endblock %}
+
+{% block content %}
+<h2 style="margin-bottom: 20px;">Investors ({{ investors | length }})</h2>
+
+{% if investors | length == 0 %}
+<div class="card">
+    <p style="text-align: center; color: #666;">
+        No investors tracked yet. Accept deals with investor data to populate this list.
+    </p>
+</div>
+{% else %}
+
+<div class="card">
+    <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+        <thead>
+            <tr style="border-bottom: 2px solid #ddd; text-align: left;">
+                <th style="padding: 10px 12px; font-size: 12px; color: #666; text-transform: uppercase;">Investor</th>
+                <th style="padding: 10px 12px; font-size: 12px; color: #666; text-transform: uppercase; text-align: center;">Deals</th>
+                <th style="padding: 10px 12px; font-size: 12px; color: #666; text-transform: uppercase;">Last Seen</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for inv in investors %}
+            <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 10px 12px; font-weight: 500;">{{ inv.name }}</td>
+                <td style="padding: 10px 12px; text-align: center;">
+                    <span class="badge badge-info">{{ inv.deal_count }}</span>
+                </td>
+                <td style="padding: 10px 12px; color: #666;">
+                    {{ inv.last_seen.strftime('%Y-%m-%d') if inv.last_seen else 'Unknown' }}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endif %}
+{% endblock %}

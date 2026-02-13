@@ -6,6 +6,8 @@ from .models import (
     AIExtraction,
     MasterItem,
     RejectedItem,
+    Investor,
+    DealInvestor,
     get_engine,
     get_session
 )
@@ -16,6 +18,8 @@ __all__ = [
     'AIExtraction',
     'MasterItem',
     'RejectedItem',
+    'Investor',
+    'DealInvestor',
     'get_engine',
     'get_session'
 ]

@@ -179,16 +179,9 @@ def generate_html_page(deals, deals_per_page=10):
             <p class="last-updated">Last updated: {datetime.now().strftime('%B %d, %Y')}</p>
         </div>
 
-        <!-- Search/Filter Bar -->
+        <!-- Search Bar -->
         <div class="briefing-controls">
             <input type="text" id="searchBox" placeholder="Search deals..." class="search-input">
-            <select id="dealTypeFilter" class="filter-select">
-                <option value="all">All Deal Types</option>
-                <option value="vc">Venture Capital</option>
-                <option value="m&a">M&A / Acquisition</option>
-                <option value="ipo">IPO</option>
-                <option value="other">Other</option>
-            </select>
         </div>
 
         <!-- Deal Feed -->
@@ -214,7 +207,6 @@ def generate_html_page(deals, deals_per_page=10):
     <script>
         // Pagination and filtering
         const searchBox = document.getElementById('searchBox');
-        const dealTypeFilter = document.getElementById('dealTypeFilter');
         const dealFeed = document.getElementById('dealFeed');
         const deals = Array.from(dealFeed.querySelectorAll('.deal-card'));
         const emptyState = document.getElementById('emptyState');
@@ -226,16 +218,10 @@ def generate_html_page(deals, deals_per_page=10):
 
         function filterDeals() {{
             const searchTerm = searchBox.value.toLowerCase();
-            const dealType = dealTypeFilter.value.toLowerCase();
 
             filteredDeals = deals.filter(deal => {{
                 const text = deal.textContent.toLowerCase();
-                const type = deal.dataset.dealType ? deal.dataset.dealType.toLowerCase() : '';
-
-                const matchesSearch = text.includes(searchTerm);
-                const matchesType = dealType === 'all' || type.includes(dealType);
-
-                return matchesSearch && matchesType;
+                return text.includes(searchTerm);
             }});
 
             currentPage = 1;
@@ -296,7 +282,6 @@ def generate_html_page(deals, deals_per_page=10):
         }}
 
         searchBox.addEventListener('input', filterDeals);
-        dealTypeFilter.addEventListener('change', filterDeals);
 
         // Mobile menu toggle
         document.querySelector('.mobile-menu-toggle').addEventListener('click', function() {{
@@ -392,11 +377,15 @@ def generate_deal_card(master, raw, ai):
 
         <div class="deal-card-body">"""
 
-    # Company headline (use curated company name from master, fallback to AI)
-    company_display = master.company if master and master.company else company_name
-    if company_display:
+    # Deal title (curated title overrides RSS title)
+    title_display = master.title if master and master.title else raw.title
+    if title_display:
         card_html += f"""
-            <h3 class="deal-company-name">{company_display}</h3>"""
+            <h3 class="deal-company-name">{title_display}</h3>"""
+    elif company_name:
+        # Fallback to company name if no title at all
+        card_html += f"""
+            <h3 class="deal-company-name">{company_name}</h3>"""
 
     # Start metadata section
     card_html += """
