@@ -1,10 +1,10 @@
 {
-  "last_updated": "2026-02-11 14:05:27",
+  "last_updated": "2026-02-13 13:32:55",
   "instruments_count": 3,
   "instruments": {
     "ITA": 1256,
     "XLI": 1256,
     "PLD": 1256,
-    "DGS10": 16010
+    "DGS10": 16012
   }
 }
