@@ -74,5 +74,29 @@ Added `/sectors` and `/sectors/{name}` routes to the triage app, mirroring the `
 ### Future:
 - Add sector breakdown to the public GitHub Pages dashboard
 
+## Simplified Capital Source Taxonomy
+
+Replaced two redundant fields (transaction_type + capital_sources multi-select) with a single **Capital Source** single-select dropdown:
+
+| Value | Covers |
+|---|---|
+| Seed | Pre-Series A, angel rounds |
+| Venture Capital | Series A through late-stage VC |
+| Private Equity | PE acquisitions, growth equity, fund raises |
+| Corporate M&A | Operating company acquires another (no PE sponsor) |
+| Government/Contract | Contracts, SBIR, grants, government equity stakes |
+| Public Markets | IPO, SPAC, secondary offerings |
+| Internal/Self-funded | Capex, facility builds from balance sheet |
+
+### Changes:
+- `triage.html` — Replaced transaction_type dropdown + capital_sources checkboxes with single `capital_source` select
+- `edit.html` — Same simplification
+- `app.py` — Updated accept and edit routes to accept `capital_source` (single string) stored in `capital_sources` column
+- `ai_summarizer.py` — Updated prompt to output `capital_source` (single string) instead of `transaction_type` + `capital_sources` array
+- `generate_ai_summaries.py` — Saves single `capital_source` string; backward-compatible with old array format
+
+### Note:
+Old deals retain their legacy field values. Migration of historical data is deferred to a future session.
+
 ## Open To-Dos
 - **Migrate static site off GitHub Pages** — Current URL (`samuelmoyer91-sketch.github.io/definvestdashboard`) is unprofessional. Plan: Cloudflare Pages + custom domain (e.g. `capitalfordefense.com`). Requires creating a Cloudflare account, purchasing domain (~$10-15/yr), generating API token. Claude can handle the workflow migration and DNS config once account is set up.

@@ -73,40 +73,21 @@
                 </div>
             </div>
 
-            <!-- Row 3: Transaction Type -->
+            <!-- Row 3: Capital Source -->
             <div style="margin-bottom: 10px;">
-                <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #555;">Transaction Type</label>
-                <select name="transaction_type"
+                <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #555;">Capital Source</label>
+                {% set current_cap = master.capital_sources or '' %}
+                <select name="capital_source"
                         style="width: 100%; padding: 7px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;">
                     <option value="">-- Select --</option>
-                    {% set current_trans = master.transaction_type or '' %}
-                    <option value="Equity Funding Round" {% if current_trans == 'Equity Funding Round' %}selected{% endif %}>Equity Funding Round</option>
-                    <option value="Acquisition" {% if current_trans == 'Acquisition' %}selected{% endif %}>Acquisition</option>
-                    <option value="Merger" {% if current_trans == 'Merger' %}selected{% endif %}>Merger</option>
-                    <option value="Asset Sale/Divestiture" {% if current_trans == 'Asset Sale/Divestiture' %}selected{% endif %}>Asset Sale/Divestiture</option>
-                    <option value="IPO" {% if current_trans == 'IPO' %}selected{% endif %}>IPO</option>
-                    <option value="Contract/Award" {% if current_trans == 'Contract/Award' %}selected{% endif %}>Contract/Award</option>
-                    <option value="Joint Venture" {% if current_trans == 'Joint Venture' %}selected{% endif %}>Joint Venture</option>
-                    <option value="Strategic" {% if current_trans == 'Strategic' %}selected{% endif %}>Strategic</option>
-                    <option value="Internal Investment" {% if current_trans == 'Internal Investment' %}selected{% endif %}>Internal Investment</option>
-                    <option value="Other">Other</option>
+                    <option value="Seed" {% if current_cap == 'Seed' %}selected{% endif %}>Seed</option>
+                    <option value="Venture Capital" {% if current_cap == 'Venture Capital' %}selected{% endif %}>Venture Capital</option>
+                    <option value="Private Equity" {% if current_cap == 'Private Equity' %}selected{% endif %}>Private Equity</option>
+                    <option value="Corporate M&A" {% if current_cap == 'Corporate M&A' %}selected{% endif %}>Corporate M&amp;A</option>
+                    <option value="Government/Contract" {% if current_cap == 'Government/Contract' %}selected{% endif %}>Government/Contract</option>
+                    <option value="Public Markets" {% if current_cap == 'Public Markets' %}selected{% endif %}>Public Markets</option>
+                    <option value="Internal/Self-funded" {% if current_cap == 'Internal/Self-funded' %}selected{% endif %}>Internal/Self-funded</option>
                 </select>
-            </div>
-
-            <!-- Row 4: Capital Sources (Multi-select) -->
-            <div style="margin-bottom: 10px;">
-                <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #555;">Capital Sources (select all that apply)</label>
-                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px 8px; padding: 6px 10px; background: #f9f9f9; border-radius: 4px;">
-                    {% set current_capital = master.capital_sources.split(',') if master.capital_sources else [] %}
-                    {% for source in ['Venture Capital', 'Corporate Venture', 'Private Equity', 'Government/Contract', 'Public Markets', 'Internal/Self-funded', 'Strategic Partner', 'Family Office'] %}
-                    <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
-                        <input type="checkbox" name="capital_sources" value="{{ source }}"
-                               {% if source in current_capital %}checked{% endif %}
-                               style="margin-right: 5px; width: 14px; height: 14px;">
-                        {{ source }}
-                    </label>
-                    {% endfor %}
-                </div>
             </div>
 
             <!-- Row 5: Sectors (Multi-select) -->

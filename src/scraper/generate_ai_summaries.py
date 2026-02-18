@@ -78,6 +78,13 @@ def generate_summaries(limit=5, force_regenerate=False):
             # Check if extraction exists
             extraction = session.query(AIExtraction).filter_by(item_id=item.id).first()
 
+            # capital_source is now a single string; fall back to old array format
+            cap_src = summary.get('capital_source')
+            if not cap_src and summary.get('capital_sources'):
+                # Old-format response (array) — take first element
+                sources = summary.get('capital_sources', [])
+                cap_src = sources[0] if sources else None
+
             if extraction:
                 # Update existing
                 extraction.title = summary.get('title')
@@ -86,9 +93,7 @@ def generate_summaries(limit=5, force_regenerate=False):
                 extraction.deal_type = summary.get('deal_type')  # Legacy
                 extraction.deal_amount = summary.get('deal_amount')
                 extraction.investors = summary.get('investors')
-                # New enhanced category fields
-                extraction.transaction_type = summary.get('transaction_type')
-                extraction.capital_sources = ','.join(summary.get('capital_sources', [])) if summary.get('capital_sources') else None
+                extraction.capital_sources = cap_src
                 extraction.sectors = ','.join(summary.get('sectors', [])) if summary.get('sectors') else None
                 extraction.location = summary.get('location')
                 extraction.strategic_significance = summary.get('strategic_significance')
@@ -105,9 +110,7 @@ def generate_summaries(limit=5, force_regenerate=False):
                     deal_type=summary.get('deal_type'),  # Legacy
                     deal_amount=summary.get('deal_amount'),
                     investors=summary.get('investors'),
-                    # New enhanced category fields
-                    transaction_type=summary.get('transaction_type'),
-                    capital_sources=','.join(summary.get('capital_sources', [])) if summary.get('capital_sources') else None,
+                    capital_sources=cap_src,
                     sectors=','.join(summary.get('sectors', [])) if summary.get('sectors') else None,
                     location=summary.get('location'),
                     strategic_significance=summary.get('strategic_significance'),
