@@ -5,6 +5,7 @@ from datetime import datetime
 from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, Boolean, Float, ForeignKey, text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
+from sqlalchemy.pool import StaticPool
 import os
 
 logger = logging.getLogger(__name__)
@@ -245,13 +246,22 @@ def get_engine(db_path='databases/tracker.db'):
                         auth_token=turso_token)
                     _libsql_conn.sync()  # Sync once on first connection
                     logger.info("Initial Turso sync complete")
+                else:
+                    # Verify the cached connection is still alive
+                    try:
+                        _libsql_conn.execute("SELECT 1")
+                    except Exception:
+                        logger.warning("Cached libsql connection stale, reconnecting...")
+                        _libsql_conn = libsql.connect('turso_replica.db',
+                            sync_url=turso_url,
+                            auth_token=turso_token)
+                        _libsql_conn.sync()
                 return LibsqlConnectionWrapper(_libsql_conn)
 
             _turso_engine = create_engine(
                 'sqlite+libsql://',
                 creator=get_libsql_connection,
-                pool_size=1,
-                pool_pre_ping=False,
+                poolclass=StaticPool,
                 echo=False
             )
             # Test the connection
