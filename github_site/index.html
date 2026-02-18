@@ -37,7 +37,7 @@
         </div>
     </nav>
 
-    <div class="hero-banner" style="position: relative; background: linear-gradient(135deg, #0f1d30 0%, #162f4d 40%, #1e456e 100%); padding: 64px 24px 56px; overflow: hidden;">
+    <div class="hero-banner" style="position: relative; background: linear-gradient(135deg, #0f1d30 0%, #162f4d 40%, #1e456e 100%); padding: 48px 24px 100px; overflow: hidden;">
         <!-- Green dot grid with diagonal fade -->
         <div style="position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: 1;
             background-image: radial-gradient(circle, #88c540 1.3px, transparent 1.3px);
@@ -46,77 +46,50 @@
             -webkit-mask-image: linear-gradient(315deg, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 70%);
             mask-image: linear-gradient(315deg, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 70%);
         "></div>
-        <div style="position: relative; z-index: 2; max-width: 1400px; margin: 0 auto; display: flex; align-items: center; gap: 40px;">
-            <div style="flex-shrink: 0;">
-                <svg width="80" height="80" viewBox="0 0 64 64" fill="none">
-                    <rect x="4" y="4" width="16" height="16" rx="2" stroke="#88c540" stroke-width="1.5" opacity="0.25"/>
-                    <rect x="24" y="4" width="16" height="16" rx="2" stroke="#88c540" stroke-width="1.5" opacity="0.25"/>
-                    <rect x="44" y="4" width="16" height="16" rx="2" stroke="#88c540" stroke-width="1.5" opacity="0.35"/>
-                    <rect x="4" y="24" width="16" height="16" rx="2" stroke="#88c540" stroke-width="1.5" opacity="0.25"/>
-                    <rect x="24" y="24" width="16" height="16" rx="2" stroke="#88c540" stroke-width="1.5" opacity="0.5"/>
-                    <rect x="44" y="24" width="16" height="16" rx="2" fill="#88c540" opacity="0.65"/>
-                    <rect x="4" y="44" width="16" height="16" rx="2" stroke="#88c540" stroke-width="1.5" opacity="0.35"/>
-                    <rect x="24" y="44" width="16" height="16" rx="2" fill="#88c540" opacity="0.65"/>
-                    <rect x="44" y="44" width="16" height="16" rx="2" fill="#88c540"/>
-                </svg>
+        <div style="position: relative; z-index: 2; max-width: 1400px; margin: 0 auto;">
+            <!-- Title row -->
+            <div style="display: flex; align-items: center; gap: 40px; margin-bottom: 40px;">
+                <div style="flex-shrink: 0;">
+                    <svg width="80" height="80" viewBox="0 0 64 64" fill="none">
+                        <rect x="4" y="4" width="16" height="16" rx="2" stroke="#88c540" stroke-width="1.5" opacity="0.25"/>
+                        <rect x="24" y="4" width="16" height="16" rx="2" stroke="#88c540" stroke-width="1.5" opacity="0.25"/>
+                        <rect x="44" y="4" width="16" height="16" rx="2" stroke="#88c540" stroke-width="1.5" opacity="0.35"/>
+                        <rect x="4" y="24" width="16" height="16" rx="2" stroke="#88c540" stroke-width="1.5" opacity="0.25"/>
+                        <rect x="24" y="24" width="16" height="16" rx="2" stroke="#88c540" stroke-width="1.5" opacity="0.5"/>
+                        <rect x="44" y="24" width="16" height="16" rx="2" fill="#88c540" opacity="0.65"/>
+                        <rect x="4" y="44" width="16" height="16" rx="2" stroke="#88c540" stroke-width="1.5" opacity="0.35"/>
+                        <rect x="24" y="44" width="16" height="16" rx="2" fill="#88c540" opacity="0.65"/>
+                        <rect x="44" y="44" width="16" height="16" rx="2" fill="#88c540"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1 style="color: white; font-size: 34px; font-weight: 700; margin: 0 0 10px 0; letter-spacing: -0.5px;">Defense Capital Dashboard</h1>
+                    <p style="color: rgba(255,255,255,0.7); font-size: 16px; margin: 0; max-width: 600px; line-height: 1.5;">Comprehensive tracking of defense sector investments, industrial health, and economic indicators</p>
+                </div>
             </div>
-            <div>
-                <h1 style="color: white; font-size: 34px; font-weight: 700; margin: 0 0 10px 0; letter-spacing: -0.5px;">Defense Capital Dashboard</h1>
-                <p style="color: rgba(255,255,255,0.7); font-size: 16px; margin: 0; max-width: 600px; line-height: 1.5;">Comprehensive tracking of defense sector investments, industrial health, and economic indicators</p>
+            <!-- Category cards inside hero -->
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
+                <a href="deals/index.html" style="background: rgba(255,255,255,0.08); backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; padding: 20px; text-decoration: none; transition: all 0.2s;">
+                    <h3 style="color: white; font-size: 16px; font-weight: 600; margin: 0 0 6px 0;">Deal Tracker</h3>
+                    <p style="color: rgba(255,255,255,0.55); font-size: 13px; margin: 0; line-height: 1.4;">Private capital investments: VC, PE, M&A, and government contracts</p>
+                </a>
+                <a href="charts/defense-investment.html" style="background: rgba(255,255,255,0.08); backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; padding: 20px; text-decoration: none; transition: all 0.2s;">
+                    <h3 style="color: white; font-size: 16px; font-weight: 600; margin: 0 0 6px 0;">Defense Investment</h3>
+                    <p style="color: rgba(255,255,255,0.55); font-size: 13px; margin: 0; line-height: 1.4;">Capital flows, new orders, and investor sentiment in the defense sector</p>
+                </a>
+                <a href="charts/defense-industrial.html" style="background: rgba(255,255,255,0.08); backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; padding: 20px; text-decoration: none; transition: all 0.2s;">
+                    <h3 style="color: white; font-size: 16px; font-weight: 600; margin: 0 0 6px 0;">Defense Industrial</h3>
+                    <p style="color: rgba(255,255,255,0.55); font-size: 13px; margin: 0; line-height: 1.4;">Production capacity, equipment output, and defense procurement</p>
+                </a>
+                <a href="charts/us-industrial.html" style="background: rgba(255,255,255,0.08); backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; padding: 20px; text-decoration: none; transition: all 0.2s;">
+                    <h3 style="color: white; font-size: 16px; font-weight: 600; margin: 0 0 6px 0;">US Industrial</h3>
+                    <p style="color: rgba(255,255,255,0.55); font-size: 13px; margin: 0; line-height: 1.4;">Broader economic indicators affecting defense manufacturing</p>
+                </a>
             </div>
         </div>
     </div>
 
     <div class="container">
-
-        <div class="grid grid-2">
-            <div class="card">
-                <h2>💰 Deal Tracker</h2>
-                <p>Monitor private capital investments in the defense sector:</p>
-                <ul style="margin: 1rem 0; padding-left: 1.5rem;">
-                    <li>Venture capital deals</li>
-                    <li>Private equity investments</li>
-                    <li>Corporate transactions</li>
-                    <li>Public-private partnerships</li>
-                </ul>
-                <a href="deals/index.html" class="btn btn-primary">View Deals</a>
-            </div>
-
-            <div class="card">
-                <h2>📈 Defense Investment Trends</h2>
-                <p>Track capital flows into the defense sector:</p>
-                <ul style="margin: 1rem 0; padding-left: 1.5rem;">
-                    <li>Defense capital goods orders</li>
-                    <li>Investment activity indicators</li>
-                    <li>Investor sentiment (ITA ETF)</li>
-                </ul>
-                <a href="charts/defense-investment.html" class="btn btn-primary">View Trends</a>
-            </div>
-
-            <div class="card">
-                <h2>🏭 Defense Industrial Health</h2>
-                <p>Measure the production capacity of the defense industrial base:</p>
-                <ul style="margin: 1rem 0; padding-left: 1.5rem;">
-                    <li>Aircraft orders & production</li>
-                    <li>Defense equipment output</li>
-                    <li>Federal defense spending</li>
-                    <li>Manufacturing construction</li>
-                </ul>
-                <a href="charts/defense-industrial.html" class="btn btn-primary">View Health</a>
-            </div>
-
-            <div class="card">
-                <h2>🇺🇸 Overall US Industrial Health</h2>
-                <p>Broader economic indicators affecting defense manufacturing:</p>
-                <ul style="margin: 1rem 0; padding-left: 1.5rem;">
-                    <li>Industrial production index</li>
-                    <li>Business investment trends</li>
-                    <li>Lending standards</li>
-                    <li>Market indicators</li>
-                </ul>
-                <a href="charts/us-industrial.html" class="btn btn-primary">View Economy</a>
-            </div>
-        </div>
 
         <div class="card">
             <h2>Featured Charts</h2>
