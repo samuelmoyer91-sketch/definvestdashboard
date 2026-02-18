@@ -105,12 +105,15 @@ Old deals retain their legacy field values. Decision: leave the backlog as-is �
 2. **AI-generated titles** — AI now writes concise analyst-style titles matching Sam's format ([Company] [Verb] [Amount] [Purpose]), pre-populated in triage form with AI badge
 3. **Electronic Warfare sector** — Added as a sector option across triage, edit, and AI prompt
 4. **Sectors filter page** — New `/sectors` overview (deal count, total value, recent companies per sector) and `/sectors/{name}` drill-down, accessible from nav bar
-5. **Simplified capital source taxonomy** — Replaced two redundant fields (transaction_type + capital_sources multi-select) with single Capital Source dropdown: Seed, VC, PE, Corporate M&A, Government/Contract, Public Markets, Internal/Self-funded
+5. **Simplified capital taxonomy** — Replaced two redundant fields (transaction_type + capital_sources multi-select) with single "Capital Type" dropdown: Seed, VC, PE, Corporate M&A, Government/Contract, Public Markets, Internal/Self-funded, Fund Raise
+6. **Fund Raise capital type** — Added to capture VC/PE funds raising LP capital (distinct from deploying capital)
+7. **Renamed "Capital Source" → "Capital Type"** — Better label since "source" doesn't fit categories like Fund Raise
 
 ### Decisions made:
 - Legacy deal data left as-is (no migration needed, fallback logic handles it)
 - Cloudflare Pages migration deferred (requires account setup)
-- Capital source is single-select (mixed-source deals pick the dominant source)
+- Capital type is single-select (mixed-source deals pick the dominant type)
+- Additional source URLs for deals go in the Notes field for now (no dedicated field unless it becomes a frequent pattern)
 
 ## Open To-Dos
 - **Migrate static site off GitHub Pages** — Current URL (`samuelmoyer91-sketch.github.io/definvestdashboard`) is unprofessional. Plan: Cloudflare Pages + custom domain (e.g. `capitalfordefense.com`). Requires creating a Cloudflare account, purchasing domain (~$10-15/yr), generating API token. Claude can handle the workflow migration and DNS config once account is set up.
