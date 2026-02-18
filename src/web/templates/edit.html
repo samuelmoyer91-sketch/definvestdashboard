@@ -114,8 +114,8 @@
                 <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #555;">Sectors/Technology (select all that apply)</label>
                 <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px 8px; padding: 6px 10px; background: #f9f9f9; border-radius: 4px;">
                     {% set current_sectors = master.sectors.split(',') if master.sectors else [] %}
-                    {% set sector_options = ['Autonomous Systems/Drones', 'AI/ML', 'Space/Satellites', 'Aerospace', 'Cybersecurity', 'Advanced Materials', 'Semiconductors/Electronics', 'Manufacturing/Production', 'Software/IT', 'Munitions/Weapons', 'Communications', 'Other'] %}
-                    {% set sector_labels = ['Autonomous/Drones', 'AI/ML', 'Space/Satellites', 'Aerospace', 'Cybersecurity', 'Advanced Materials', 'Semiconductors', 'Manufacturing', 'Software/IT', 'Munitions/Weapons', 'Communications', 'Other'] %}
+                    {% set sector_options = ['Autonomous Systems/Drones', 'AI/ML', 'Space/Satellites', 'Aerospace', 'Cybersecurity', 'Advanced Materials', 'Semiconductors/Electronics', 'Manufacturing/Production', 'Software/IT', 'Munitions/Weapons', 'Communications', 'Electronic Warfare', 'Other'] %}
+                    {% set sector_labels = ['Autonomous/Drones', 'AI/ML', 'Space/Satellites', 'Aerospace', 'Cybersecurity', 'Advanced Materials', 'Semiconductors', 'Manufacturing', 'Software/IT', 'Munitions/Weapons', 'Communications', 'Electronic Warfare', 'Other'] %}
                     {% for i in range(sector_options|length) %}
                     <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
                         <input type="checkbox" name="sectors" value="{{ sector_options[i] }}"

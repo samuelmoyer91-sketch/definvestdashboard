@@ -61,7 +61,7 @@ Extract the following information (use "Unknown" if not found):
 2. COMPANY DESCRIPTION: One sentence describing what the company does (focus on defense/tech capabilities)
 3. TRANSACTION TYPE: Choose ONE from: Equity Funding Round, Acquisition, Merger, Asset Sale/Divestiture, IPO, Contract/Award, Joint Venture, Strategic, Internal Investment, Other
 4. CAPITAL SOURCES: Choose ALL that apply from: Venture Capital, Corporate Venture, Private Equity, Government/Contract, Public Markets, Internal/Self-funded, Strategic Partner, Family Office (return as array)
-5. SECTORS: Choose ALL that apply from: Autonomous Systems/Drones, AI/ML, Space/Satellites, Aerospace, Cybersecurity, Advanced Materials, Semiconductors/Electronics, Manufacturing/Production, Software/IT, Munitions/Weapons, Communications, Other (return as array)
+5. SECTORS: Choose ALL that apply from: Autonomous Systems/Drones, AI/ML, Space/Satellites, Aerospace, Cybersecurity, Advanced Materials, Semiconductors/Electronics, Manufacturing/Production, Software/IT, Munitions/Weapons, Communications, Electronic Warfare, Other (return as array)
 6. DEAL AMOUNT: Dollar value if mentioned (e.g., "$300M" or "$4.7B")
 7. INVESTORS/ACQUIRERS: Key firms or companies involved
 8. LOCATION: Where the company is headquartered or where the deal/project is located. Format as "City, State, Country" for US locations (e.g., "San Diego, CA, USA") or "City, Country" for international (e.g., "London, UK"). Use null if not mentioned.

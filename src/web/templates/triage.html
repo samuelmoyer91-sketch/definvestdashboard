@@ -361,6 +361,12 @@
                             Communications
                         </label>
                         <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                            <input type="checkbox" name="sectors" value="Electronic Warfare"
+                                   {% if 'Electronic Warfare' in ai_sectors_new or 'Electronic Warfare' in ai_sector or 'EW' in ai_sector or 'Jamming' in ai_sector %}checked{% endif %}
+                                   style="margin-right: 5px; width: 14px; height: 14px;">
+                            Electronic Warfare
+                        </label>
+                        <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
                             <input type="checkbox" name="sectors" value="Other"
                                    style="margin-right: 5px; width: 14px; height: 14px;">
                             Other
