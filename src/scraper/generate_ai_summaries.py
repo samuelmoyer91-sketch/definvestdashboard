@@ -80,6 +80,7 @@ def generate_summaries(limit=5, force_regenerate=False):
 
             if extraction:
                 # Update existing
+                extraction.title = summary.get('title')
                 extraction.company = summary.get('company_name')
                 extraction.company_description = summary.get('company_description')
                 extraction.deal_type = summary.get('deal_type')  # Legacy
@@ -98,6 +99,7 @@ def generate_summaries(limit=5, force_regenerate=False):
                 # Create new
                 extraction = AIExtraction(
                     item_id=item.id,
+                    title=summary.get('title'),
                     company=summary.get('company_name'),
                     company_description=summary.get('company_description'),
                     deal_type=summary.get('deal_type'),  # Legacy

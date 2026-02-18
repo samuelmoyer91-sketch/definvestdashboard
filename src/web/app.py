@@ -57,6 +57,15 @@ async def run_startup_migrations():
             conn.commit()
             logger.info("title column added successfully")
 
+        # Check if title column exists on ai_extractions
+        try:
+            conn.execute(sa_text("SELECT title FROM ai_extractions LIMIT 1"))
+        except Exception:
+            logger.info("Adding title column to ai_extractions...")
+            conn.execute(sa_text("ALTER TABLE ai_extractions ADD COLUMN title TEXT"))
+            conn.commit()
+            logger.info("ai_extractions.title column added successfully")
+
 
 # =============================================================================
 # Global Exception Handler

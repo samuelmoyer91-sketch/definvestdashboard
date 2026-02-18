@@ -56,7 +56,8 @@ Article Text:
 
 Extract the following information (use "Unknown" if not found):
 
-1. COMPANY NAME: The company being invested in or acquired
+1. TITLE: Write a concise analyst-style headline (5-10 words). Always lead with the company name. Use present-tense action verbs: "Raises", "Acquires", "Builds", "Invests", "Opens". Include the dollar amount when known. Strip all journalistic fluff — no "to meet growing demand", no source attributions, no filler. Use industry shorthand where appropriate (e.g., "PE Fund", "PNT", "Space Tech"). Never be vague — always name the company (not "Startup raises..." or "Company confirms..."). Examples: "Safran Acquires Syntony for PNT", "GRVTY Invests $8M in Virginia Facility", "Veritas Raises $15.3B PE Fund for Defense Investments", "GE Aerospace Builds Manufacturing Facilities". Do NOT copy the article headline — rewrite it shorter and cleaner.
+2. COMPANY NAME: The company being invested in or acquired
 2. COMPANY DESCRIPTION: One sentence describing what the company does (focus on defense/tech capabilities)
 3. TRANSACTION TYPE: Choose ONE from: Equity Funding Round, Acquisition, Merger, Asset Sale/Divestiture, IPO, Contract/Award, Joint Venture, Strategic, Internal Investment, Other
 4. CAPITAL SOURCES: Choose ALL that apply from: Venture Capital, Corporate Venture, Private Equity, Government/Contract, Public Markets, Internal/Self-funded, Strategic Partner, Family Office (return as array)
@@ -69,6 +70,7 @@ Extract the following information (use "Unknown" if not found):
 
 Format your response as JSON:
 {{
+  "title": "...",
   "company_name": "...",
   "company_description": "...",
   "transaction_type": "...",

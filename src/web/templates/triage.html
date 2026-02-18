@@ -128,9 +128,11 @@
                 <div style="margin-bottom: 10px;">
                     <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #555;">
                         Title
+                        {% if item.ai_extraction and item.ai_extraction.title %}<span class="ai-badge">AI</span>{% endif %}
                     </label>
                     <input type="text" name="title"
-                           value="{{ item.title }}"
+                           value="{{ item.ai_extraction.title if item.ai_extraction and item.ai_extraction.title else item.title }}"
+                           {% if item.ai_extraction and item.ai_extraction.title %}class="ai-populated"{% endif %}
                            style="width: 100%; padding: 7px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;"
                            placeholder="Edit the deal title">
                 </div>

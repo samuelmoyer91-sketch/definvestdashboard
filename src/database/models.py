@@ -76,6 +76,9 @@ class AIExtraction(Base):
     id = Column(Integer, primary_key=True)
     item_id = Column(Integer, ForeignKey('raw_items.id'), unique=True, nullable=False)
 
+    # AI-generated title
+    title = Column(String)  # Concise deal headline, e.g. "Shield AI Raises $300M Series E"
+
     # Core deal information
     company = Column(String)  # Company name
     company_description = Column(Text)  # What the company does (1 sentence)
