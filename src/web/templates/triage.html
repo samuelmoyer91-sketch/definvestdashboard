@@ -196,10 +196,10 @@
                     </div>
                 </div>
 
-                <!-- Row 3: Capital Source -->
+                <!-- Row 3: Capital Type -->
                 <div style="margin-bottom: 10px;">
                     <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #555;">
-                        Capital Source
+                        Capital Type
                         {% if item.ai_extraction and item.ai_extraction.capital_sources %}<span class="ai-badge">AI</span>{% endif %}
                     </label>
                     {% set ai_cap = item.ai_extraction.capital_sources if item.ai_extraction and item.ai_extraction.capital_sources else '' %}
