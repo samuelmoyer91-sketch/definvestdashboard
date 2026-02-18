@@ -9,7 +9,8 @@ from .models import (
     Investor,
     DealInvestor,
     get_engine,
-    get_session
+    get_session,
+    sync_turso
 )
 
 __all__ = [
@@ -21,5 +22,6 @@ __all__ = [
     'Investor',
     'DealInvestor',
     'get_engine',
-    'get_session'
+    'get_session',
+    'sync_turso'
 ]

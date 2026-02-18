@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
-from src.database import RawItem, ArticleContent, AIExtraction, MasterItem, RejectedItem, Investor, DealInvestor, get_session
+from src.database import RawItem, ArticleContent, AIExtraction, MasterItem, RejectedItem, Investor, DealInvestor, get_session, sync_turso
 from src.utils.investor_parser import parse_investors, slugify
 
 app = FastAPI(title="Defense Capital Tracker")
@@ -24,6 +24,17 @@ app = FastAPI(title="Defense Capital Tracker")
 # =============================================================================
 # Startup Migration — ensures schema is current on deploy
 # =============================================================================
+
+@app.on_event("startup")
+async def sync_replica_on_startup():
+    """Sync the Turso replica on startup so reads are fresh."""
+    try:
+        get_session().close()  # Initializes engine + first sync
+        sync_turso()
+        logger.info("Startup Turso sync complete")
+    except Exception as e:
+        logger.warning(f"Startup sync failed (will retry on first request): {e}")
+
 
 @app.on_event("startup")
 async def run_startup_migrations():
@@ -199,6 +210,7 @@ async def email_action(request: Request, token: str = Query(...)):
                 )
                 session.add(master)
                 session.commit()
+                sync_turso()
 
             return HTMLResponse(
                 content=f"""
@@ -224,6 +236,7 @@ async def email_action(request: Request, token: str = Query(...)):
                 )
                 session.add(rejected)
                 session.commit()
+                sync_turso()
 
             return HTMLResponse(
                 content=f"""
@@ -271,6 +284,8 @@ templates = Jinja2Templates(directory=str(templates_dir))
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
     """Home page showing triage queue."""
+    from sqlalchemy.orm import joinedload
+
     session = get_session()
 
     try:
@@ -284,6 +299,9 @@ async def home(request: Request):
             ArticleContent, RawItem.id == ArticleContent.item_id
         ).outerjoin(
             AIExtraction, RawItem.id == AIExtraction.item_id
+        ).options(
+            joinedload(RawItem.article),
+            joinedload(RawItem.extraction)
         ).filter(
             ArticleContent.scrape_success == True,
             RawItem.status != 'ai_screened_out',
@@ -299,10 +317,10 @@ async def home(request: Request):
             RawItem.published_date.desc()
         ).limit(200).all()
 
-        # Add article content and AI extraction to each item
+        # Map relationships to the attribute names templates expect
         for item in items:
-            item.article_content = session.query(ArticleContent).filter_by(item_id=item.id).first()
-            item.ai_extraction = session.query(AIExtraction).filter_by(item_id=item.id).first()
+            item.article_content = item.article
+            item.ai_extraction = item.extraction
 
         total_items = len(items)
         master_count = session.query(MasterItem).count()
@@ -461,10 +479,9 @@ async def accept_item(
             _sync_investor_links(session, master)
 
             session.commit()
+            sync_turso()  # Push write to Turso cloud
 
-        next_id = _find_next_triage_item(session, item_id)
-        redirect_url = f"/?open={next_id}" if next_id else "/"
-        return RedirectResponse(url=redirect_url, status_code=303)
+        return RedirectResponse(url="/", status_code=303)
     finally:
         session.close()
 
@@ -475,9 +492,6 @@ async def reject_item(item_id: int):
     session = get_session()
 
     try:
-        # Find next item BEFORE rejecting (current item is still in queue)
-        next_id = _find_next_triage_item(session, item_id)
-
         # Check if already rejected
         existing = session.query(RejectedItem).filter_by(item_id=item_id).first()
 
@@ -485,9 +499,9 @@ async def reject_item(item_id: int):
             rejected = RejectedItem(item_id=item_id)
             session.add(rejected)
             session.commit()
+            sync_turso()  # Push write to Turso cloud
 
-        redirect_url = f"/?open={next_id}" if next_id else "/"
-        return RedirectResponse(url=redirect_url, status_code=303)
+        return RedirectResponse(url="/", status_code=303)
     finally:
         session.close()
 
@@ -578,10 +592,21 @@ def _sync_investor_links(session, master):
 
     Deletes existing links first (for edit use case), then recreates.
     """
-    # Delete old links
+    # Track investors that need deal_count updates
+    affected_investor_ids = set()
+
+    # Get existing links before deleting (to update their counts later)
+    old_links = session.query(DealInvestor).filter_by(master_item_id=master.id).all()
+    for link in old_links:
+        affected_investor_ids.add(link.investor_id)
     session.query(DealInvestor).filter_by(master_item_id=master.id).delete()
 
     if not master.investors:
+        # Update counts for removed investors only
+        for inv_id in affected_investor_ids:
+            investor = session.query(Investor).filter_by(id=inv_id).first()
+            if investor:
+                investor.deal_count = session.query(DealInvestor).filter_by(investor_id=inv_id).count()
         return
 
     parsed = parse_investors(master.investors)
@@ -604,6 +629,8 @@ def _sync_investor_links(session, master):
         if now > (investor.last_seen or now):
             investor.last_seen = now
 
+        affected_investor_ids.add(investor.id)
+
         link = DealInvestor(
             master_item_id=master.id,
             investor_id=investor.id,
@@ -611,11 +638,11 @@ def _sync_investor_links(session, master):
         )
         session.add(link)
 
-    # Update deal counts for all investors
-    for investor in session.query(Investor).all():
-        investor.deal_count = session.query(DealInvestor).filter_by(
-            investor_id=investor.id
-        ).count()
+    # Update deal counts only for affected investors
+    for inv_id in affected_investor_ids:
+        investor = session.query(Investor).filter_by(id=inv_id).first()
+        if investor:
+            investor.deal_count = session.query(DealInvestor).filter_by(investor_id=inv_id).count()
 
 
 @app.get("/edit/{master_id}", response_class=HTMLResponse)
@@ -685,6 +712,7 @@ async def save_edit(
         _sync_investor_links(session, master)
 
         session.commit()
+        sync_turso()
 
         return RedirectResponse(url="/master", status_code=303)
     finally:

@@ -19,6 +19,8 @@ Base = declarative_base()
 
 # Turso/LibSQL connection cache
 _turso_engine = None
+_session_factory = None
+_libsql_conn = None
 
 
 class RawItem(Base):
@@ -236,15 +238,20 @@ def get_engine(db_path='databases/tracker.db'):
                     return getattr(self._conn, name)
 
             def get_libsql_connection():
-                conn = libsql.connect('turso_replica.db',
-                    sync_url=turso_url,
-                    auth_token=turso_token)
-                conn.sync()
-                return LibsqlConnectionWrapper(conn)
+                global _libsql_conn
+                if _libsql_conn is None:
+                    _libsql_conn = libsql.connect('turso_replica.db',
+                        sync_url=turso_url,
+                        auth_token=turso_token)
+                    _libsql_conn.sync()  # Sync once on first connection
+                    logger.info("Initial Turso sync complete")
+                return LibsqlConnectionWrapper(_libsql_conn)
 
             _turso_engine = create_engine(
                 'sqlite+libsql://',
                 creator=get_libsql_connection,
+                pool_size=1,
+                pool_pre_ping=False,
                 echo=False
             )
             # Test the connection
@@ -265,8 +272,24 @@ def get_engine(db_path='databases/tracker.db'):
         return engine
 
 
+def sync_turso():
+    """Sync the local Turso replica with the cloud after writes.
+
+    Call this after committing data so subsequent reads see fresh data.
+    No-op if not using Turso (local SQLite mode).
+    """
+    global _libsql_conn
+    if _libsql_conn is not None:
+        try:
+            _libsql_conn.sync()
+        except Exception as e:
+            logger.warning(f"Turso sync failed (non-fatal): {e}")
+
+
 def get_session(db_path='databases/tracker.db'):
     """Create and return database session."""
-    engine = get_engine(db_path)
-    Session = sessionmaker(bind=engine)
-    return Session()
+    global _session_factory
+    if _session_factory is None:
+        engine = get_engine(db_path)
+        _session_factory = sessionmaker(bind=engine)
+    return _session_factory()
