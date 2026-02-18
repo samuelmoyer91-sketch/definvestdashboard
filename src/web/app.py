@@ -747,6 +747,125 @@ async def investors_list(request: Request):
         session.close()
 
 
+def _parse_amount(amount_str):
+    """Parse investment amount string to a float for aggregation.
+
+    Handles: "$15,300,000", "$300M", "$4.7B", "$500K", None
+    Returns None if unparseable.
+    """
+    if not amount_str:
+        return None
+    clean = amount_str.replace('$', '').replace(',', '').strip()
+    if not clean:
+        return None
+    import re
+    match = re.match(r'^([\d.]+)\s*([KMBT])', clean, re.IGNORECASE)
+    if match:
+        num = float(match.group(1))
+        suffix = match.group(2).upper()
+        multipliers = {'K': 1e3, 'M': 1e6, 'B': 1e9, 'T': 1e12}
+        return num * multipliers.get(suffix, 1)
+    try:
+        return float(clean)
+    except ValueError:
+        return None
+
+
+def _format_amount(value):
+    """Format a numeric amount as a readable string like $1.2B or $300M."""
+    if value is None or value == 0:
+        return None
+    if value >= 1e9:
+        return f"${value / 1e9:.1f}B"
+    if value >= 1e6:
+        return f"${value / 1e6:.0f}M"
+    if value >= 1e3:
+        return f"${value / 1e3:.0f}K"
+    return f"${value:,.0f}"
+
+
+@app.get("/sectors", response_class=HTMLResponse)
+async def sectors_list(request: Request):
+    """View deal activity by sector/technology."""
+    session = get_session()
+
+    try:
+        items = session.query(MasterItem).filter(
+            MasterItem.sectors != None,
+            MasterItem.sectors != ''
+        ).order_by(MasterItem.curated_at.desc()).all()
+
+        # Aggregate by sector
+        from collections import defaultdict
+        sector_data = defaultdict(lambda: {
+            'count': 0, 'total_value': 0, 'companies': [], 'last_seen': None
+        })
+
+        for item in items:
+            for sector in item.sectors.split(','):
+                sector = sector.strip()
+                if not sector:
+                    continue
+                data = sector_data[sector]
+                data['count'] += 1
+                amount = _parse_amount(item.investment_amount)
+                if amount:
+                    data['total_value'] += amount
+                if item.company and item.company not in data['companies']:
+                    data['companies'].append(item.company)
+                if data['last_seen'] is None or (item.curated_at and item.curated_at > data['last_seen']):
+                    data['last_seen'] = item.curated_at
+
+        # Build sorted list
+        sectors = []
+        for name, data in sorted(sector_data.items(), key=lambda x: x[1]['count'], reverse=True):
+            sectors.append({
+                'name': name,
+                'count': data['count'],
+                'total_value': _format_amount(data['total_value']),
+                'companies': data['companies'][:3],
+                'last_seen': data['last_seen'],
+            })
+
+        return templates.TemplateResponse("sectors.html", {
+            "request": request,
+            "sectors": sectors,
+        })
+    finally:
+        session.close()
+
+
+@app.get("/sectors/{sector_name}", response_class=HTMLResponse)
+async def sector_deals(request: Request, sector_name: str):
+    """View all deals in a specific sector."""
+    from urllib.parse import unquote
+    sector_name = unquote(sector_name)
+
+    session = get_session()
+
+    try:
+        # Find master items containing this sector
+        all_items = session.query(MasterItem).filter(
+            MasterItem.sectors != None
+        ).order_by(MasterItem.curated_at.desc()).all()
+
+        # Filter to items that contain this sector
+        items = []
+        for item in all_items:
+            sector_list = [s.strip() for s in item.sectors.split(',')]
+            if sector_name in sector_list:
+                item.raw_item = session.query(RawItem).filter_by(id=item.item_id).first()
+                items.append(item)
+
+        return templates.TemplateResponse("sector_deals.html", {
+            "request": request,
+            "sector_name": sector_name,
+            "items": items,
+        })
+    finally:
+        session.close()
+
+
 if __name__ == "__main__":
     import uvicorn
 

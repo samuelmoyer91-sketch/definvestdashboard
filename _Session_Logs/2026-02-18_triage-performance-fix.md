@@ -60,5 +60,19 @@ Reviewed Sam's manual title rewrites on recent master list items to identify pre
 ### Note:
 Only new articles processed after this deploy will get AI-generated titles. Existing items retain their original headlines unless re-processed with `--force`.
 
+## Sectors/Technology Filter Page
+
+Added `/sectors` and `/sectors/{name}` routes to the triage app, mirroring the `/investors` page pattern.
+
+### Changes:
+- `src/web/app.py` — Two new routes: `/sectors` (overview with deal count, total value, recent companies per sector) and `/sectors/{sector_name}` (filtered deal list for one sector). Helper functions `_parse_amount()` and `_format_amount()` for aggregating investment values.
+- `src/web/templates/sectors.html` — Overview table: sector name (clickable), deal count, total deal value, recent companies, last seen date
+- `src/web/templates/sector_deals.html` — Filtered deal cards per sector (reuses master list card layout)
+- `src/web/templates/base.html` — Added "Sectors" nav link between "Investors" and "Statistics"
+- No new database tables — aggregates directly from `master_list.sectors` comma-separated column
+
+### Future:
+- Add sector breakdown to the public GitHub Pages dashboard
+
 ## Open To-Dos
 - **Migrate static site off GitHub Pages** — Current URL (`samuelmoyer91-sketch.github.io/definvestdashboard`) is unprofessional. Plan: Cloudflare Pages + custom domain (e.g. `capitalfordefense.com`). Requires creating a Cloudflare account, purchasing domain (~$10-15/yr), generating API token. Claude can handle the workflow migration and DNS config once account is set up.

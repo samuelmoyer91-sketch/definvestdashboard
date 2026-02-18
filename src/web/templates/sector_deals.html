@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}{{ sector_name }} - Defense Capital Tracker{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 20px;">
+    <a href="/sectors" class="btn btn-secondary" style="font-size: 13px; padding: 6px 12px;">&larr; All Sectors</a>
+</div>
+
+<h2 style="margin-bottom: 5px;">{{ sector_name }}</h2>
+<p style="color: #666; margin-bottom: 20px;">{{ items | length }} deal{{ 's' if items | length != 1 else '' }}</p>
+
+{% if items | length == 0 %}
+<div class="card">
+    <p style="text-align: center; color: #666;">No deals found in this sector.</p>
+</div>
+{% else %}
+
+{% for item in items %}
+<div class="card item-card" style="border-left: 4px solid #4c9173;">
+    <div class="item-header">
+        <div class="item-title">{{ item.title if item.title else item.raw_item.title | safe }}</div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 12px;">
+        {% if item.company %}
+        <div>
+            <strong style="font-size: 12px; color: #666;">Company:</strong>
+            <div style="font-size: 14px; margin-top: 4px;">{{ item.company }}</div>
+        </div>
+        {% endif %}
+
+        {% if item.investment_amount %}
+        <div>
+            <strong style="font-size: 12px; color: #666;">Amount:</strong>
+            <div style="font-size: 14px; margin-top: 4px;">{{ item.investment_amount }}</div>
+        </div>
+        {% endif %}
+
+        {% if item.investors %}
+        <div>
+            <strong style="font-size: 12px; color: #666;">Investors:</strong>
+            <div style="font-size: 14px; margin-top: 4px;">{{ item.investors }}</div>
+        </div>
+        {% endif %}
+
+        {% if item.transaction_type %}
+        <div>
+            <strong style="font-size: 12px; color: #666;">Type:</strong>
+            <div style="margin-top: 4px;"><span class="badge badge-info">{{ item.transaction_type }}</span></div>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if item.summary %}
+    <div style="margin-top: 8px;">
+        <strong style="font-size: 12px; color: #666;">Summary:</strong>
+        <div style="font-size: 14px; color: #555; margin-top: 4px; line-height: 1.5;">{{ item.summary }}</div>
+    </div>
+    {% endif %}
+
+    <div class="item-actions" style="margin-top: 12px;">
+        <a href="/edit/{{ item.id }}" class="btn btn-primary" style="font-size: 13px; padding: 6px 12px;">Edit</a>
+        {% if item.raw_item %}
+        <a href="{{ item.raw_item.url }}" target="_blank" class="btn btn-link" style="font-size: 13px;">View Original</a>
+        {% endif %}
+    </div>
+</div>
+{% endfor %}
+
+{% endif %}
+{% endblock %}

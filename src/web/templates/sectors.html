@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Sectors - Defense Capital Tracker{% endblock %}
+
+{% block content %}
+<h2 style="margin-bottom: 20px;">Sectors / Technology ({{ sectors | length }})</h2>
+
+{% if sectors | length == 0 %}
+<div class="card">
+    <p style="text-align: center; color: #666;">
+        No sector data yet. Accept deals with sector tags to populate this list.
+    </p>
+</div>
+{% else %}
+
+<div class="card">
+    <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+        <thead>
+            <tr style="border-bottom: 2px solid #ddd; text-align: left;">
+                <th style="padding: 10px 12px; font-size: 12px; color: #666; text-transform: uppercase;">Sector</th>
+                <th style="padding: 10px 12px; font-size: 12px; color: #666; text-transform: uppercase; text-align: center;">Deals</th>
+                <th style="padding: 10px 12px; font-size: 12px; color: #666; text-transform: uppercase;">Total Value</th>
+                <th style="padding: 10px 12px; font-size: 12px; color: #666; text-transform: uppercase;">Recent Companies</th>
+                <th style="padding: 10px 12px; font-size: 12px; color: #666; text-transform: uppercase;">Last Seen</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sector in sectors %}
+            <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 10px 12px; font-weight: 500;">
+                    <a href="/sectors/{{ sector.name | urlencode }}" style="color: #5e81ac; text-decoration: none;">{{ sector.name }}</a>
+                </td>
+                <td style="padding: 10px 12px; text-align: center;">
+                    <span class="badge badge-info">{{ sector.count }}</span>
+                </td>
+                <td style="padding: 10px 12px; color: #333; font-weight: 500;">
+                    {{ sector.total_value or '—' }}
+                </td>
+                <td style="padding: 10px 12px; color: #666; font-size: 13px;">
+                    {{ sector.companies | join(', ') }}
+                </td>
+                <td style="padding: 10px 12px; color: #666;">
+                    {{ sector.last_seen.strftime('%Y-%m-%d') if sector.last_seen else 'Unknown' }}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endif %}
+{% endblock %}
