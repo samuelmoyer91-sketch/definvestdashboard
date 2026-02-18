@@ -96,7 +96,23 @@ Replaced two redundant fields (transaction_type + capital_sources multi-select) 
 - `generate_ai_summaries.py` — Saves single `capital_source` string; backward-compatible with old array format
 
 ### Note:
-Old deals retain their legacy field values. Migration of historical data is deferred to a future session.
+Old deals retain their legacy field values. Decision: leave the backlog as-is — legacy fields display fine through fallback logic, no user-facing impact, not worth the busywork of batch-migrating 84 records.
+
+## Session Summary
+
+### What was accomplished:
+1. **Triage performance fix** — Reduced accept/reject latency from ~10s to <1s by caching the Turso connection, eliminating redundant syncs, fixing N+1 queries, and scoping investor recounts
+2. **AI-generated titles** — AI now writes concise analyst-style titles matching Sam's format ([Company] [Verb] [Amount] [Purpose]), pre-populated in triage form with AI badge
+3. **Electronic Warfare sector** — Added as a sector option across triage, edit, and AI prompt
+4. **Sectors filter page** — New `/sectors` overview (deal count, total value, recent companies per sector) and `/sectors/{name}` drill-down, accessible from nav bar
+5. **Simplified capital source taxonomy** — Replaced two redundant fields (transaction_type + capital_sources multi-select) with single Capital Source dropdown: Seed, VC, PE, Corporate M&A, Government/Contract, Public Markets, Internal/Self-funded
+
+### Decisions made:
+- Legacy deal data left as-is (no migration needed, fallback logic handles it)
+- Cloudflare Pages migration deferred (requires account setup)
+- Capital source is single-select (mixed-source deals pick the dominant source)
 
 ## Open To-Dos
 - **Migrate static site off GitHub Pages** — Current URL (`samuelmoyer91-sketch.github.io/definvestdashboard`) is unprofessional. Plan: Cloudflare Pages + custom domain (e.g. `capitalfordefense.com`). Requires creating a Cloudflare account, purchasing domain (~$10-15/yr), generating API token. Claude can handle the workflow migration and DNS config once account is set up.
+- **Add sector breakdown to public dashboard** — The `/sectors` page exists on the triage app; eventually replicate on the GitHub Pages site
+- **Batch-migrate legacy deals** — Low priority; 84 old records still use legacy fields, can be re-tagged to new taxonomy in a future session if needed
