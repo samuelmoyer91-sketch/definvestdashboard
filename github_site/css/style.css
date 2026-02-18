@@ -81,7 +81,7 @@ nav {
   background-color: var(--primary-blue);
   color: white;
   height: var(--nav-height);
-  box-shadow: 0 2px 4px var(--shadow);
+  box-shadow: none;
   position: sticky;
   top: 0;
   z-index: 1000;
@@ -177,20 +177,38 @@ nav ul li a.active {
 
 /* Page header */
 .page-header {
-  background-color: white;
-  padding: var(--spacing-lg);
-  margin-bottom: var(--spacing-lg);
-  border-radius: var(--border-radius);
-  box-shadow: 0 2px 4px var(--shadow);
-  border-top: 3px solid var(--accent-green);
+  position: relative;
+  background: linear-gradient(180deg, var(--primary-blue) 0%, var(--primary-blue-dark) 100%);
+  padding: var(--spacing-lg) var(--spacing-md);
+  margin: 0 calc(-1 * var(--spacing-md)) var(--spacing-lg);
+  margin-top: calc(-1 * var(--spacing-md));
+  border-radius: 0;
+  box-shadow: none;
+  border-top: none;
+  overflow: hidden;
+}
+
+.page-header::before {
+  content: '';
+  position: absolute;
+  top: 0; right: 0; bottom: 0; left: 0;
+  background-image: radial-gradient(circle, #88c540 1.3px, transparent 1.3px);
+  background-size: 20px 20px;
+  opacity: 0.4;
+  -webkit-mask-image: linear-gradient(315deg, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 70%);
+  mask-image: linear-gradient(315deg, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 70%);
+  pointer-events: none;
 }
 
 .page-header h1 {
+  position: relative;
+  color: white;
   margin-bottom: var(--spacing-xs);
 }
 
 .page-header p {
-  color: var(--text-secondary);
+  position: relative;
+  color: rgba(255,255,255,0.7);
   font-size: var(--font-size-lg);
 }
 
