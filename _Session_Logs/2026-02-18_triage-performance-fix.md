@@ -108,12 +108,28 @@ Old deals retain their legacy field values. Decision: leave the backlog as-is �
 5. **Simplified capital taxonomy** — Replaced two redundant fields (transaction_type + capital_sources multi-select) with single "Capital Type" dropdown: Seed, VC, PE, Corporate M&A, Government/Contract, Public Markets, Internal/Self-funded, Fund Raise
 6. **Fund Raise capital type** — Added to capture VC/PE funds raising LP capital (distinct from deploying capital)
 7. **Renamed "Capital Source" → "Capital Type"** — Better label since "source" doesn't fit categories like Fund Raise
+8. **Logo & favicon (B3 Corner Glow)** — Added Data Grid logo mark (3x3 grid, corner-glow opacity) to triage app header, public dashboard nav (all 23 pages), and SVG favicon
 
 ### Decisions made:
 - Legacy deal data left as-is (no migration needed, fallback logic handles it)
 - Cloudflare Pages migration deferred (requires account setup)
 - Capital type is single-select (mixed-source deals pick the dominant type)
 - Additional source URLs for deals go in the Notes field for now (no dedicated field unless it becomes a frequent pattern)
+
+## Logo & Branding (B3 — Corner Glow)
+
+Selected the "Data Grid" logo concept — a 3x3 grid with opacity gradient radiating from the bottom-right corner ("data emerging from noise"). Variant B3.
+
+### Changes:
+- **`src/web/templates/base.html`** — Added inline SVG logo (28px) next to site title in header; added inline SVG favicon via data URI
+- **`github_site/index.html`** — Added SVG logo (24px) inside nav `.logo` link; added `<link rel="icon">` for favicon
+- **`github_site/favicon.svg`** — NEW: Standalone SVG favicon (navy background with B3 grid)
+- **All 22 subpages** (`github_site/charts/*.html`, `github_site/deals/index.html`) — Added logo SVG in nav and favicon link
+- **`_design_drafts/logo_concepts.html`** — Design exploration file with all three B variants + nav/favicon previews
+
+### Next steps for branding:
+- Hero banner (subtle topographic/contour SVG on dark navy) — not yet implemented
+- Consider using logo in email templates or reports if those are built later
 
 ## Open To-Dos
 - **Migrate static site off GitHub Pages** — Current URL (`samuelmoyer91-sketch.github.io/definvestdashboard`) is unprofessional. Plan: Cloudflare Pages + custom domain (e.g. `capitalfordefense.com`). Requires creating a Cloudflare account, purchasing domain (~$10-15/yr), generating API token. Claude can handle the workflow migration and DNS config once account is set up.

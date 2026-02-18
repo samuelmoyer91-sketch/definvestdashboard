@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Defense Capital Tracker{% endblock %}</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='8' fill='%231a1a2e'/><rect x='4' y='4' width='16' height='16' rx='2' stroke='%2388c0d0' stroke-width='1.5' opacity='.15'/><rect x='24' y='4' width='16' height='16' rx='2' stroke='%2388c0d0' stroke-width='1.5' opacity='.15'/><rect x='44' y='4' width='16' height='16' rx='2' stroke='%2388c0d0' stroke-width='1.5' opacity='.25'/><rect x='4' y='24' width='16' height='16' rx='2' stroke='%2388c0d0' stroke-width='1.5' opacity='.15'/><rect x='24' y='24' width='16' height='16' rx='2' stroke='%2388c0d0' stroke-width='1.5' opacity='.35'/><rect x='44' y='24' width='16' height='16' rx='2' fill='%2388c0d0' opacity='.55'/><rect x='4' y='44' width='16' height='16' rx='2' stroke='%2388c0d0' stroke-width='1.5' opacity='.25'/><rect x='24' y='44' width='16' height='16' rx='2' fill='%2388c0d0' opacity='.55'/><rect x='44' y='44' width='16' height='16' rx='2' fill='%2388c0d0'/></svg>">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -140,7 +141,20 @@
 <body>
     <header>
         <div class="container">
-            <h1>Defense Private Capital Intelligence Platform</h1>
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <svg width="28" height="28" viewBox="0 0 64 64" fill="none">
+                    <rect x="4" y="4" width="16" height="16" rx="2" stroke="#88c0d0" stroke-width="1.5" opacity="0.15"/>
+                    <rect x="24" y="4" width="16" height="16" rx="2" stroke="#88c0d0" stroke-width="1.5" opacity="0.15"/>
+                    <rect x="44" y="4" width="16" height="16" rx="2" stroke="#88c0d0" stroke-width="1.5" opacity="0.25"/>
+                    <rect x="4" y="24" width="16" height="16" rx="2" stroke="#88c0d0" stroke-width="1.5" opacity="0.15"/>
+                    <rect x="24" y="24" width="16" height="16" rx="2" stroke="#88c0d0" stroke-width="1.5" opacity="0.35"/>
+                    <rect x="44" y="24" width="16" height="16" rx="2" fill="#88c0d0" opacity="0.55"/>
+                    <rect x="4" y="44" width="16" height="16" rx="2" stroke="#88c0d0" stroke-width="1.5" opacity="0.25"/>
+                    <rect x="24" y="44" width="16" height="16" rx="2" fill="#88c0d0" opacity="0.55"/>
+                    <rect x="44" y="44" width="16" height="16" rx="2" fill="#88c0d0"/>
+                </svg>
+                <h1>Defense Private Capital Intelligence Platform</h1>
+            </div>
             <nav>
                 <a href="/">Triage Queue</a>
                 <a href="/master">Accepted Items</a>
