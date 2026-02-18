@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  body { background: #1a1a2e; color: white; font-family: -apple-system, sans-serif; padding: 40px; }
+  h2 { margin-bottom: 30px; }
+  .variants { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; max-width: 900px; margin-bottom: 40px; }
+  .variant { text-align: center; }
+  .variant h3 { margin-top: 12px; font-size: 14px; color: #88c0d0; }
+  .variant p { font-size: 12px; color: #888; margin-top: 4px; }
+  hr { border: none; border-top: 1px solid #333; margin: 40px 0; }
+  .nav-preview { background: #1a1a2e; padding: 20px 30px; border-radius: 8px; margin-bottom: 16px; border: 1px solid #333; }
+  .nav-row { display: flex; align-items: center; gap: 14px; }
+  .nav-row span { font-size: 20px; font-weight: 600; color: white; }
+</style>
+</head>
+<body>
+
+<h2>Logo Concept B — Data Grid — Refined Variants</h2>
+<p style="color: #888; margin-bottom: 40px;">Even 3x3 grid, 64px display size. Highlighted center cell = "intelligence focus."</p>
+
+<div class="variants">
+
+  <!-- B1: Uniform grid, center filled -->
+  <div class="variant">
+    <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+      <rect x="4" y="4" width="16" height="16" rx="2" stroke="#88c0d0" stroke-width="1.5" opacity="0.3"/>
+      <rect x="24" y="4" width="16" height="16" rx="2" stroke="#88c0d0" stroke-width="1.5" opacity="0.3"/>
+      <rect x="44" y="4" width="16" height="16" rx="2" stroke="#88c0d0" stroke-width="1.5" opacity="0.3"/>
+      <rect x="4" y="24" width="16" height="16" rx="2" stroke="#88c0d0" stroke-width="1.5" opacity="0.3"/>
+      <rect x="24" y="24" width="16" height="16" rx="2" fill="#88c0d0"/>
+      <rect x="44" y="24" width="16" height="16" rx="2" stroke="#88c0d0" stroke-width="1.5" opacity="0.3"/>
+      <rect x="4" y="44" width="16" height="16" rx="2" stroke="#88c0d0" stroke-width="1.5" opacity="0.3"/>
+      <rect x="24" y="44" width="16" height="16" rx="2" stroke="#88c0d0" stroke-width="1.5" opacity="0.3"/>
+      <rect x="44" y="44" width="16" height="16" rx="2" stroke="#88c0d0" stroke-width="1.5" opacity="0.3"/>
+    </svg>
+    <h3>B1 — Center Focus</h3>
+    <p>Clean center highlight</p>
+  </div>
+
+  <!-- B2: Diagonal highlight (top-left to bottom-right) -->
+  <div class="variant">
+    <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+      <rect x="4" y="4" width="16" height="16" rx="2" fill="#88c0d0" opacity="0.5"/>
+      <rect x="24" y="4" width="16" height="16" rx="2" stroke="#88c0d0" stroke-width="1.5" opacity="0.3"/>
+      <rect x="44" y="4" width="16" height="16" rx="2" stroke="#88c0d0" stroke-width="1.5" opacity="0.3"/>
+      <rect x="4" y="24" width="16" height="16" rx="2" stroke="#88c0d0" stroke-width="1.5" opacity="0.3"/>
+      <rect x="24" y="24" width="16" height="16" rx="2" fill="#88c0d0" opacity="0.75"/>
+      <rect x="44" y="24" width="16" height="16" rx="2" stroke="#88c0d0" stroke-width="1.5" opacity="0.3"/>
+      <rect x="4" y="44" width="16" height="16" rx="2" stroke="#88c0d0" stroke-width="1.5" opacity="0.3"/>
+      <rect x="24" y="44" width="16" height="16" rx="2" stroke="#88c0d0" stroke-width="1.5" opacity="0.3"/>
+      <rect x="44" y="44" width="16" height="16" rx="2" fill="#88c0d0"/>
+    </svg>
+    <h3>B2 — Diagonal</h3>
+    <p>Ascending emphasis, growth implied</p>
+  </div>
+
+  <!-- B3: Bottom-right corner glow (data emerging) -->
+  <div class="variant">
+    <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+      <rect x="4" y="4" width="16" height="16" rx="2" stroke="#88c0d0" stroke-width="1.5" opacity="0.15"/>
+      <rect x="24" y="4" width="16" height="16" rx="2" stroke="#88c0d0" stroke-width="1.5" opacity="0.15"/>
+      <rect x="44" y="4" width="16" height="16" rx="2" stroke="#88c0d0" stroke-width="1.5" opacity="0.25"/>
+      <rect x="4" y="24" width="16" height="16" rx="2" stroke="#88c0d0" stroke-width="1.5" opacity="0.15"/>
+      <rect x="24" y="24" width="16" height="16" rx="2" stroke="#88c0d0" stroke-width="1.5" opacity="0.35"/>
+      <rect x="44" y="24" width="16" height="16" rx="2" fill="#88c0d0" opacity="0.55"/>
+      <rect x="4" y="44" width="16" height="16" rx="2" stroke="#88c0d0" stroke-width="1.5" opacity="0.25"/>
+      <rect x="24" y="44" width="16" height="16" rx="2" fill="#88c0d0" opacity="0.55"/>
+      <rect x="44" y="44" width="16" height="16" rx="2" fill="#88c0d0"/>
+    </svg>
+    <h3>B3 — Corner Glow</h3>
+    <p>Data emerging from noise</p>
+  </div>
+
+</div>
+
+<hr>
+
+<h2>In Context — Nav Bar Preview</h2>
+
+<div class="nav-preview">
+  <div class="nav-row">
+    <svg width="28" height="28" viewBox="0 0 64 64" fill="none"><rect x="4" y="4" width="16" height="16" rx="2" stroke="#88c0d0" stroke-width="1.5" opacity="0.3"/><rect x="24" y="4" width="16" height="16" rx="2" stroke="#88c0d0" stroke-width="1.5" opacity="0.3"/><rect x="44" y="4" width="16" height="16" rx="2" stroke="#88c0d0" stroke-width="1.5" opacity="0.3"/><rect x="4" y="24" width="16" height="16" rx="2" stroke="#88c0d0" stroke-width="1.5" opacity="0.3"/><rect x="24" y="24" width="16" height="16" rx="2" fill="#88c0d0"/><rect x="44" y="24" width="16" height="16" rx="2" stroke="#88c0d0" stroke-width="1.5" opacity="0.3"/><rect x="4" y="44" width="16" height="16" rx="2" stroke="#88c0d0" stroke-width="1.5" opacity="0.3"/><rect x="24" y="44" width="16" height="16" rx="2" stroke="#88c0d0" stroke-width="1.5" opacity="0.3"/><rect x="44" y="44" width="16" height="16" rx="2" stroke="#88c0d0" stroke-width="1.5" opacity="0.3"/></svg>
+    <span>Defense Private Capital Intelligence Platform</span>
+  </div>
+  <div style="margin-top: 12px;">
+    <a style="color: #88c0d0; margin-right: 20px; font-size: 14px; text-decoration: none;">Deal Tracker</a>
+    <a style="color: #88c0d0; margin-right: 20px; font-size: 14px; text-decoration: none;">Defense Investment</a>
+    <a style="color: #88c0d0; margin-right: 20px; font-size: 14px; text-decoration: none;">Defense Industrial</a>
+    <a style="color: #88c0d0; font-size: 14px; text-decoration: none;">US Industrial</a>
+  </div>
+</div>
+
+<div class="nav-preview">
+  <div class="nav-row">
+    <svg width="28" height="28" viewBox="0 0 64 64" fill="none"><rect x="4" y="4" width="16" height="16" rx="2" fill="#88c0d0" opacity="0.5"/><rect x="24" y="4" width="16" height="16" rx="2" stroke="#88c0d0" stroke-width="1.5" opacity="0.3"/><rect x="44" y="4" width="16" height="16" rx="2" stroke="#88c0d0" stroke-width="1.5" opacity="0.3"/><rect x="4" y="24" width="16" height="16" rx="2" stroke="#88c0d0" stroke-width="1.5" opacity="0.3"/><rect x="24" y="24" width="16" height="16" rx="2" fill="#88c0d0" opacity="0.75"/><rect x="44" y="24" width="16" height="16" rx="2" stroke="#88c0d0" stroke-width="1.5" opacity="0.3"/><rect x="4" y="44" width="16" height="16" rx="2" stroke="#88c0d0" stroke-width="1.5" opacity="0.3"/><rect x="24" y="44" width="16" height="16" rx="2" stroke="#88c0d0" stroke-width="1.5" opacity="0.3"/><rect x="44" y="44" width="16" height="16" rx="2" fill="#88c0d0"/></svg>
+    <span>Defense Private Capital Intelligence Platform</span>
+  </div>
+  <div style="margin-top: 12px;">
+    <a style="color: #88c0d0; margin-right: 20px; font-size: 14px; text-decoration: none;">Deal Tracker</a>
+    <a style="color: #88c0d0; margin-right: 20px; font-size: 14px; text-decoration: none;">Defense Investment</a>
+    <a style="color: #88c0d0; margin-right: 20px; font-size: 14px; text-decoration: none;">Defense Industrial</a>
+    <a style="color: #88c0d0; font-size: 14px; text-decoration: none;">US Industrial</a>
+  </div>
+</div>
+
+<div class="nav-preview">
+  <div class="nav-row">
+    <svg width="28" height="28" viewBox="0 0 64 64" fill="none"><rect x="4" y="4" width="16" height="16" rx="2" stroke="#88c0d0" stroke-width="1.5" opacity="0.15"/><rect x="24" y="4" width="16" height="16" rx="2" stroke="#88c0d0" stroke-width="1.5" opacity="0.15"/><rect x="44" y="4" width="16" height="16" rx="2" stroke="#88c0d0" stroke-width="1.5" opacity="0.25"/><rect x="4" y="24" width="16" height="16" rx="2" stroke="#88c0d0" stroke-width="1.5" opacity="0.15"/><rect x="24" y="24" width="16" height="16" rx="2" stroke="#88c0d0" stroke-width="1.5" opacity="0.35"/><rect x="44" y="24" width="16" height="16" rx="2" fill="#88c0d0" opacity="0.55"/><rect x="4" y="44" width="16" height="16" rx="2" stroke="#88c0d0" stroke-width="1.5" opacity="0.25"/><rect x="24" y="44" width="16" height="16" rx="2" fill="#88c0d0" opacity="0.55"/><rect x="44" y="44" width="16" height="16" rx="2" fill="#88c0d0"/></svg>
+    <span>Defense Private Capital Intelligence Platform</span>
+  </div>
+  <div style="margin-top: 12px;">
+    <a style="color: #88c0d0; margin-right: 20px; font-size: 14px; text-decoration: none;">Deal Tracker</a>
+    <a style="color: #88c0d0; margin-right: 20px; font-size: 14px; text-decoration: none;">Defense Investment</a>
+    <a style="color: #88c0d0; margin-right: 20px; font-size: 14px; text-decoration: none;">Defense Industrial</a>
+    <a style="color: #88c0d0; font-size: 14px; text-decoration: none;">US Industrial</a>
+  </div>
+</div>
+
+<hr>
+
+<h2>Favicon Preview (32px on white + dark)</h2>
+<div style="display: flex; gap: 40px; align-items: center; margin-top: 20px;">
+  <div style="background: white; padding: 16px; border-radius: 8px; text-align: center;">
+    <svg width="32" height="32" viewBox="0 0 64 64" fill="none"><rect x="4" y="4" width="16" height="16" rx="2" stroke="#1a1a2e" stroke-width="2" opacity="0.2"/><rect x="24" y="4" width="16" height="16" rx="2" stroke="#1a1a2e" stroke-width="2" opacity="0.2"/><rect x="44" y="4" width="16" height="16" rx="2" stroke="#1a1a2e" stroke-width="2" opacity="0.2"/><rect x="4" y="24" width="16" height="16" rx="2" stroke="#1a1a2e" stroke-width="2" opacity="0.2"/><rect x="24" y="24" width="16" height="16" rx="2" fill="#1a1a2e"/><rect x="44" y="24" width="16" height="16" rx="2" stroke="#1a1a2e" stroke-width="2" opacity="0.2"/><rect x="4" y="44" width="16" height="16" rx="2" stroke="#1a1a2e" stroke-width="2" opacity="0.2"/><rect x="24" y="44" width="16" height="16" rx="2" stroke="#1a1a2e" stroke-width="2" opacity="0.2"/><rect x="44" y="44" width="16" height="16" rx="2" stroke="#1a1a2e" stroke-width="2" opacity="0.2"/></svg>
+    <div style="color: #333; font-size: 11px; margin-top: 8px;">B1 on white</div>
+  </div>
+  <div style="background: #1a1a2e; padding: 16px; border-radius: 8px; text-align: center; border: 1px solid #333;">
+    <svg width="32" height="32" viewBox="0 0 64 64" fill="none"><rect x="4" y="4" width="16" height="16" rx="2" stroke="#88c0d0" stroke-width="2" opacity="0.3"/><rect x="24" y="4" width="16" height="16" rx="2" stroke="#88c0d0" stroke-width="2" opacity="0.3"/><rect x="44" y="4" width="16" height="16" rx="2" stroke="#88c0d0" stroke-width="2" opacity="0.3"/><rect x="4" y="24" width="16" height="16" rx="2" stroke="#88c0d0" stroke-width="2" opacity="0.3"/><rect x="24" y="24" width="16" height="16" rx="2" fill="#88c0d0"/><rect x="44" y="24" width="16" height="16" rx="2" stroke="#88c0d0" stroke-width="2" opacity="0.3"/><rect x="4" y="44" width="16" height="16" rx="2" stroke="#88c0d0" stroke-width="2" opacity="0.3"/><rect x="24" y="44" width="16" height="16" rx="2" stroke="#88c0d0" stroke-width="2" opacity="0.3"/><rect x="44" y="44" width="16" height="16" rx="2" stroke="#88c0d0" stroke-width="2" opacity="0.3"/></svg>
+    <div style="color: #888; font-size: 11px; margin-top: 8px;">B1 on dark</div>
+  </div>
+  <div style="background: white; padding: 16px; border-radius: 8px; text-align: center;">
+    <svg width="32" height="32" viewBox="0 0 64 64" fill="none"><rect x="4" y="4" width="16" height="16" rx="2" fill="#1a1a2e" opacity="0.35"/><rect x="24" y="4" width="16" height="16" rx="2" stroke="#1a1a2e" stroke-width="2" opacity="0.2"/><rect x="44" y="4" width="16" height="16" rx="2" stroke="#1a1a2e" stroke-width="2" opacity="0.2"/><rect x="4" y="24" width="16" height="16" rx="2" stroke="#1a1a2e" stroke-width="2" opacity="0.2"/><rect x="24" y="24" width="16" height="16" rx="2" fill="#1a1a2e" opacity="0.6"/><rect x="44" y="24" width="16" height="16" rx="2" stroke="#1a1a2e" stroke-width="2" opacity="0.2"/><rect x="4" y="44" width="16" height="16" rx="2" stroke="#1a1a2e" stroke-width="2" opacity="0.2"/><rect x="24" y="44" width="16" height="16" rx="2" stroke="#1a1a2e" stroke-width="2" opacity="0.2"/><rect x="44" y="44" width="16" height="16" rx="2" fill="#1a1a2e"/></svg>
+    <div style="color: #333; font-size: 11px; margin-top: 8px;">B2 on white</div>
+  </div>
+  <div style="background: white; padding: 16px; border-radius: 8px; text-align: center;">
+    <svg width="32" height="32" viewBox="0 0 64 64" fill="none"><rect x="4" y="4" width="16" height="16" rx="2" stroke="#1a1a2e" stroke-width="2" opacity="0.1"/><rect x="24" y="4" width="16" height="16" rx="2" stroke="#1a1a2e" stroke-width="2" opacity="0.1"/><rect x="44" y="4" width="16" height="16" rx="2" stroke="#1a1a2e" stroke-width="2" opacity="0.15"/><rect x="4" y="24" width="16" height="16" rx="2" stroke="#1a1a2e" stroke-width="2" opacity="0.1"/><rect x="24" y="24" width="16" height="16" rx="2" stroke="#1a1a2e" stroke-width="2" opacity="0.25"/><rect x="44" y="24" width="16" height="16" rx="2" fill="#1a1a2e" opacity="0.45"/><rect x="4" y="44" width="16" height="16" rx="2" stroke="#1a1a2e" stroke-width="2" opacity="0.15"/><rect x="24" y="44" width="16" height="16" rx="2" fill="#1a1a2e" opacity="0.45"/><rect x="44" y="44" width="16" height="16" rx="2" fill="#1a1a2e"/></svg>
+    <div style="color: #333; font-size: 11px; margin-top: 8px;">B3 on white</div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -109,12 +109,19 @@ Old deals retain their legacy field values. Decision: leave the backlog as-is �
 6. **Fund Raise capital type** — Added to capture VC/PE funds raising LP capital (distinct from deploying capital)
 7. **Renamed "Capital Source" → "Capital Type"** — Better label since "source" doesn't fit categories like Fund Raise
 8. **Logo & favicon (B3 Corner Glow)** — Added Data Grid logo mark (3x3 grid, corner-glow opacity) to triage app header, public dashboard nav (all 23 pages), and SVG favicon
+9. **Hero banner** — Full-width dark navy banner with green dot matrix (diagonal corner fade) and large green B3 logo on the public dashboard homepage
 
 ### Decisions made:
 - Legacy deal data left as-is (no migration needed, fallback logic handles it)
 - Cloudflare Pages migration deferred (requires account setup)
 - Capital type is single-select (mixed-source deals pick the dominant type)
 - Additional source URLs for deals go in the Notes field for now (no dedicated field unless it becomes a frequent pattern)
+- B3 Corner Glow chosen as logo variant; green dot matrix with diagonal corner fade chosen as hero banner pattern
+- Design iteration workflow: HTML mockups in `_design_drafts/`, peer screenshots in `_design_drafts/Examples/`
+
+### Quirks discovered:
+- GitHub Pages deploys from `gh-pages` branch via `publish.yml` workflow, NOT directly from pushes to `main`. Must run `gh workflow run publish.yml` after pushing site changes.
+- SVG `<mask>` elements for opacity fades don't render reliably in all browsers; CSS `mask-image` with `linear-gradient` is more dependable.
 
 ## Logo & Branding (B3 — Corner Glow)
 
@@ -127,8 +134,25 @@ Selected the "Data Grid" logo concept — a 3x3 grid with opacity gradient radia
 - **All 22 subpages** (`github_site/charts/*.html`, `github_site/deals/index.html`) — Added logo SVG in nav and favicon link
 - **`_design_drafts/logo_concepts.html`** — Design exploration file with all three B variants + nav/favicon previews
 
+## Hero Banner
+
+Added full-width hero banner to the public dashboard homepage, replacing the plain white `.page-header` card.
+
+### Design:
+- Dark navy gradient background (`#0f1d30` → `#162f4d` → `#1e456e`)
+- Green (`#88c540`) dot matrix pattern using CSS `radial-gradient`, with diagonal opacity fade from bottom-right corner toward top-left (CSS `mask-image`)
+- B3 logo at 80px in green, alongside white title and subtitle
+- Design iterated through multiple rounds of mockups in `_design_drafts/hero_banner.html`, referencing peer sites (Conversations with Tyler, SCSP reports) for "vibe"
+
+### Changes:
+- **`github_site/index.html`** — Replaced `.page-header` div with full-width `.hero-banner` section
+- **`_design_drafts/hero_banner.html`** — Final iteration with chosen design (variant C: diagonal corner fade)
+- **`_design_drafts/Examples/`** — Peer site screenshots used as design references
+
+### Deployment discovery:
+GitHub Pages was not updating after `git push` to `main`. Root cause: the public dashboard deploys via `publish.yml` workflow (peaceiris/actions-gh-pages) which copies `github_site/` to the `gh-pages` branch. Pushing to `main` alone does nothing for the live site. Fixed by running `gh workflow run publish.yml` to trigger manual deployment. **Added this to CLAUDE.md** so future sessions don't repeat the mistake.
+
 ### Next steps for branding:
-- Hero banner (subtle topographic/contour SVG on dark navy) — not yet implemented
 - Consider using logo in email templates or reports if those are built later
 
 ## Open To-Dos
