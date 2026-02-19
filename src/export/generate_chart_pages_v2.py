@@ -404,6 +404,8 @@ def generate_chart_page(chart_id, chart_info):
 
     # Determine if this is market data
     is_market = chart_id in ['ita', 'xli', 'pld', 'dgs10']
+    is_yahoo = chart_id in ['ita', 'xli', 'pld']
+    is_custom = chart_id in ['vc_defense', 'ma_defense', 'public_defense_companies']
     data_file = f'../data/{chart_id.lower()}.json'
 
     # Get source URL
@@ -413,12 +415,12 @@ def generate_chart_page(chart_id, chart_info):
     if chart_id in ['vc_defense', 'ma_defense', 'public_defense_companies']:
         source_name = 'Custom Research'
         source_link = source_name  # No link for custom data
-    elif is_market and chart_id != 'dgs10':
+    elif is_yahoo:
         source_name = 'Yahoo Finance'
-        source_link = f'<a href="{source_url}" target="_blank" rel="noopener" style="color: #1e456e; text-decoration: none;">{source_name}</a>' if source_url else source_name
+        source_link = f'<a href="{source_url}" target="_blank" rel="noopener" style="color: rgba(255,255,255,0.9); text-decoration: underline;">{source_name}</a>' if source_url else source_name
     else:
         source_name = 'Federal Reserve Economic Data (FRED)'
-        source_link = f'<a href="{source_url}" target="_blank" rel="noopener" style="color: #1e456e; text-decoration: none;">{source_name}</a>' if source_url else source_name
+        source_link = f'<a href="{source_url}" target="_blank" rel="noopener" style="color: rgba(255,255,255,0.9); text-decoration: underline;">{source_name}</a>' if source_url else source_name
 
     # Find related charts in the same category
     related_charts = [cid for cid, cinfo in CHARTS.items()
@@ -486,7 +488,7 @@ def generate_chart_page(chart_id, chart_info):
         <div class="data-summary" id="dataSummary" style="display: none;">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
                 <h2 style="margin: 0;">Key Statistics</h2>
-                <button class="btn btn-download" id="downloadBtn">Download CSV</button>
+                {'<button class="btn btn-download" id="downloadBtn">Download CSV</button>' if not is_yahoo else ''}
             </div>
             <div class="summary-grid">
                 <div class="summary-item">
@@ -516,7 +518,7 @@ def generate_chart_page(chart_id, chart_info):
             <h2>About This Metric</h2>
             <p>{chart_info['description']}</p>
             <p>{chart_info['context']}</p>
-            <p style="margin-top: 1rem; color: #666; font-size: 0.9rem;">Units: {chart_info['units']}</p>
+            <p style="margin-top: 1rem; font-size: 0.9rem;">Units: {chart_info['units']}</p>
         </div>
 
         <div class="card">
@@ -528,8 +530,10 @@ def generate_chart_page(chart_id, chart_info):
     </div>
 
     <footer>
-        <p>Defense Capital Dashboard</p>
-        <p>Data source: {'Yahoo Finance' if is_market and chart_id != 'dgs10' else 'Federal Reserve Economic Data (FRED)'}</p>
+        <p><strong>Defense Capital Dashboard</strong></p>
+        <p>Data source: {'Yahoo Finance (delayed, informational purposes only)' if is_yahoo else 'Custom Research' if is_custom else 'Federal Reserve Economic Data (FRED)'}</p>
+        <p style="font-size: 0.75rem; opacity: 0.7; margin-top: 0.5rem;">This product uses the FRED&reg; API but is not endorsed or certified by the Federal Reserve Bank of St. Louis.</p>
+        <p>Created by Sam Moyer | <a href="https://github.com/samuelmoyer91-sketch">GitHub</a></p>
     </footer>
 
     <script src="../js/main.js"></script>
@@ -644,11 +648,14 @@ def generate_chart_page(chart_id, chart_info):
             }}
 
             // Download button handler
-            document.getElementById('downloadBtn').addEventListener('click', function() {{
-                if (chartData) {{
-                    ChartUtils.downloadCSV(chartData, '{chart_id}.csv');
-                }}
-            }});
+            const downloadBtn = document.getElementById('downloadBtn');
+            if (downloadBtn) {{
+                downloadBtn.addEventListener('click', function() {{
+                    if (chartData) {{
+                        ChartUtils.downloadCSV(chartData, '{chart_id}.csv');
+                    }}
+                }});
+            }}
         }});
     </script>
 </body>
@@ -823,8 +830,10 @@ def generate_category_page(cat_id, cat_info):
     </div>
 
     <footer>
-        <p>Defense Capital Dashboard</p>
-        <p>Data sources: Federal Reserve Economic Data (FRED), Yahoo Finance</p>
+        <p><strong>Defense Capital Dashboard</strong></p>
+        <p>Data sources: Federal Reserve Economic Data (FRED), Yahoo Finance, Custom Research</p>
+        <p style="font-size: 0.75rem; opacity: 0.7; margin-top: 0.5rem;">This product uses the FRED&reg; API but is not endorsed or certified by the Federal Reserve Bank of St. Louis.</p>
+        <p>Created by Sam Moyer | <a href="https://github.com/samuelmoyer91-sketch">GitHub</a></p>
     </footer>
 
     <script src="../js/main.js"></script>

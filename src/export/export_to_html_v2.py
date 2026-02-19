@@ -44,6 +44,7 @@ Data Priority:
 - Only human-reviewed content appears on published dashboard
 """
 
+import re
 import sys
 import os
 from pathlib import Path
@@ -212,8 +213,10 @@ def generate_html_page(deals, deals_per_page=10):
     </div>
 
     <footer>
-        <p>Defense Capital Dashboard</p>
+        <p><strong>Defense Capital Dashboard</strong></p>
         <p>Deal intelligence curated from open sources</p>
+        <p style="font-size: 0.75rem; opacity: 0.7; margin-top: 0.5rem;">This product uses the FRED&reg; API but is not endorsed or certified by the Federal Reserve Bank of St. Louis.</p>
+        <p>Created by Sam Moyer | <a href="https://github.com/samuelmoyer91-sketch">GitHub</a></p>
     </footer>
 
     <script src="../js/main.js"></script>
@@ -392,6 +395,9 @@ def generate_deal_card(master, raw, ai):
 
     # Deal title (curated title overrides RSS title)
     title_display = master.title if master and master.title else raw.title
+    # Strip publication name suffixes from RSS titles (e.g., "- SpaceNews", "| Aviation Week")
+    if title_display and not (master and master.title):
+        title_display = re.split(r'\s+[-|–—]\s+(?=[A-Z][\w\s]*$)', title_display)[0].strip()
     if title_display:
         card_html += f"""
             <h3 class="deal-company-name">{title_display}</h3>"""
