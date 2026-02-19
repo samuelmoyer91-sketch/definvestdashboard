@@ -5,9 +5,6 @@ on:
     - cron: '0 1 * * *'  # Daily at 01:00 UTC (8 PM ET previous day)
   workflow_dispatch:
 
-permissions:
-  contents: write
-
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -34,8 +31,9 @@ jobs:
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
         run: python generate_site.py
 
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./github_site
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy github_site --project-name capitalfordefense --branch main
