@@ -1,293 +1,159 @@
 # Defense Capital Dashboard
 
-A professional dashboard tracking defense sector investments, industrial health, and economic indicators - designed for defense analysts, think tankers, and industry researchers.
+A professional dashboard tracking defense sector investments, industrial health, and economic indicators — designed for defense analysts, think tankers, and industry researchers.
 
-**[🔗 View Live Dashboard](https://capitalfordefense.com)**
+**[View Live Dashboard](https://capitalfordefense.com)**
+
 ---
 
-## 🔄 Automated Pipeline
+## Automated Pipeline
 
 The entire pipeline runs automatically via GitHub Actions — the only manual step is triaging deals.
 
 | Stage | Schedule | How |
 |-------|----------|-----|
-| **Ingest** (fetch → screen → scrape → AI) | Daily 6 AM ET | GitHub Actions (`ingest.yml`), automatic |
-| **Triage** (review/accept/reject deals) | Whenever you want | Railway web app (`capitalfordefense.up.railway.app`) |
-| **Publish** (economic data + deal export + deploy) | Daily 8 PM ET | GitHub Actions (`publish.yml`), automatic |
+| **Ingest** (fetch, screen, scrape, AI) | Daily 6 AM ET | GitHub Actions (`ingest.yml`) |
+| **Triage** (review/accept/reject deals) | Anytime | Railway web app |
+| **Publish** (economic data + deal export + deploy) | Daily 8 PM ET | GitHub Actions (`publish.yml`) |
 
-Both workflows can also be triggered manually from the GitHub Actions tab.
-
-**Your only task: triage deals** at `capitalfordefense.up.railway.app` from any device.
+Both workflows can also be triggered manually: `gh workflow run ingest.yml` or `gh workflow run publish.yml`.
 
 ---
 
-## 📊 Overview
+## Overview
 
-This dashboard provides comprehensive visibility into the defense industrial base and capital markets:
+The dashboard provides visibility into the defense industrial base and capital markets through four lenses:
 
-### Three Core Categories:
+**Deal Tracker** — Curated private capital investments (VC, PE, M&A, contracts) in defense companies, with AI-assisted triage and human-curated summaries.
 
-1. **Defense Investment Trends** - Capital flows and funding activity
-   - Defense capital goods orders
-   - Venture capital investment in defense tech
-   - M&A activity in aerospace & defense
+**Defense Investment Trends** — Capital flows including defense capital goods orders, VC/M&A activity, and market sentiment (ITA ETF).
 
-2. **Defense Industrial Health** - Production capacity and contractor activity
-   - Aircraft and equipment manufacturing
-   - Defense spending and procurement
-   - Manufacturing construction
+**Defense Industrial Health** — Production capacity metrics: aircraft orders, defense equipment output, federal spending, manufacturing construction.
 
-3. **Overall US Industrial Health** - Broader economic context
-   - Industrial production indices
-   - Business investment trends
-   - Lending standards and interest rates
+**US Industrial Health** — Broader economic context: industrial production, business investment, lending standards, interest rates.
 
 ---
 
-## ✨ Professional Features
+## Architecture
 
-### Analyst-Focused Tools:
-- **📈 Data Summary Stats** - Latest values, period changes, YoY trends with visual indicators
-- **⬇️ CSV Export** - One-click download of economic/market datasets for custom analysis
-- **🔍 Key Insights** - Curated context explaining metric relationships
-- **📅 Timestamps** - Data freshness displayed on every page
-- **📱 Mobile Responsive** - Professional design on all devices
-- **🤖 AI Drafting Assistant** - Claude pre-populates triage form (you review/edit before publishing)
+| Component | Purpose | Hosting |
+|-----------|---------|---------|
+| **Public Dashboard** | Static site with charts and deal feed | Cloudflare Pages (`capitalfordefense.com`) |
+| **Triage App** | Web UI for reviewing/curating deals | Railway (24/7) |
+| **Database** | Single source of truth for all deal data | Turso (cloud SQLite) |
+| **Ingest Pipeline** | RSS fetch, title screening, article scraping, AI extraction | GitHub Actions |
+| **Publish Pipeline** | FRED/market data fetch, site generation, Cloudflare deploy | GitHub Actions |
 
-### Interactive Charts:
-- Hover for exact values with formatted units ($B, $T, %)
-- Clean quarterly labels (2019 Q1, 2020 Q2, etc.)
-- Consistent 2019-present timeframe across all charts
-- Vertical gridlines marking quarters and years
-- Properly scaled y-axes (billions, trillions, percentages)
-- Full historical data available via CSV export (for economic/market data only)
-
-### Intelligence Briefing Deal Feed:
-- Professional briefing-style layout for government analysts
-- 100% human-curated content (AI assists but never publishes directly)
-- Clean text-based visual hierarchy:
-  - Transaction type and date in header
-  - Company name prominent (1.4rem, bold)
-  - Labeled metadata fields (Amount, Investors, Capital, Sectors)
-  - Labels uppercase/light gray, values dark/medium weight
-  - Fields only show when data exists (graceful degradation)
-- Enhanced category system:
-  - **Transaction Type**: Equity Funding Round, Acquisition, Merger, Contract/Award, Joint Venture, Internal Investment, etc.
-  - **Capital Sources**: Venture Capital, Corporate Venture, Private Equity, Government/Contract, Public Markets, etc. (multi-select)
-  - **Sectors**: AI/ML, Autonomous Systems/Drones, Space/Satellites, Aerospace, Cybersecurity, etc. (multi-select)
-- AI pre-populates triage form with deal details and draft summaries
-- You review and edit everything before publication
-- Published dashboard shows only your curated content (never raw AI or RSS data)
-- Source attribution on every article link
-- Real-time search and filtering by transaction type
-- Chronological feed with pagination
+**How it works in practice:**
+- New articles flow in automatically every morning
+- You triage deals from any device via the Railway app
+- Accepted deals and fresh economic data publish automatically every evening
+- The public site regenerates chart pages and deal cards from templates on each publish
 
 ---
 
-## 🎯 Use Cases
+## Data Sources
 
-**Defense Analysts**: Export data for policy papers, cite latest values with timestamps
+| Source | Data | License Status |
+|--------|------|----------------|
+| **FRED API** | 10+ economic series (defense spending, industrial production, orders, investment, lending) | Public domain, citation requested |
+| **Yahoo Finance** | Defense ETFs (ITA), industrials (XLI), REITs (PLD), Treasuries (DGS10) | Displayed with disclaimer, no redistribution |
+| **Custom Research** | VC and M&A deal volume, public defense company metrics | Original compilation |
+| **RSS/Google Alerts** | Defense sector deal announcements | AI-summarized, human-curated |
 
-**Think Tank Researchers**: Download datasets for custom modeling and analysis
-
-**Industry Associations**: Use key insights as talking points for board presentations
-
-**Journalists**: Access data for investigative reporting on defense sector trends
-
-**Academics**: Import data into statistical models for research
-
----
-
-## 📊 Data Sources
-
-- **FRED API** - 10 Federal Reserve economic series
-- **Yahoo Finance** - Defense ETFs (ITA), industrials (XLI), REITs (PLD), Treasuries (DGS10)
-- **Custom Research** - VC/M&A data from defense sector tracking
-- **RSS Feeds** - Curated M&A deal announcements (private tool)
+This product uses the FRED API but is not endorsed or certified by the Federal Reserve Bank of St. Louis.
 
 ---
 
-## 🛠️ Technology Stack
+## Technology Stack
 
-### Frontend:
-- **Chart.js 4.4.0** - Interactive visualizations
-- **Vanilla JavaScript** - No heavy frameworks, fast loading
-- **Responsive CSS** - Mobile-first design with teal theme (#226E93)
-- **Static HTML** - No server required, CDN-backed
+**Frontend:** Chart.js 4.4.0, vanilla JavaScript, responsive CSS, static HTML
 
-### Backend (Data Pipeline):
-- **Python 3** - Data fetching and page generation
-- **fredapi** - Official FRED API client
-- **yfinance** - Yahoo Finance data
-- **pandas** - Excel data processing
-- **SQLite** - Deal curation database (local)
-- **FastAPI** - Local triage UI for deal curation
-- **Claude AI (Anthropic)** - AI-powered deal analysis and summaries
+**Backend:** Python 3, FRED API client, yfinance, SQLAlchemy, FastAPI (triage UI), Claude AI (Anthropic) for deal extraction and draft summaries
 
-### Hosting:
-- **GitHub Pages** - Free, fast, reliable
-- **Git Version Control** - Full change history
-- **Automated Deployment** - Push to update in 30 seconds
+**Infrastructure:** Cloudflare Pages (static site + custom domain), Railway (triage app), Turso (database), GitHub Actions (CI/CD)
+
+**Branding:** B3 "Corner Glow" logo (3x3 grid with opacity gradient), navy (#1e456e) and green (#88c540) palette
 
 ---
 
-### Manual Data Update (Charts Only, No New Deals)
-
-The publish pipeline runs automatically daily. For an immediate update:
-
-```bash
-# Option 1: Trigger from GitHub Actions tab (recommended)
-# Go to Actions → "Publish Site" → "Run workflow"
-
-# Option 2: Run locally
-cd ~/Documents/Claude/"PC Dashboard"
-python3 generate_site.py
-```
-
-**See [docs/AI_WORKFLOW.md](docs/AI_WORKFLOW.md) for detailed AI setup instructions.**
-
----
-
-## 📁 Project Structure
+## Project Structure
 
 ```
-Claude - Defense PC Dashboard/
-├── github_site/              # Published website (deployed to GitHub Pages)
-│   ├── index.html           # Homepage
-│   ├── charts/              # 16 individual chart pages + 3 category pages
-│   ├── deals/               # Deal tracker (intelligence briefing style)
-│   ├── data/                # JSON datasets (FRED, finance, custom)
-│   ├── css/                 # Styling (includes briefing styles)
-│   └── js/                  # Chart utilities
+PC Dashboard/
+├── github_site/              # Published website (deployed to Cloudflare Pages)
+│   ├── index.html            # Homepage with hero banner
+│   ├── charts/               # 16 chart pages + 3 category overview pages
+│   ├── deals/                # Deal tracker (intelligence briefing style)
+│   ├── data/                 # JSON datasets (FRED, finance, custom)
+│   ├── css/style.css         # Global styles
+│   ├── js/main.js            # Chart utilities
+│   └── favicon.svg           # B3 logo favicon
 ├── src/
-│   ├── data_fetchers/       # FRED, Yahoo Finance, Excel extractors
-│   ├── export/              # HTML generators (chart pages, deal feed)
-│   ├── scraper/             # RSS fetcher, article scraper, AI summarizer
-│   ├── utils/               # AI summarizer (Claude API)
-│   ├── web/                 # Local triage UI (FastAPI)
-│   └── database/            # SQLite models (includes AIExtraction)
-├── databases/               # SQLite databases (local only, not deployed)
-│   ├── tracker.db           # Deal curation database
-│   └── defense_deals.db     # Legacy database
-├── data/                    # Source data (JSON files for charts)
-├── docs/
-│   └── AI_WORKFLOW.md       # AI summary setup and usage guide
-├── *.xlsx                   # Excel source files (VC/M&A data)
-├── generate_site.py         # Site generation script (data + HTML)
-└── requirements.txt         # Python dependencies (includes anthropic)
+│   ├── data_fetchers/        # FRED and Yahoo Finance data fetchers
+│   ├── export/               # HTML generators (chart pages, deal feed)
+│   ├── scraper/              # RSS fetcher, article scraper, AI summarizer
+│   ├── utils/                # AI summarizer (Claude API)
+│   ├── web/                  # Triage app (FastAPI + templates)
+│   └── database/             # SQLAlchemy models, Turso connection
+├── .github/workflows/
+│   ├── ingest.yml            # Daily ingest pipeline
+│   └── publish.yml           # Daily publish + deploy pipeline
+├── generate_site.py          # Orchestrates data fetch + site generation
+├── update_workflow.sh        # Manual workflow helper script
+└── requirements.txt          # Python dependencies
 ```
 
 ---
 
-## 🚀 Setup (For Maintenance)
+## Deal Curation Pipeline
 
-### Prerequisites:
+1. **RSS Fetch** — Google News Alerts deliver defense deal articles
+2. **AI Title Screen** — Claude filters noise (earnings calls, opinion pieces) from genuine deals
+3. **Article Scraping** — Full article text retrieved for AI processing
+4. **AI Extraction** — Claude extracts structured data (company, amount, investors, sectors) and drafts an analytical summary
+5. **Human Triage** — Reviewer accepts/rejects deals, edits any field before publication
+6. **Export** — Only human-approved content appears on the public site (raw AI and RSS data never shown)
+
+Capital type taxonomy: Seed, Venture Capital, Private Equity, Corporate M&A, Government/Contract, Public Markets, Internal/Self-funded, Fund Raise.
+
+---
+
+## Privacy & Security
+
+- Public dashboard is a static site — no user tracking, no cookies
+- Triage app is hosted on Railway (not indexed, not publicly linked)
+- All data flows through Turso cloud database
+- Only human-approved deals appear on the public site
+- AI-generated drafts are never published directly
+
+---
+
+## Setup (For Maintenance)
+
 ```bash
 # Install dependencies
 pip3 install -r requirements.txt
 
-# Set FRED API key (get free key from fred.stlouisfed.org)
-echo "export FRED_API_KEY='your_key_here'" >> ~/.zshrc
-source ~/.zshrc
-```
+# Required environment variables
+export FRED_API_KEY='...'
+export TURSO_DATABASE_URL='...'
+export TURSO_AUTH_TOKEN='...'
+export ANTHROPIC_API_KEY='...'
 
-### Run Locally:
-```bash
-cd github_site
-python3 -m http.server 8080
-# Open http://localhost:8080
-```
+# Run locally
+cd github_site && python3 -m http.server 8080
 
-### Generate Site:
-```bash
+# Generate site (fetches fresh data + rebuilds all pages)
 python3 generate_site.py
+
+# Deploy manually
+gh workflow run publish.yml
 ```
 
 ---
 
-## 📈 What Gets Updated Daily (Automated)
-
-- **Deal Pipeline** - New articles ingested, screened, scraped, and AI-processed every morning
-- **Economic Indicators** - Latest FRED data fetched every evening
-- **Market Prices** - Current ETF/stock prices refreshed every evening
-- **Chart Pages** - Regenerated with fresh data every evening
-- **Deal Tracker** - Accepted deals published to site every evening
-
----
-
-## 🎨 Design Philosophy
-
-**Analyst-First**: Every feature answers "What would a defense analyst need?"
-
-**Data Transparency**: Timestamps, sources, export capability
-
-**Professional Quality**: Clean design, reliable hosting, version control
-
-**Simple Maintenance**: One command to update, push to deploy
-
-**No Vendor Lock-In**: Static files, open standards, portable anywhere
-
----
-
-## 📝 Documentation
-
-- **IMPROVEMENTS_SUMMARY.md** - Details on professional features (stats, export, insights)
-- **REVIEW_INSTRUCTIONS.md** - Testing and deployment guide
-- **QUICK_REFERENCE.md** - Common commands cheat sheet
-
----
-
-## 🏗️ Architecture
-
-This project has four components that work together:
-
-| Component | What It Does | Where It Runs | Access |
-|-----------|-------------|---------------|--------|
-| **Turso Database** | Cloud database — single source of truth for all deal data | Turso cloud | All components connect to it |
-| **Triage App** (Railway) | Web UI for reviewing and accepting/rejecting deals | `capitalfordefense.up.railway.app` (24/7) | Accessible from anywhere — phone, laptop, any browser |
-| **Ingest Pipeline** | Fetches RSS → screens titles → scrapes articles → AI extraction | GitHub Actions, daily 6 AM ET | Automatic (or manual trigger) |
-| **Publish Pipeline** | Fetches economic/market data → generates site → deploys to GitHub Pages | GitHub Actions, daily 8 PM ET | Automatic (or manual trigger) |
-
-**What this means in practice:**
-- You can **triage deals anytime, anywhere** — Railway keeps the app running 24/7
-- **New articles flow in automatically** every morning via GitHub Actions
-- **Accepted deals publish automatically** every evening via GitHub Actions
-- The Telegram bot also connects to the same Turso database, so submissions from Telegram appear in triage immediately
-- To trigger either pipeline manually, go to the GitHub Actions tab and click "Run workflow"
-
----
-
-## 🔐 Privacy & Security
-
-- Main dashboard is public (for portfolio/sharing)
-- Triage tool is hosted on Railway (private, not indexed)
-- All data flows through Turso cloud database
-- RSS feeds and raw articles processed locally
-- Only approved deals exported to public site
-- AI-generated drafts never appear in published output (only human-curated content)
-
----
-
-## 🏆 Portfolio Highlights
-
-**Technical Skills Demonstrated:**
-- Static site generation with Python
-- Data pipeline automation (APIs, Excel, databases)
-- Interactive data visualization (Chart.js)
-- Responsive web design (mobile-first CSS)
-- Git version control with feature branches
-- Professional analyst tool design
-- Clean, maintainable code architecture
-
-**Domain Knowledge:**
-- Defense industrial base metrics
-- Economic indicators and their relationships
-- Capital markets (VC, M&A, public equities)
-- Data analysis and presentation
-
----
-
-## 📞 Contact
+## Contact
 
 **Sam Moyer**
 - GitHub: [@samuelmoyer91-sketch](https://github.com/samuelmoyer91-sketch)
@@ -295,11 +161,4 @@ This project has four components that work together:
 
 ---
 
-## 📄 License
-
-Created for personal portfolio and professional use.
-
----
-
-**Last Updated:** February 2026
-**Status:** ✅ Live — fully automated via GitHub Actions
+**Status:** Live — fully automated via GitHub Actions
