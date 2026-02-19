@@ -3609,8 +3609,15 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
             'materials': 'advanced-materials',
             'mineral-refining': 'advanced-materials'
         };
+        const capitalAliases = {
+            'corporate-investment': 'internal-self-funded',
+            'grant-sbir': 'government-contract'
+        };
         function normalizeSector(s) {
             return sectorAliases[s] || s;
+        }
+        function normalizeCapital(c) {
+            return capitalAliases[c] || c;
         }
 
         // Populate filter dropdowns from card data attributes
@@ -3632,10 +3639,8 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
             };
             const capitalLabels = {
                 'corporate-venture': 'Corporate Venture',
-                'corporate-investment': 'Corporate Investment',
                 'family-office': 'Family Office',
                 'government-contract': 'Government Contract',
-                'grant-sbir': 'Grant/SBIR',
                 'internal-self-funded': 'Internal/Self-Funded',
                 'private-equity': 'Private Equity',
                 'public-markets': 'Public Markets',
@@ -3657,7 +3662,8 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
                 const capital = deal.dataset.capital;
                 if (capital) {
                     capital.split(',').forEach(c => {
-                        capitalCounts[c] = (capitalCounts[c] || 0) + 1;
+                        const nc = normalizeCapital(c);
+                        capitalCounts[nc] = (capitalCounts[nc] || 0) + 1;
                     });
                 }
             });
@@ -3693,7 +3699,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
             filteredDeals = deals.filter(deal => {
                 const matchesSearch = deal.textContent.toLowerCase().includes(searchTerm);
                 const matchesSector = !sectorVal || (deal.dataset.sectors && deal.dataset.sectors.split(',').map(normalizeSector).includes(sectorVal));
-                const matchesCapital = !capitalVal || (deal.dataset.capital && deal.dataset.capital.split(',').includes(capitalVal));
+                const matchesCapital = !capitalVal || (deal.dataset.capital && deal.dataset.capital.split(',').map(normalizeCapital).includes(capitalVal));
                 return matchesSearch && matchesSector && matchesCapital;
             });
 

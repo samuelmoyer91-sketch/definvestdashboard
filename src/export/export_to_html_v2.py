@@ -246,8 +246,15 @@ def generate_html_page(deals, deals_per_page=10):
             'materials': 'advanced-materials',
             'mineral-refining': 'advanced-materials'
         }};
+        const capitalAliases = {{
+            'corporate-investment': 'internal-self-funded',
+            'grant-sbir': 'government-contract'
+        }};
         function normalizeSector(s) {{
             return sectorAliases[s] || s;
+        }}
+        function normalizeCapital(c) {{
+            return capitalAliases[c] || c;
         }}
 
         // Populate filter dropdowns from card data attributes
@@ -269,10 +276,8 @@ def generate_html_page(deals, deals_per_page=10):
             }};
             const capitalLabels = {{
                 'corporate-venture': 'Corporate Venture',
-                'corporate-investment': 'Corporate Investment',
                 'family-office': 'Family Office',
                 'government-contract': 'Government Contract',
-                'grant-sbir': 'Grant/SBIR',
                 'internal-self-funded': 'Internal/Self-Funded',
                 'private-equity': 'Private Equity',
                 'public-markets': 'Public Markets',
@@ -294,7 +299,8 @@ def generate_html_page(deals, deals_per_page=10):
                 const capital = deal.dataset.capital;
                 if (capital) {{
                     capital.split(',').forEach(c => {{
-                        capitalCounts[c] = (capitalCounts[c] || 0) + 1;
+                        const nc = normalizeCapital(c);
+                        capitalCounts[nc] = (capitalCounts[nc] || 0) + 1;
                     }});
                 }}
             }});
@@ -330,7 +336,7 @@ def generate_html_page(deals, deals_per_page=10):
             filteredDeals = deals.filter(deal => {{
                 const matchesSearch = deal.textContent.toLowerCase().includes(searchTerm);
                 const matchesSector = !sectorVal || (deal.dataset.sectors && deal.dataset.sectors.split(',').map(normalizeSector).includes(sectorVal));
-                const matchesCapital = !capitalVal || (deal.dataset.capital && deal.dataset.capital.split(',').includes(capitalVal));
+                const matchesCapital = !capitalVal || (deal.dataset.capital && deal.dataset.capital.split(',').map(normalizeCapital).includes(capitalVal));
                 return matchesSearch && matchesSector && matchesCapital;
             }});
 
