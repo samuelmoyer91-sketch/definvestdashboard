@@ -16,7 +16,7 @@ This dashboard combines macro and micro perspectives on the defense capital land
 - **Searchable Deals**: Filter by sector, capital type, or search terms
 - **Mobile-Friendly**: Works on all devices
 - **Fast Loading**: Static site with optimized assets
-- **Professional Design**: Clean teal theme (#226E93)
+- **Professional Design**: Navy and green theme with B3 logo
 
 ## Data Sources
 
@@ -33,7 +33,7 @@ This dashboard combines macro and micro perspectives on the defense capital land
 
 ## Live Site
 
-**[View Dashboard →](https://samuelmoyer91-sketch.github.io/defense-dashboard/)**
+**[View Dashboard →](https://capitalfordefense.com)**
 
 ---
 

@@ -195,7 +195,7 @@ def main():
     print("     Open: http://localhost:8080\n")
 
     print("  Live site:")
-    print("     https://samuelmoyer91-sketch.github.io/definvestdashboard/\n")
+    print("     https://capitalfordefense.com\n")
 
     print(f"Completed at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 

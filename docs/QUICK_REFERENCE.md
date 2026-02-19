@@ -22,7 +22,7 @@ uvicorn src.web.app:app --reload
 ./update_workflow.sh publish
 ```
 
-**Done!** Site updates in ~30 seconds at https://samuelmoyer91-sketch.github.io/definvestdashboard/
+**Done!** Site updates at https://capitalfordefense.com (deployed via Cloudflare Pages)
 
 ---
 
@@ -167,7 +167,7 @@ python3 src/export/export_to_html_v2.py
 |------|-----|
 | Local Test | http://localhost:8080 |
 | Triage UI | http://127.0.0.1:8000 |
-| Live Site | https://samuelmoyer91-sketch.github.io/defense-dashboard/ |
+| Live Site | https://capitalfordefense.com |
 | GitHub Repo | https://github.com/samuelmoyer91-sketch/defense-dashboard |
 | FRED API Key | https://fred.stlouisfed.org/docs/api/api_key.html |
 

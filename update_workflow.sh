@@ -81,7 +81,7 @@ elif [ "$STAGE" = "publish" ]; then
   echo ""
 
   # Automatically proceed to deploy
-  echo "🚀 STAGE 5: Deploying to GitHub..."
+  echo "🚀 STAGE 5: Deploying to Cloudflare Pages..."
 
   # Check if there are changes
   if git diff --quiet github_site/; then
@@ -95,18 +95,18 @@ elif [ "$STAGE" = "publish" ]; then
   git commit -m "Update deals - $(date +%Y-%m-%d)"
   git push origin main
 
-  # Deploy to GitHub Pages
+  # Trigger Cloudflare Pages deploy via GitHub Actions
   echo ""
-  echo "📤 Deploying to GitHub Pages..."
-  git subtree push --prefix github_site origin gh-pages
+  echo "📤 Triggering Cloudflare Pages deployment..."
+  gh workflow run publish.yml
 
   echo ""
-  echo "✅ DEPLOYMENT COMPLETE!"
-  echo "   Your site will update in ~30 seconds at:"
-  echo "   https://samuelmoyer91-sketch.github.io/definvestdashboard/"
+  echo "✅ DEPLOYMENT TRIGGERED!"
+  echo "   Site will update in ~2 minutes at:"
+  echo "   https://capitalfordefense.com"
 
 elif [ "$STAGE" = "deploy" ]; then
-  echo "🚀 STAGE 5: Deploying to GitHub..."
+  echo "🚀 STAGE 5: Deploying to Cloudflare Pages..."
 
   # Check if there are changes
   if git diff --quiet github_site/; then
@@ -120,15 +120,15 @@ elif [ "$STAGE" = "deploy" ]; then
   git commit -m "Update deals - $(date +%Y-%m-%d)"
   git push origin main
 
-  # Deploy to GitHub Pages
+  # Trigger Cloudflare Pages deploy via GitHub Actions
   echo ""
-  echo "📤 Deploying to GitHub Pages..."
-  git subtree push --prefix github_site origin gh-pages
+  echo "📤 Triggering Cloudflare Pages deployment..."
+  gh workflow run publish.yml
 
   echo ""
-  echo "✅ DEPLOYMENT COMPLETE!"
-  echo "   Your site will update in ~30 seconds at:"
-  echo "   https://samuelmoyer91-sketch.github.io/definvestdashboard/"
+  echo "✅ DEPLOYMENT TRIGGERED!"
+  echo "   Site will update in ~2 minutes at:"
+  echo "   https://capitalfordefense.com"
 
 else
   echo "Usage: ./update_workflow.sh [stage]"
@@ -139,7 +139,7 @@ else
   echo "  scrape  - Scrape article content"
   echo "  ai      - Generate AI summaries for deals"
   echo "  publish - Refresh ALL data (FRED, Yahoo Finance, deals) & generate site + deploy"
-  echo "  deploy  - Deploy to GitHub Pages only"
+  echo "  deploy  - Deploy to Cloudflare Pages only"
   echo "  all     - Run fetch→screen→scrape→ai, then pause for triage"
   echo ""
   echo "Complete workflow:"

@@ -2,7 +2,7 @@
 
 A professional dashboard tracking defense sector investments, industrial health, and economic indicators - designed for defense analysts, think tankers, and industry researchers.
 
-**[🔗 View Live Dashboard](https://samuelmoyer91-sketch.github.io/definvestdashboard/)**
+**[🔗 View Live Dashboard](https://capitalfordefense.com)**
 ---
 
 ## 🔄 Automated Pipeline
@@ -291,7 +291,7 @@ This project has four components that work together:
 
 **Sam Moyer**
 - GitHub: [@samuelmoyer91-sketch](https://github.com/samuelmoyer91-sketch)
-- Dashboard: [definvestdashboard](https://samuelmoyer91-sketch.github.io/definvestdashboard/)
+- Dashboard: [capitalfordefense.com](https://capitalfordefense.com)
 
 ---
 
