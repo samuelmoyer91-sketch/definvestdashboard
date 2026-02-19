@@ -438,13 +438,27 @@ def generate_chart_page(chart_id, chart_info):
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{chart_info['title']} - Defense Capital Dashboard</title>
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
     <link rel="stylesheet" href="../css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
     <nav>
         <div class="container">
-            <a href="../index.html" class="logo">Defense Capital Dashboard</a>
+            <a href="../index.html" class="logo" style="display: flex; align-items: center; gap: 10px;">
+                <svg width="24" height="24" viewBox="0 0 64 64" fill="none">
+                    <rect x="4" y="4" width="16" height="16" rx="2" stroke="white" stroke-width="1.5" opacity="0.15"/>
+                    <rect x="24" y="4" width="16" height="16" rx="2" stroke="white" stroke-width="1.5" opacity="0.15"/>
+                    <rect x="44" y="4" width="16" height="16" rx="2" stroke="white" stroke-width="1.5" opacity="0.25"/>
+                    <rect x="4" y="24" width="16" height="16" rx="2" stroke="white" stroke-width="1.5" opacity="0.15"/>
+                    <rect x="24" y="24" width="16" height="16" rx="2" stroke="white" stroke-width="1.5" opacity="0.35"/>
+                    <rect x="44" y="24" width="16" height="16" rx="2" fill="white" opacity="0.55"/>
+                    <rect x="4" y="44" width="16" height="16" rx="2" stroke="white" stroke-width="1.5" opacity="0.25"/>
+                    <rect x="24" y="44" width="16" height="16" rx="2" fill="white" opacity="0.55"/>
+                    <rect x="44" y="44" width="16" height="16" rx="2" fill="white"/>
+                </svg>
+                Defense Capital Dashboard
+            </a>
             <button class="mobile-menu-toggle">☰</button>
             <ul>
                 {nav_html}
@@ -456,7 +470,7 @@ def generate_chart_page(chart_id, chart_info):
         <div class="page-header">
             <h1>{chart_info['title']}</h1>
             <p>{chart_info['subtitle']}</p>
-            <p style="margin-top: 0.5rem; font-size: 0.9rem; color: #666;">
+            <p style="margin-top: 0.5rem; font-size: 0.9rem;">
                 Source: {source_link}
             </p>
             <p class="last-updated" id="lastUpdated"></p>
@@ -767,13 +781,27 @@ def generate_category_page(cat_id, cat_info):
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{cat_info['title']} - Defense Capital Dashboard</title>
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
     <link rel="stylesheet" href="../css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
     <nav>
         <div class="container">
-            <a href="../index.html" class="logo">Defense Capital Dashboard</a>
+            <a href="../index.html" class="logo" style="display: flex; align-items: center; gap: 10px;">
+                <svg width="24" height="24" viewBox="0 0 64 64" fill="none">
+                    <rect x="4" y="4" width="16" height="16" rx="2" stroke="white" stroke-width="1.5" opacity="0.15"/>
+                    <rect x="24" y="4" width="16" height="16" rx="2" stroke="white" stroke-width="1.5" opacity="0.15"/>
+                    <rect x="44" y="4" width="16" height="16" rx="2" stroke="white" stroke-width="1.5" opacity="0.25"/>
+                    <rect x="4" y="24" width="16" height="16" rx="2" stroke="white" stroke-width="1.5" opacity="0.15"/>
+                    <rect x="24" y="24" width="16" height="16" rx="2" stroke="white" stroke-width="1.5" opacity="0.35"/>
+                    <rect x="44" y="24" width="16" height="16" rx="2" fill="white" opacity="0.55"/>
+                    <rect x="4" y="44" width="16" height="16" rx="2" stroke="white" stroke-width="1.5" opacity="0.25"/>
+                    <rect x="24" y="44" width="16" height="16" rx="2" fill="white" opacity="0.55"/>
+                    <rect x="44" y="44" width="16" height="16" rx="2" fill="white"/>
+                </svg>
+                Defense Capital Dashboard
+            </a>
             <button class="mobile-menu-toggle">☰</button>
             <ul>
                 {nav_html}
