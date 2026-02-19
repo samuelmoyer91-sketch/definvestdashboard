@@ -193,9 +193,15 @@ def generate_html_page(deals, deals_per_page=10):
             <p class="last-updated">Last updated: {datetime.now().strftime('%B %d, %Y')}</p>
         </div>
 
-        <!-- Search Bar -->
+        <!-- Search & Filter Controls -->
         <div class="briefing-controls">
             <input type="text" id="searchBox" placeholder="Search deals..." class="search-input">
+            <select id="sectorFilter" class="filter-select">
+                <option value="">All Sectors</option>
+            </select>
+            <select id="capitalFilter" class="filter-select">
+                <option value="">All Capital Types</option>
+            </select>
         </div>
 
         <!-- Deal Feed -->
@@ -223,6 +229,8 @@ def generate_html_page(deals, deals_per_page=10):
     <script>
         // Pagination and filtering
         const searchBox = document.getElementById('searchBox');
+        const sectorFilter = document.getElementById('sectorFilter');
+        const capitalFilter = document.getElementById('capitalFilter');
         const dealFeed = document.getElementById('dealFeed');
         const deals = Array.from(dealFeed.querySelectorAll('.deal-card'));
         const emptyState = document.getElementById('emptyState');
@@ -232,12 +240,98 @@ def generate_html_page(deals, deals_per_page=10):
         let currentPage = 1;
         let filteredDeals = deals;
 
+        // Merge aliases into canonical slugs
+        const sectorAliases = {{
+            'ai': 'ai-ml',
+            'materials': 'advanced-materials',
+            'mineral-refining': 'advanced-materials'
+        }};
+        function normalizeSector(s) {{
+            return sectorAliases[s] || s;
+        }}
+
+        // Populate filter dropdowns from card data attributes
+        (function populateFilters() {{
+            // Canonical labels for display
+            const sectorLabels = {{
+                'advanced-materials': 'Advanced Materials',
+                'aerospace': 'Aerospace',
+                'ai-ml': 'AI/ML',
+                'autonomous-systems-drones': 'Autonomous Systems/Drones',
+                'communications': 'Communications',
+                'cybersecurity': 'Cybersecurity',
+                'intelligence': 'Intelligence',
+                'manufacturing-production': 'Manufacturing/Production',
+                'munitions-weapons': 'Munitions/Weapons',
+                'semiconductors-electronics': 'Semiconductors/Electronics',
+                'software-it': 'Software/IT',
+                'space-satellites': 'Space/Satellites'
+            }};
+            const capitalLabels = {{
+                'corporate-venture': 'Corporate Venture',
+                'corporate-investment': 'Corporate Investment',
+                'family-office': 'Family Office',
+                'government-contract': 'Government Contract',
+                'grant-sbir': 'Grant/SBIR',
+                'internal-self-funded': 'Internal/Self-Funded',
+                'private-equity': 'Private Equity',
+                'public-markets': 'Public Markets',
+                'strategic-partner': 'Strategic Partner',
+                'venture-capital': 'Venture Capital'
+            }};
+
+            const sectorCounts = {{}};
+            const capitalCounts = {{}};
+
+            deals.forEach(deal => {{
+                const sectors = deal.dataset.sectors;
+                if (sectors) {{
+                    sectors.split(',').forEach(s => {{
+                        const ns = normalizeSector(s);
+                        sectorCounts[ns] = (sectorCounts[ns] || 0) + 1;
+                    }});
+                }}
+                const capital = deal.dataset.capital;
+                if (capital) {{
+                    capital.split(',').forEach(c => {{
+                        capitalCounts[c] = (capitalCounts[c] || 0) + 1;
+                    }});
+                }}
+            }});
+
+            Object.keys(sectorCounts).sort((a, b) => {{
+                const la = sectorLabels[a] || a;
+                const lb = sectorLabels[b] || b;
+                return la.localeCompare(lb);
+            }}).forEach(slug => {{
+                const opt = document.createElement('option');
+                opt.value = slug;
+                opt.textContent = (sectorLabels[slug] || slug) + ' (' + sectorCounts[slug] + ')';
+                sectorFilter.appendChild(opt);
+            }});
+
+            Object.keys(capitalCounts).sort((a, b) => {{
+                const la = capitalLabels[a] || a;
+                const lb = capitalLabels[b] || b;
+                return la.localeCompare(lb);
+            }}).forEach(slug => {{
+                const opt = document.createElement('option');
+                opt.value = slug;
+                opt.textContent = (capitalLabels[slug] || slug) + ' (' + capitalCounts[slug] + ')';
+                capitalFilter.appendChild(opt);
+            }});
+        }})();
+
         function filterDeals() {{
             const searchTerm = searchBox.value.toLowerCase();
+            const sectorVal = sectorFilter.value;
+            const capitalVal = capitalFilter.value;
 
             filteredDeals = deals.filter(deal => {{
-                const text = deal.textContent.toLowerCase();
-                return text.includes(searchTerm);
+                const matchesSearch = deal.textContent.toLowerCase().includes(searchTerm);
+                const matchesSector = !sectorVal || (deal.dataset.sectors && deal.dataset.sectors.split(',').map(normalizeSector).includes(sectorVal));
+                const matchesCapital = !capitalVal || (deal.dataset.capital && deal.dataset.capital.split(',').includes(capitalVal));
+                return matchesSearch && matchesSector && matchesCapital;
             }});
 
             currentPage = 1;
@@ -298,6 +392,8 @@ def generate_html_page(deals, deals_per_page=10):
         }}
 
         searchBox.addEventListener('input', filterDeals);
+        sectorFilter.addEventListener('change', filterDeals);
+        capitalFilter.addEventListener('change', filterDeals);
 
         // Mobile menu toggle
         document.querySelector('.mobile-menu-toggle').addEventListener('click', function() {{
@@ -381,9 +477,36 @@ def generate_deal_card(master, raw, ai):
     company_name = (ai.company if ai and ai.company else
                    master.company if master and master.company else None)
 
+    # Extract sectors and capital sources early (used for both data attrs and display)
+    capital_sources = None
+    if master and master.capital_sources:
+        capital_sources = master.capital_sources
+    elif master and master.capital_type:
+        capital_sources = master.capital_type
+
+    sectors = None
+    if master and master.sectors:
+        sectors = master.sectors
+    elif master and master.sector:
+        sectors = master.sector
+
+    # Build data attributes for filtering
+    def slugify(val):
+        return re.sub(r'[\s/]+', '-', val.strip().lower())
+
+    sectors_attr = ''
+    if sectors:
+        sector_slugs = ','.join(slugify(s) for s in re.split(r',\s*', sectors))
+        sectors_attr = f' data-sectors="{sector_slugs}"'
+
+    capital_attr = ''
+    if capital_sources:
+        capital_slugs = ','.join(slugify(s) for s in re.split(r',\s*', capital_sources))
+        capital_attr = f' data-capital="{capital_slugs}"'
+
     # Build card with clean text-based layout
     card_html = f"""
-    <div class="deal-card" data-deal-type="{deal_type.lower()}">
+    <div class="deal-card" data-deal-type="{deal_type.lower()}"{sectors_attr}{capital_attr}>
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">{deal_type}</span>
@@ -440,13 +563,7 @@ def generate_deal_card(master, raw, ai):
                     <span>{investors_display}</span>
                 </div>"""
 
-    # Capital Sources (with fallback to old capital_type)
-    capital_sources = None
-    if master and master.capital_sources:
-        capital_sources = master.capital_sources
-    elif master and master.capital_type:
-        capital_sources = master.capital_type
-
+    # Capital Sources (already extracted above for data attributes)
     if capital_sources:
         card_html += f"""
                 <div class="deal-meta-line">
@@ -454,13 +571,7 @@ def generate_deal_card(master, raw, ai):
                     <span>{capital_sources}</span>
                 </div>"""
 
-    # Sectors (with fallback to old sector)
-    sectors = None
-    if master and master.sectors:
-        sectors = master.sectors
-    elif master and master.sector:
-        sectors = master.sector
-
+    # Sectors (already extracted above for data attributes)
     if sectors:
         card_html += f"""
                 <div class="deal-meta-line">

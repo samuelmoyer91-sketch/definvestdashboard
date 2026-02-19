@@ -10,7 +10,19 @@
 <body>
     <nav>
         <div class="container">
-            <a href="../index.html" class="logo" style="display: flex; align-items: center; gap: 10px;"><svg width="24" height="24" viewBox="0 0 64 64" fill="none"><rect x="4" y="4" width="16" height="16" rx="2" stroke="white" stroke-width="1.5" opacity="0.15"/><rect x="24" y="4" width="16" height="16" rx="2" stroke="white" stroke-width="1.5" opacity="0.15"/><rect x="44" y="4" width="16" height="16" rx="2" stroke="white" stroke-width="1.5" opacity="0.25"/><rect x="4" y="24" width="16" height="16" rx="2" stroke="white" stroke-width="1.5" opacity="0.15"/><rect x="24" y="24" width="16" height="16" rx="2" stroke="white" stroke-width="1.5" opacity="0.35"/><rect x="44" y="24" width="16" height="16" rx="2" fill="white" opacity="0.55"/><rect x="4" y="44" width="16" height="16" rx="2" stroke="white" stroke-width="1.5" opacity="0.25"/><rect x="24" y="44" width="16" height="16" rx="2" fill="white" opacity="0.55"/><rect x="44" y="44" width="16" height="16" rx="2" fill="white"/></svg>Defense Capital Dashboard</a>
+            <a href="../index.html" class="logo" style="display: flex; align-items: center; gap: 10px;">
+                <svg width="24" height="24" viewBox="0 0 64 64" fill="none">
+                    <rect x="4" y="4" width="16" height="16" rx="2" stroke="white" stroke-width="1.5" opacity="0.15"/>
+                    <rect x="24" y="4" width="16" height="16" rx="2" stroke="white" stroke-width="1.5" opacity="0.15"/>
+                    <rect x="44" y="4" width="16" height="16" rx="2" stroke="white" stroke-width="1.5" opacity="0.25"/>
+                    <rect x="4" y="24" width="16" height="16" rx="2" stroke="white" stroke-width="1.5" opacity="0.15"/>
+                    <rect x="24" y="24" width="16" height="16" rx="2" stroke="white" stroke-width="1.5" opacity="0.35"/>
+                    <rect x="44" y="24" width="16" height="16" rx="2" fill="white" opacity="0.55"/>
+                    <rect x="4" y="44" width="16" height="16" rx="2" stroke="white" stroke-width="1.5" opacity="0.25"/>
+                    <rect x="24" y="44" width="16" height="16" rx="2" fill="white" opacity="0.55"/>
+                    <rect x="44" y="44" width="16" height="16" rx="2" fill="white"/>
+                </svg>
+                Defense Capital Dashboard
             <button class="mobile-menu-toggle">☰</button>
             <ul>
                 <li><a href="../index.html">Home</a></li>
@@ -26,18 +38,460 @@
         <div class="page-header">
             <h1>Defense Investment Activity</h1>
             <p>Curated intelligence on venture capital, M&A, and funding activity in the defense sector</p>
-            <p class="last-updated">Last updated: February 13, 2026</p>
+            <p class="last-updated">Last updated: February 19, 2026</p>
         </div>
 
-        <!-- Search Bar -->
+        <!-- Search & Filter Controls -->
         <div class="briefing-controls">
             <input type="text" id="searchBox" placeholder="Search deals..." class="search-input">
+            <select id="sectorFilter" class="filter-select">
+                <option value="">All Sectors</option>
+            </select>
+            <select id="capitalFilter" class="filter-select">
+                <option value="">All Capital Types</option>
+            </select>
         </div>
 
         <!-- Deal Feed -->
         <div id="dealFeed" class="briefing-feed">
             
-    <div class="deal-card" data-deal-type="funding">
+    <div class="deal-card" data-deal-type="merger" data-sectors="autonomous-systems-drones,ai-ml,software-it" data-capital="public-markets,strategic-partner">
+        <div class="deal-card-header">
+            <div class="deal-header-line">
+                <span class="deal-type-label">MERGER</span>
+                <span class="deal-date">Feb 18, 2026</span>
+            </div>
+        </div>
+
+        <div class="deal-card-body">
+            <h3 class="deal-company-name">Merger with Israeli Drone Company XTEND Results in Publicly Traded Company with $1.5B Valuation</h3>
+            <div class="deal-metadata">
+                <div class="deal-meta-line">
+                    <span class="meta-label">Amount</span>
+                    <span>$1,500,000,000</span>
+                </div>
+                <div class="deal-meta-line">
+                    <span class="meta-label">Investors</span>
+                    <span>JFB Construction Holdings, Eric Trump, Protego Ventures, Unusual Machines, American Ventures LLC, Aliya Capital, Agostinelli Group</span>
+                </div>
+                <div class="deal-meta-line">
+                    <span class="meta-label">Capital</span>
+                    <span>Public Markets,Strategic Partner</span>
+                </div>
+                <div class="deal-meta-line">
+                    <span class="meta-label">Sectors</span>
+                    <span>Autonomous Systems/Drones,AI/ML,Software/IT</span>
+                </div>
+            </div>
+            <div class="deal-insight">
+                <p>This merger positions XTEND to scale US manufacturing capabilities and access public markets as drone demand surges at the Pentagon.</p>
+            </div>
+        </div>
+
+        <div class="deal-card-footer">
+            <a href="https://www.google.com/url?rct=j&sa=t&url=https://www.jpost.com/defense-and-tech/article-886987&ct=ga&cd=CAIyHDcxM2VjOTAzMTk0MzIyOTE6Y29tOmVuOlVTOlI&usg=AOvVaw2pA0-01eG47pbDttD0Yz15" target="_blank" rel="noopener" class="deal-source-link">
+                Read Full Article on jpost.com →
+            </a>
+        </div>
+    </div>
+
+    <div class="deal-card" data-deal-type="strategic" data-sectors="aerospace,advanced-materials" data-capital="internal-self-funded,strategic-partner">
+        <div class="deal-card-header">
+            <div class="deal-header-line">
+                <span class="deal-type-label">STRATEGIC</span>
+                <span class="deal-date">Feb 18, 2026</span>
+            </div>
+        </div>
+
+        <div class="deal-card-body">
+            <h3 class="deal-company-name">ExxonMobil Builds New Facility for Lithium-Ion Battery Manufacturing</h3>
+            <div class="deal-metadata">
+                <div class="deal-meta-line">
+                    <span class="meta-label">Amount</span>
+                    <span>Unknown</span>
+                </div>
+                <div class="deal-meta-line">
+                    <span class="meta-label">Investors</span>
+                    <span>ExxonMobil, ACP Technology</span>
+                </div>
+                <div class="deal-meta-line">
+                    <span class="meta-label">Capital</span>
+                    <span>Internal/Self-funded,Strategic Partner</span>
+                </div>
+                <div class="deal-meta-line">
+                    <span class="meta-label">Sectors</span>
+                    <span>Aerospace,Advanced Materials</span>
+                </div>
+            </div>
+            <div class="deal-insight">
+                <p>This facility strengthens US domestic production of critical minerals needed for lithium-ion batteries used in defense and aerospace systems. The partnership between ExxonMobil and ACP Technology creates a supply chain for battery-grade graphite materials, reducing dependence on foreign sources for critical defense technologies.</p>
+            </div>
+        </div>
+
+        <div class="deal-card-footer">
+            <a href="https://www.google.com/url?rct=j&sa=t&url=https://www.wsaz.com/2026/02/18/facility-opens-produce-new-material-invented-tri-state/&ct=ga&cd=CAIyGmE3ODBmZjljMzAxZTgxNDQ6Y29tOmVuOlVT&usg=AOvVaw3VzBSyjaVYuYtA7eWNVQFS" target="_blank" rel="noopener" class="deal-source-link">
+                Read Full Article on wsaz.com →
+            </a>
+        </div>
+    </div>
+
+    <div class="deal-card" data-deal-type="internal" data-sectors="space-satellites,cybersecurity,communications" data-capital="government-contract,internal-self-funded">
+        <div class="deal-card-header">
+            <div class="deal-header-line">
+                <span class="deal-type-label">INTERNAL</span>
+                <span class="deal-date">Feb 17, 2026</span>
+            </div>
+        </div>
+
+        <div class="deal-card-body">
+            <h3 class="deal-company-name">GRVTY Invests $8M in Virginia Facility</h3>
+            <div class="deal-metadata">
+                <div class="deal-meta-line">
+                    <span class="meta-label">Amount</span>
+                    <span>$8,000,000</span>
+                </div>
+                <div class="deal-meta-line">
+                    <span class="meta-label">Investors</span>
+                    <span>Self-funded</span>
+                </div>
+                <div class="deal-meta-line">
+                    <span class="meta-label">Capital</span>
+                    <span>Government/Contract,Internal/Self-funded</span>
+                </div>
+                <div class="deal-meta-line">
+                    <span class="meta-label">Sectors</span>
+                    <span>Space/Satellites,Cybersecurity,Communications</span>
+                </div>
+            </div>
+            <div class="deal-insight">
+                <p style="color: #999; font-style: italic;">No summary provided.</p>
+            </div>
+        </div>
+
+        <div class="deal-card-footer">
+            <a href="https://www.google.com/url?rct=j&sa=t&url=https://www.governor.virginia.gov/newsroom/news-releases/2026/february-/name-1112743-en.html&ct=ga&cd=CAIyGmE3ODBmZjljMzAxZTgxNDQ6Y29tOmVuOlVT&usg=AOvVaw2Kukr1S5Q-JUbQ0gviI_gj" target="_blank" rel="noopener" class="deal-source-link">
+                Read Full Article on governor.virginia.gov →
+            </a>
+        </div>
+    </div>
+
+    <div class="deal-card" data-deal-type="funding" data-sectors="autonomous-systems-drones,aerospace" data-capital="private-equity">
+        <div class="deal-card-header">
+            <div class="deal-header-line">
+                <span class="deal-type-label">FUNDING</span>
+                <span class="deal-date">Feb 17, 2026</span>
+            </div>
+        </div>
+
+        <div class="deal-card-body">
+            <h3 class="deal-company-name">Stratolaunch Raises Private Equity to Increase Hypersonic Vehicle Production</h3>
+            <div class="deal-metadata">
+                <div class="deal-meta-line">
+                    <span class="meta-label">Amount</span>
+                    <span>Unknown</span>
+                </div>
+                <div class="deal-meta-line">
+                    <span class="meta-label">Investors</span>
+                    <span>Elliott Investment Management, Cerberus Capital Management</span>
+                </div>
+                <div class="deal-meta-line">
+                    <span class="meta-label">Capital</span>
+                    <span>Private Equity</span>
+                </div>
+                <div class="deal-meta-line">
+                    <span class="meta-label">Sectors</span>
+                    <span>Autonomous Systems/Drones,Aerospace</span>
+                </div>
+            </div>
+            <div class="deal-insight">
+                <p style="color: #999; font-style: italic;">No summary provided.</p>
+            </div>
+        </div>
+
+        <div class="deal-card-footer">
+            <a href="https://www.google.com/url?rct=j&sa=t&url=https://www.latimes.com/b2b/space-tech/story/2026-02-17/mojave-aerospace-stratolaunch-investment&ct=ga&cd=CAIyHGI4MGE4YjBiOWNmOWJhYmI6Y29tOmVuOlVTOlI&usg=AOvVaw1Q1R1x7ZI2usA92zygW8MW" target="_blank" rel="noopener" class="deal-source-link">
+                Read Full Article on latimes.com →
+            </a>
+        </div>
+    </div>
+
+    <div class="deal-card" data-deal-type="other" data-sectors="ai-ml,aerospace,cybersecurity,software-it" data-capital="private-equity">
+        <div class="deal-card-header">
+            <div class="deal-header-line">
+                <span class="deal-type-label">OTHER</span>
+                <span class="deal-date">Feb 17, 2026</span>
+            </div>
+        </div>
+
+        <div class="deal-card-body">
+            <h3 class="deal-company-name">Veritas Raises $15.3B PE Fund for Aerospace and Defense Investments</h3>
+            <div class="deal-metadata">
+                <div class="deal-meta-line">
+                    <span class="meta-label">Amount</span>
+                    <span>$15,300,000,000</span>
+                </div>
+                <div class="deal-meta-line">
+                    <span class="meta-label">Investors</span>
+                    <span>Veritas Capital Fund IX and related investment vehicles</span>
+                </div>
+                <div class="deal-meta-line">
+                    <span class="meta-label">Capital</span>
+                    <span>Private Equity</span>
+                </div>
+                <div class="deal-meta-line">
+                    <span class="meta-label">Sectors</span>
+                    <span>AI/ML,Aerospace,Cybersecurity,Software/IT</span>
+                </div>
+            </div>
+            <div class="deal-insight">
+                <p>This massive fundraise positions Veritas to continue consolidating defense and government technology companies during a challenging fundraising environment. Recent acquisitions include GHX (healthcare supply chain) and MetroStar (AI-enabled digital transformation for defense agencies), while portfolio company Peraton secured multi-billion dollar FAA modernization contracts.</p>
+            </div>
+        </div>
+
+        <div class="deal-card-footer">
+            <a href="https://www.google.com/url?rct=j&sa=t&url=https://finance.yahoo.com/news/veritas-capital-raises-15-3-130000440.html&ct=ga&cd=CAIyHGI4MGE4YjBiOWNmOWJhYmI6Y29tOmVuOlVTOlI&usg=AOvVaw2pcLi2E7AZpUwhXFIrlgxR" target="_blank" rel="noopener" class="deal-source-link">
+                Read Full Article on finance.yahoo.com →
+            </a>
+        </div>
+    </div>
+
+    <div class="deal-card" data-deal-type="acquisition" data-sectors="space-satellites,semiconductors-electronics,communications" data-capital="strategic-partner">
+        <div class="deal-card-header">
+            <div class="deal-header-line">
+                <span class="deal-type-label">ACQUISITION</span>
+                <span class="deal-date">Feb 17, 2026</span>
+            </div>
+        </div>
+
+        <div class="deal-card-body">
+            <h3 class="deal-company-name">Safran Acquires Syntony for PNT</h3>
+            <div class="deal-metadata">
+                <div class="deal-meta-line">
+                    <span class="meta-label">Amount</span>
+                    <span>Unknown</span>
+                </div>
+                <div class="deal-meta-line">
+                    <span class="meta-label">Investors</span>
+                    <span>Safran Electronics & Defense</span>
+                </div>
+                <div class="deal-meta-line">
+                    <span class="meta-label">Capital</span>
+                    <span>Strategic Partner</span>
+                </div>
+                <div class="deal-meta-line">
+                    <span class="meta-label">Sectors</span>
+                    <span>Space/Satellites,Semiconductors/Electronics,Communications</span>
+                </div>
+            </div>
+            <div class="deal-insight">
+                <p>This acquisition strengthens Safran's position in resilient PNT (Position, Navigation, Timing) capabilities, adding critical anti-jamming and spoofing technologies essential for flight safety and infrastructure protection. The deal expands Safran's portfolio with controlled reception pattern antennas (CRPAs) and software-defined radio capabilities, building on their 2023 Orolia acquisition to create a comprehensive GNSS resilience offering.</p>
+            </div>
+        </div>
+
+        <div class="deal-card-footer">
+            <a href="https://www.google.com/url?rct=j&sa=t&url=https://www.gpsworld.com/safran-acquires-syntony-to-strengthen-position-in-resilient-pnt-market/&ct=ga&cd=CAIyHDcxM2VjOTAzMTk0MzIyOTE6Y29tOmVuOlVTOlI&usg=AOvVaw21CZ6gIHG1-i8HTyfRMpfA" target="_blank" rel="noopener" class="deal-source-link">
+                Read Full Article on gpsworld.com →
+            </a>
+        </div>
+    </div>
+
+    <div class="deal-card" data-deal-type="unknown" data-sectors="software-it" data-capital="venture-capital">
+        <div class="deal-card-header">
+            <div class="deal-header-line">
+                <span class="deal-type-label">UNKNOWN</span>
+                <span class="deal-date">Feb 16, 2026</span>
+            </div>
+        </div>
+
+        <div class="deal-card-body">
+            <h3 class="deal-company-name">Integrate Raises $17M for Defense Software</h3>
+            <div class="deal-metadata">
+                <div class="deal-meta-line">
+                    <span class="meta-label">Amount</span>
+                    <span>$17,000,000</span>
+                </div>
+                <div class="deal-meta-line">
+                    <span class="meta-label">Investors</span>
+                    <span>FPV Ventures, Fuse VC, RSquared VC, New Vista, Hyperlane, Riot Ventures</span>
+                </div>
+                <div class="deal-meta-line">
+                    <span class="meta-label">Capital</span>
+                    <span>Venture Capital</span>
+                </div>
+                <div class="deal-meta-line">
+                    <span class="meta-label">Sectors</span>
+                    <span>Software/IT</span>
+                </div>
+            </div>
+            <div class="deal-insight">
+                <p>Fundraise to assist startup scale for recent Space Force contract.</p>
+            </div>
+        </div>
+
+        <div class="deal-card-footer">
+            <a href="https://www.google.com/url?rct=j&sa=t&url=http://www.msn.com/en-us/news/technology/seattle-startup-integrate-lands-17m-to-expand-its-super-secure-project-management-tool-for-defense-tech/ar-AA1W9prP%3Fapiversion%3Dv2%26domshim%3D1%26noservercache%3D1%26noservertelemetry%3D1%26batchservertelemetry%3D1%26renderwebcomponents%3D1%26wcseo%3D1&ct=ga&cd=CAIyHDcxM2VjOTAzMTk0MzIyOTE6Y29tOmVuOlVTOlI&usg=AOvVaw0s0rnZt0vpxM4CCrN7CgwS" target="_blank" rel="noopener" class="deal-source-link">
+                Read Full Article on msn.com →
+            </a>
+        </div>
+    </div>
+
+    <div class="deal-card" data-deal-type="internal" data-sectors="aerospace,manufacturing-production" data-capital="internal-self-funded">
+        <div class="deal-card-header">
+            <div class="deal-header-line">
+                <span class="deal-type-label">INTERNAL</span>
+                <span class="deal-date">Feb 15, 2026</span>
+            </div>
+        </div>
+
+        <div class="deal-card-body">
+            <h3 class="deal-company-name">GE Aerospace Builds Manufacturing Facilities</h3>
+            <div class="deal-metadata">
+                <div class="deal-meta-line">
+                    <span class="meta-label">Amount</span>
+                    <span>$75,000,000</span>
+                </div>
+                <div class="deal-meta-line">
+                    <span class="meta-label">Investors</span>
+                    <span>Self-funded</span>
+                </div>
+                <div class="deal-meta-line">
+                    <span class="meta-label">Capital</span>
+                    <span>Internal/Self-funded</span>
+                </div>
+                <div class="deal-meta-line">
+                    <span class="meta-label">Sectors</span>
+                    <span>Aerospace,Manufacturing/Production</span>
+                </div>
+            </div>
+            <div class="deal-insight">
+                <p>GE Aerospace is investing in expanded manufacturing capacity with new facilities in Michigan, creating 160 jobs and adding 36,000 square feet of production space.</p>
+            </div>
+        </div>
+
+        <div class="deal-card-footer">
+            <a href="https://www.google.com/url?rct=j&sa=t&url=https://www.areadevelopment.com/newsItems/2-15-2026/ge-aerospace-muskegon-county-michigan.shtml&ct=ga&cd=CAIyGmE3ODBmZjljMzAxZTgxNDQ6Y29tOmVuOlVT&usg=AOvVaw3kQCPl8eoWkeUkfQnc2GdK" target="_blank" rel="noopener" class="deal-source-link">
+                Read Full Article on areadevelopment.com →
+            </a>
+        </div>
+    </div>
+
+    <div class="deal-card" data-deal-type="internal" data-sectors="aerospace,manufacturing-production" data-capital="internal-self-funded">
+        <div class="deal-card-header">
+            <div class="deal-header-line">
+                <span class="deal-type-label">INTERNAL</span>
+                <span class="deal-date">Feb 14, 2026</span>
+            </div>
+        </div>
+
+        <div class="deal-card-body">
+            <h3 class="deal-company-name">Safran Invests $305 Million to Build Aerospace Production Facility in Morocco</h3>
+            <div class="deal-metadata">
+                <div class="deal-meta-line">
+                    <span class="meta-label">Amount</span>
+                    <span>$305,000,000</span>
+                </div>
+                <div class="deal-meta-line">
+                    <span class="meta-label">Investors</span>
+                    <span>Self-funded</span>
+                </div>
+                <div class="deal-meta-line">
+                    <span class="meta-label">Capital</span>
+                    <span>Internal/Self-funded</span>
+                </div>
+                <div class="deal-meta-line">
+                    <span class="meta-label">Sectors</span>
+                    <span>Aerospace,Manufacturing/Production</span>
+                </div>
+            </div>
+            <div class="deal-insight">
+                <p>The facility will manufacture critical landing gear systems for the Airbus A320 family of aircraft.</p>
+            </div>
+        </div>
+
+        <div class="deal-card-footer">
+            <a href="https://www.google.com/url?rct=j&sa=t&url=https://www.ecofinagency.com/news/1402-52903-morocco-safran-announces-305-million-investment-to-build-one-of-the-worlds-largest-landing-gear-plants&ct=ga&cd=CAIyGmE3ODBmZjljMzAxZTgxNDQ6Y29tOmVuOlVT&usg=AOvVaw2-Zj75Mvd4O4bghkQWS7xx" target="_blank" rel="noopener" class="deal-source-link">
+                Read Full Article on ecofinagency.com →
+            </a>
+        </div>
+    </div>
+
+    <div class="deal-card" data-deal-type="strategic" data-sectors="space-satellites,aerospace" data-capital="private-equity">
+        <div class="deal-card-header">
+            <div class="deal-header-line">
+                <span class="deal-type-label">STRATEGIC</span>
+                <span class="deal-date">Feb 14, 2026</span>
+            </div>
+        </div>
+
+        <div class="deal-card-body">
+            <h3 class="deal-company-name">N.S. Lachman Raises $57.5B for Space Industry PE Funds</h3>
+            <div class="deal-metadata">
+                <div class="deal-meta-line">
+                    <span class="meta-label">Amount</span>
+                    <span>$57,500,000,000</span>
+                </div>
+                <div class="deal-meta-line">
+                    <span class="meta-label">Investors</span>
+                    <span>N.S. Lachman & Co.</span>
+                </div>
+                <div class="deal-meta-line">
+                    <span class="meta-label">Capital</span>
+                    <span>Private Equity</span>
+                </div>
+                <div class="deal-meta-line">
+                    <span class="meta-label">Sectors</span>
+                    <span>Space/Satellites,Aerospace</span>
+                </div>
+            </div>
+            <div class="deal-insight">
+                <p>This family of PE funds will focus on dual-use space technology, including a position in SpaceX.</p>
+            </div>
+        </div>
+
+        <div class="deal-card-footer">
+            <a href="https://www.google.com/url?rct=j&sa=t&url=https://www.floridatoday.com/press-release/story/70121/n-s-lachman-co-launches-57-5-billion-space-industry-consolidation-ecosystem-worlds-largest-space-focused-platform/&ct=ga&cd=CAIyHGI4MGE4YjBiOWNmOWJhYmI6Y29tOmVuOlVTOlI&usg=AOvVaw3av3QP2BklotYKZh9Y-PHM" target="_blank" rel="noopener" class="deal-source-link">
+                Read Full Article on floridatoday.com →
+            </a>
+        </div>
+    </div>
+
+    <div class="deal-card" data-deal-type="internal investment" data-sectors="aerospace,manufacturing-production" data-capital="internal-self-funded">
+        <div class="deal-card-header">
+            <div class="deal-header-line">
+                <span class="deal-type-label">INTERNAL INVESTMENT</span>
+                <span class="deal-date">Feb 14, 2026</span>
+            </div>
+        </div>
+
+        <div class="deal-card-body">
+            <h3 class="deal-company-name">RENK Group Announces $170M CapEx and R&D for Michigan Facilities</h3>
+            <div class="deal-metadata">
+                <div class="deal-meta-line">
+                    <span class="meta-label">Amount</span>
+                    <span>$170,000,000</span>
+                </div>
+                <div class="deal-meta-line">
+                    <span class="meta-label">Capital</span>
+                    <span>Internal/Self-funded</span>
+                </div>
+                <div class="deal-meta-line">
+                    <span class="meta-label">Sectors</span>
+                    <span>Aerospace,Manufacturing/Production</span>
+                </div>
+            </div>
+            <div class="deal-insight">
+                <p>RENK Group's $170 million investment ($70M capex, $100M R&D) in Michigan facilities by 2030 will create 300 jobs and strengthen existing operations in Muskegon, Sterling Heights, and Roseville. This expansion reinforces Michigan's position as a key defense manufacturing hub and deepens the strategic partnership between German defense companies and U.S. industrial base.</p>
+            </div>
+        </div>
+
+        <div class="deal-card-footer">
+            <a href="https://www.google.com/url?rct=j&sa=t&url=https://www.wilx.com/2026/02/13/gov-whitmer-leads-michigan-investment-mission-germany/&ct=ga&cd=CAIyGmE3ODBmZjljMzAxZTgxNDQ6Y29tOmVuOlVT&usg=AOvVaw3GHXbm1iBCswuMRT8320YN" target="_blank" rel="noopener" class="deal-source-link">
+                Read Full Article on wilx.com →
+            </a>
+        </div>
+    </div>
+
+    <div class="deal-card" data-deal-type="funding" data-sectors="space-satellites,aerospace" data-capital="venture-capital,private-equity,government-contract,strategic-partner">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">FUNDING</span>
@@ -46,7 +500,7 @@
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">China's iSpace launch firm raises record $729 <b>million</b> for reusable rockets - SpaceNews</h3>
+            <h3 class="deal-company-name">China's iSpace launch firm raises record $729 million for reusable rockets</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -77,7 +531,7 @@
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="internal">
+    <div class="deal-card" data-deal-type="internal" data-sectors="manufacturing-production" data-capital="internal-self-funded">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">INTERNAL</span>
@@ -86,7 +540,7 @@
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">Chapco announces new 150000 sqft manufacturing <b>facility</b>. Strengthens support for ... - Florida Today</h3>
+            <h3 class="deal-company-name">Chapco announces new 150000 sqft manufacturing facility. Strengthens support for ...</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -117,7 +571,7 @@
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="internal">
+    <div class="deal-card" data-deal-type="internal" data-sectors="manufacturing-production,munitions-weapons" data-capital="internal-self-funded">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">INTERNAL</span>
@@ -157,7 +611,7 @@
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="funding">
+    <div class="deal-card" data-deal-type="funding" data-sectors="autonomous-systems-drones,advanced-materials,manufacturing-production" data-capital="venture-capital">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">FUNDING</span>
@@ -166,7 +620,7 @@
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">Startup <b>Raises</b> Funds To 3D Print Conformal Drone Batteries | Aviation Week Network</h3>
+            <h3 class="deal-company-name">Startup Raises Funds To 3D Print Conformal Drone Batteries</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -197,7 +651,7 @@
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="internal">
+    <div class="deal-card" data-deal-type="internal" data-sectors="aerospace,manufacturing-production,communications" data-capital="internal-self-funded">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">INTERNAL</span>
@@ -206,7 +660,7 @@
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">Curtiss-Wright Reports Fourth Quarter and Full-Year 2025 Financial Results - Morningstar</h3>
+            <h3 class="deal-company-name">Curtiss-Wright Reports Fourth Quarter and Full-Year 2025 Financial Results</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -237,7 +691,7 @@
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="internal">
+    <div class="deal-card" data-deal-type="internal" data-sectors="autonomous-systems-drones,ai-ml,advanced-materials,manufacturing-production" data-capital="internal-self-funded">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">INTERNAL</span>
@@ -246,7 +700,7 @@
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">Echodyne to Open Major New Manufacturing <b>Facility</b> to Meet Rapidly Growing Global Demand</h3>
+            <h3 class="deal-company-name">Echodyne to Open Major New Manufacturing Facility to Meet Rapidly Growing Global Demand</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -277,7 +731,7 @@
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="acquisition">
+    <div class="deal-card" data-deal-type="acquisition" data-sectors="aerospace,software-it" data-capital="private-equity">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">ACQUISITION</span>
@@ -286,7 +740,7 @@
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">By Light Closes Dignitas Technologies <b>Acquisition</b> to Strengthen Modeling &amp; Simulation Portfolio</h3>
+            <h3 class="deal-company-name">By Light Closes Dignitas Technologies Acquisition to Strengthen Modeling &amp; Simulation Portfolio</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -317,7 +771,7 @@
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="funding">
+    <div class="deal-card" data-deal-type="funding" data-sectors="cybersecurity,software-it" data-capital="venture-capital">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">FUNDING</span>
@@ -326,7 +780,7 @@
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">Integrate <b>Raises</b> $17M To Modernize <b>Defense</b> Projects - FindArticles</h3>
+            <h3 class="deal-company-name">Integrate Raises $17M To Modernize Defense Projects</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -357,7 +811,7 @@
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="funding">
+    <div class="deal-card" data-deal-type="funding" data-sectors="ai-ml,software-it,communications" data-capital="venture-capital">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">FUNDING</span>
@@ -366,7 +820,7 @@
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">Tenna Systems <b>Raises</b> $13.5M to Deliver Hardware-Free Spectrum Intelligence for Modern ...</h3>
+            <h3 class="deal-company-name">Tenna Systems Raises $13.5M to Deliver Hardware-Free Spectrum Intelligence for Modern ...</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -397,7 +851,7 @@
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="strategic">
+    <div class="deal-card" data-deal-type="strategic" data-sectors="manufacturing-production,munitions-weapons" data-capital="strategic-partner">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">STRATEGIC</span>
@@ -406,7 +860,7 @@
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">NUBURU buys strategic equity stake in Heckler &amp; Koch | BURU Stock News</h3>
+            <h3 class="deal-company-name">NUBURU buys strategic equity stake in Heckler &amp; Koch</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -437,7 +891,7 @@
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="funding">
+    <div class="deal-card" data-deal-type="funding" data-sectors="aerospace,munitions-weapons" data-capital="venture-capital,government-contract">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">FUNDING</span>
@@ -446,7 +900,7 @@
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">German startup aims to deliver European hypersonic strike by 2029 - <b>Defense</b> News</h3>
+            <h3 class="deal-company-name">German startup aims to deliver European hypersonic strike by 2029 - Defense News</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -477,7 +931,7 @@
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="acquisition">
+    <div class="deal-card" data-deal-type="acquisition" data-sectors="advanced-materials" data-capital="private-equity">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">ACQUISITION</span>
@@ -486,7 +940,7 @@
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">Arcline-backed Novaria snaps up coatings provider Plasma Ruggedized Solutions - PE Hub</h3>
+            <h3 class="deal-company-name">Arcline-backed Novaria snaps up coatings provider Plasma Ruggedized Solutions</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -517,7 +971,7 @@
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="funding">
+    <div class="deal-card" data-deal-type="funding" data-sectors="aerospace,manufacturing-production" data-capital="venture-capital">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">FUNDING</span>
@@ -526,7 +980,7 @@
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">First Saudi Arabian <b>Defense</b> VC Fund Launched | Aviation Week Network</h3>
+            <h3 class="deal-company-name">First Saudi Arabian Defense VC Fund Launched</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -557,7 +1011,7 @@
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="acquisition">
+    <div class="deal-card" data-deal-type="acquisition" data-sectors="aerospace,advanced-materials" data-capital="private-equity">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">ACQUISITION</span>
@@ -566,7 +1020,7 @@
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">Fort Worth's Novaria Group <b>Acquires</b> California-Based Plasma Ruggedized Solutions</h3>
+            <h3 class="deal-company-name">Fort Worth's Novaria Group Acquires California-Based Plasma Ruggedized Solutions</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -597,7 +1051,7 @@
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="acquisition">
+    <div class="deal-card" data-deal-type="acquisition" data-sectors="aerospace" data-capital="strategic-partner">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">ACQUISITION</span>
@@ -606,7 +1060,7 @@
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">Belgian <b>military</b> intelligence probes Chinese-linked acquisition of helicopter company</h3>
+            <h3 class="deal-company-name">Belgian military intelligence probes Chinese-linked acquisition of helicopter company</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -637,7 +1091,7 @@
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="funding">
+    <div class="deal-card" data-deal-type="funding" data-sectors="ai-ml,aerospace,manufacturing-production" data-capital="corporate-venture,strategic-partner">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">FUNDING</span>
@@ -646,7 +1100,7 @@
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">Machina Labs <b>raises</b> $124 million to scale manufacturing infrastructure</h3>
+            <h3 class="deal-company-name">Machina Labs raises $124 million to scale manufacturing infrastructure</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -677,7 +1131,7 @@
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="acquisition">
+    <div class="deal-card" data-deal-type="acquisition" data-sectors="manufacturing-production" data-capital="internal-self-funded,strategic-partner">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">ACQUISITION</span>
@@ -686,7 +1140,7 @@
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">Orion <b>acquires</b> J.E. McAmis - WorkBoat</h3>
+            <h3 class="deal-company-name">Orion acquires J.E. McAmis</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -717,7 +1171,7 @@
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="acquisition">
+    <div class="deal-card" data-deal-type="acquisition" data-sectors="autonomous-systems-drones,ai-ml,manufacturing-production" data-capital="strategic-partner">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">ACQUISITION</span>
@@ -726,7 +1180,7 @@
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">Magnet <b>Defense acquires</b> Metal Shark</h3>
+            <h3 class="deal-company-name">Magnet Defense acquires Metal Shark</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -757,7 +1211,7 @@
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="acquisition">
+    <div class="deal-card" data-deal-type="acquisition" data-sectors="space-satellites,aerospace,advanced-materials,manufacturing-production" data-capital="strategic-partner">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">ACQUISITION</span>
@@ -766,7 +1220,7 @@
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">Karman Space and <b>Defense</b> acquires Gulfport's Seemann Composites, Material Sciences</h3>
+            <h3 class="deal-company-name">Karman Space and Defense acquires Gulfport's Seemann Composites, Material Sciences</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -797,7 +1251,7 @@
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="contract">
+    <div class="deal-card" data-deal-type="contract" data-sectors="manufacturing-production,munitions-weapons" data-capital="internal-self-funded">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">CONTRACT</span>
@@ -806,7 +1260,7 @@
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">U.S. Army and Conco inaugurate new artillery container <b>facility</b> in Indiana - DVIDS</h3>
+            <h3 class="deal-company-name">U.S. Army and Conco inaugurate new artillery container facility in Indiana</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -839,7 +1293,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="internal">
+    <div class="deal-card" data-deal-type="internal" data-sectors="manufacturing-production" data-capital="government-contract,internal-self-funded">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">INTERNAL</span>
@@ -848,7 +1302,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">SAU Tech in Camden announces $20 million <b>expansion</b> for <b>defense</b> manufacturing center of ...</h3>
+            <h3 class="deal-company-name">SAU Tech in Camden announces $20 million expansion for defense manufacturing center of ...</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -879,7 +1333,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="funding">
+    <div class="deal-card" data-deal-type="funding" data-sectors="advanced-materials,semiconductors-electronics,manufacturing-production,munitions-weapons" data-capital="public-markets">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">FUNDING</span>
@@ -888,7 +1342,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">nLIGHT Equity Raise Fuels <b>Defense</b> Laser <b>Expansion</b> And Execution Focus - Simply Wall St News</h3>
+            <h3 class="deal-company-name">nLIGHT Equity Raise Fuels Defense Laser Expansion And Execution Focus</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -919,7 +1373,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="acquisition">
+    <div class="deal-card" data-deal-type="acquisition" data-sectors="aerospace,software-it,communications" data-capital="private-equity">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">ACQUISITION</span>
@@ -928,7 +1382,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">Connected seatback at the fore as RAVE <b>Aerospace</b> enters new era - Runway Girl</h3>
+            <h3 class="deal-company-name">Connected seatback at the fore as RAVE Aerospace enters new era</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -959,7 +1413,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="stock purchase">
+    <div class="deal-card" data-deal-type="stock purchase" data-sectors="autonomous-systems-drones,space-satellites,cybersecurity,munitions-weapons,communications" data-capital="public-markets">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">STOCK PURCHASE</span>
@@ -968,7 +1422,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">WCM <b>Investment</b> Management LLC Makes New <b>Investment</b> in Kratos <b>Defense</b> &amp; Security ...</h3>
+            <h3 class="deal-company-name">WCM Investment Management LLC Makes New Investment in Kratos Defense &amp; Security ...</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -999,7 +1453,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="funding">
+    <div class="deal-card" data-deal-type="funding" data-sectors="ai-ml,space-satellites,communications" data-capital="venture-capital,corporate-venture,government-contract">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">FUNDING</span>
@@ -1008,7 +1462,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">CesiumAstro <b>Raises</b> $270M Series C - Payload Space</h3>
+            <h3 class="deal-company-name">CesiumAstro Raises $270M Series C</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -1039,7 +1493,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="internal">
+    <div class="deal-card" data-deal-type="internal" data-sectors="aerospace,advanced-materials,manufacturing-production" data-capital="internal-self-funded">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">INTERNAL</span>
@@ -1079,7 +1533,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="internal">
+    <div class="deal-card" data-deal-type="internal" data-sectors="space-satellites,aerospace,manufacturing-production" data-capital="government-contract">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">INTERNAL</span>
@@ -1088,7 +1542,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">Sodern America selects Colorado for <b>aerospace expansion</b> - ColoradoBiz</h3>
+            <h3 class="deal-company-name">Sodern America selects Colorado for aerospace expansion</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -1119,7 +1573,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="internal">
+    <div class="deal-card" data-deal-type="internal" data-sectors="manufacturing-production,aerospace,munitions-weapons" data-capital="internal-self-funded">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">INTERNAL</span>
@@ -1128,7 +1582,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">Hadrian opens huge automated <b>military</b>, <b>aerospace</b> products <b>factory</b> in East Valley - ABC15 Arizona</h3>
+            <h3 class="deal-company-name">Hadrian opens huge automated military, aerospace products factory in East Valley</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -1159,7 +1613,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="funding">
+    <div class="deal-card" data-deal-type="funding" data-sectors="aerospace,manufacturing-production" data-capital="venture-capital">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">FUNDING</span>
@@ -1168,7 +1622,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">PE-backed <b>aerospace</b> parts maker JJG Aero raises $30 mn - VCCircle</h3>
+            <h3 class="deal-company-name">PE-backed aerospace parts maker JJG Aero raises $30 mn</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -1199,7 +1653,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="internal">
+    <div class="deal-card" data-deal-type="internal" data-sectors="manufacturing-production,munitions-weapons" data-capital="internal-self-funded">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">INTERNAL</span>
@@ -1208,7 +1662,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">Groundbreaking set for Lockheed Martin's <b>Munitions</b> Acceleration Center at Camden</h3>
+            <h3 class="deal-company-name">Groundbreaking set for Lockheed Martin's Munitions Acceleration Center at Camden</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -1239,7 +1693,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="other">
+    <div class="deal-card" data-deal-type="other" data-sectors="aerospace,manufacturing-production">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">OTHER</span>
@@ -1248,7 +1702,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">After decades of growth, Wolcott fastener manufacturer adds new <b>facility</b> in $4M <b>expansion</b></h3>
+            <h3 class="deal-company-name">After decades of growth, Wolcott fastener manufacturer adds new facility in $4M expansion</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -1275,7 +1729,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="internal">
+    <div class="deal-card" data-deal-type="internal" data-sectors="aerospace" data-capital="internal-self-funded">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">INTERNAL</span>
@@ -1284,7 +1738,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">AAR <b>expansion</b> brings new jobs and added capacity to OKC aviation</h3>
+            <h3 class="deal-company-name">AAR expansion brings new jobs and added capacity to OKC aviation</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -1315,7 +1769,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="strategic">
+    <div class="deal-card" data-deal-type="strategic" data-sectors="manufacturing-production,munitions-weapons" data-capital="internal-self-funded">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">STRATEGIC</span>
@@ -1324,7 +1778,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name"><b>Defense</b> contractor to build $1.3 billion <b>munitions facility</b> in Pine Bluff - KAIT</h3>
+            <h3 class="deal-company-name">Defense contractor to build $1.3 billion munitions facility in Pine Bluff</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -1355,7 +1809,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="acquisition">
+    <div class="deal-card" data-deal-type="acquisition" data-sectors="aerospace,manufacturing-production" data-capital="private-equity">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">ACQUISITION</span>
@@ -1364,7 +1818,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">AxioAero Group <b>Acquires</b> Airway <b>Aerospace</b> LLC - Florida Today</h3>
+            <h3 class="deal-company-name">AxioAero Group Acquires Airway Aerospace LLC</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -1395,7 +1849,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="acquisition">
+    <div class="deal-card" data-deal-type="acquisition" data-sectors="space-satellites,cybersecurity,communications" data-capital="internal-self-funded">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">ACQUISITION</span>
@@ -1404,7 +1858,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">IonQ Completes Skyloom Acquisition: Advancing Quantum Networking - IonQ</h3>
+            <h3 class="deal-company-name">IonQ Completes Skyloom Acquisition: Advancing Quantum Networking</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -1435,7 +1889,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="internal">
+    <div class="deal-card" data-deal-type="internal" data-sectors="ai-ml,aerospace" data-capital="government-contract">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">INTERNAL</span>
@@ -1444,7 +1898,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">Hong Kong's US$8 <b>billion</b> wealth fund eyes fintech, <b>aerospace</b> and AI for growth</h3>
+            <h3 class="deal-company-name">Hong Kong's US$8 billion wealth fund eyes fintech, aerospace and AI for growth</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -1475,7 +1929,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="earnings report">
+    <div class="deal-card" data-deal-type="earnings report" data-sectors="aerospace,manufacturing-production,munitions-weapons" data-capital="public-markets,internal-self-funded">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">EARNINGS REPORT</span>
@@ -1484,7 +1938,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">RTX Q4 Deep Dive: Commercial and <b>Defense</b> Demand Drive Momentum, Margin <b>Expansion</b> ...</h3>
+            <h3 class="deal-company-name">RTX Q4 Deep Dive: Commercial and Defense Demand Drive Momentum, Margin Expansion ...</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -1515,7 +1969,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="strategic">
+    <div class="deal-card" data-deal-type="strategic" data-sectors="aerospace,advanced-materials,manufacturing-production" data-capital="internal-self-funded,strategic-partner">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">STRATEGIC</span>
@@ -1555,7 +2009,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="internal">
+    <div class="deal-card" data-deal-type="internal" data-sectors="manufacturing-production,munitions-weapons" data-capital="government-contract">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">INTERNAL</span>
@@ -1595,7 +2049,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="funding">
+    <div class="deal-card" data-deal-type="funding" data-sectors="space-satellites,communications" data-capital="venture-capital,corporate-venture">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">FUNDING</span>
@@ -1604,7 +2058,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">Northwood Space <b>raises</b> $100 million <b>Series B</b>, lands $49 million Space Force deal</h3>
+            <h3 class="deal-company-name">Northwood Space raises $100 million Series B, lands $49 million Space Force deal</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -1635,7 +2089,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="internal">
+    <div class="deal-card" data-deal-type="internal" data-sectors="aerospace,manufacturing-production" data-capital="internal-self-funded">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">INTERNAL</span>
@@ -1644,7 +2098,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">New naval power and propulsion <b>facility</b> opens in South Carolina - Navy Times</h3>
+            <h3 class="deal-company-name">New naval power and propulsion facility opens in South Carolina</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -1675,7 +2129,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="internal">
+    <div class="deal-card" data-deal-type="internal" data-sectors="autonomous-systems-drones,manufacturing-production,munitions-weapons" data-capital="internal-self-funded">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">INTERNAL</span>
@@ -1715,7 +2169,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="internal">
+    <div class="deal-card" data-deal-type="internal" data-sectors="aerospace,manufacturing-production" data-capital="internal-self-funded">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">INTERNAL</span>
@@ -1724,7 +2178,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">Company confirms East Helena, Butte scouted for possible $200M manufacturing <b>facility</b></h3>
+            <h3 class="deal-company-name">Company confirms East Helena, Butte scouted for possible $200M manufacturing facility</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -1755,7 +2209,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="funding">
+    <div class="deal-card" data-deal-type="funding" data-sectors="autonomous-systems-drones,ai-ml,aerospace" data-capital="venture-capital">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">FUNDING</span>
@@ -1764,7 +2218,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name"><b>Aerospace</b> &amp; <b>Defense</b> Startup Grid Aero <b>Raises</b> $20M <b>Series A</b> to Scale Long-Range ...</h3>
+            <h3 class="deal-company-name">Aerospace &amp; Defense Startup Grid Aero Raises $20M Series A to Scale Long-Range ...</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -1795,7 +2249,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="funding">
+    <div class="deal-card" data-deal-type="funding" data-sectors="aerospace,advanced-materials,semiconductors-electronics,manufacturing-production" data-capital="government-contract">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">FUNDING</span>
@@ -1804,7 +2258,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">US takes equity stake, invests $1.6B in rare earths miner - E&amp;E News by POLITICO</h3>
+            <h3 class="deal-company-name">US Takes Equity in USA Rare Earth</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -1835,7 +2289,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="funding">
+    <div class="deal-card" data-deal-type="funding" data-sectors="space-satellites,aerospace" data-capital="private-equity,family-office">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">FUNDING</span>
@@ -1844,7 +2298,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">Azimut Group invests $128 million in D-Orbit - SpaceNews</h3>
+            <h3 class="deal-company-name">Azimut Group invests $128 million in D-Orbit</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -1875,7 +2329,47 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="funding">
+    <div class="deal-card" data-deal-type="internal" data-sectors="ai-ml,advanced-materials,manufacturing-production" data-capital="internal-self-funded">
+        <div class="deal-card-header">
+            <div class="deal-header-line">
+                <span class="deal-type-label">INTERNAL</span>
+                <span class="deal-date">Jan 22, 2026</span>
+            </div>
+        </div>
+
+        <div class="deal-card-body">
+            <h3 class="deal-company-name">Hadrian Opens Additive Manufacturing Facility to Expand U.S. Production Capacity</h3>
+            <div class="deal-metadata">
+                <div class="deal-meta-line">
+                    <span class="meta-label">Amount</span>
+                    <span>$200,000,000</span>
+                </div>
+                <div class="deal-meta-line">
+                    <span class="meta-label">Investors</span>
+                    <span>Self-funded</span>
+                </div>
+                <div class="deal-meta-line">
+                    <span class="meta-label">Capital</span>
+                    <span>Internal/Self-funded</span>
+                </div>
+                <div class="deal-meta-line">
+                    <span class="meta-label">Sectors</span>
+                    <span>AI/ML,Advanced Materials,Manufacturing/Production</span>
+                </div>
+            </div>
+            <div class="deal-insight">
+                <p>The 290,000-square-foot Factory 3 (F3) facility cost approximately $200 million. This expansion addresses critical gaps in U.S. defense industrial base capacity by industrializing additive manufacturing for production-scale defense programs rather than just prototyping. The integration into Hadrian's existing AI-powered factory platform enables end-to-end manufacturing for mission-critical systems with qualification standards required for defense applications.</p>
+            </div>
+        </div>
+
+        <div class="deal-card-footer">
+            <a href="https://www.google.com/url?rct=j&sa=t&url=https://www.prnewswire.com/news-releases/hadrian-launches-additive-manufacturing-division-to-expand-us-defense-production-capacity-302668241.html&ct=ga&cd=CAIyGmEyZWM3MTRjMDNiY2Y1ZGI6Y29tOmVuOlVT&usg=AOvVaw0aBx7fise__UDVxKw5YqGy" target="_blank" rel="noopener" class="deal-source-link">
+                Read Full Article on prnewswire.com →
+            </a>
+        </div>
+    </div>
+
+    <div class="deal-card" data-deal-type="funding" data-sectors="ai-ml,space-satellites,manufacturing-production" data-capital="private-equity,strategic-partner">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">FUNDING</span>
@@ -1884,7 +2378,87 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">Metallium Announces Completion of A$75 Million Strategic <b>Capital Raise</b> Led by U.S. Institutions</h3>
+            <h3 class="deal-company-name">D-Orbit Raises $53M to Support Space Tech</h3>
+            <div class="deal-metadata">
+                <div class="deal-meta-line">
+                    <span class="meta-label">Amount</span>
+                    <span>$53,000,000</span>
+                </div>
+                <div class="deal-meta-line">
+                    <span class="meta-label">Investors</span>
+                    <span>Azimut Group</span>
+                </div>
+                <div class="deal-meta-line">
+                    <span class="meta-label">Capital</span>
+                    <span>Private Equity,Strategic Partner</span>
+                </div>
+                <div class="deal-meta-line">
+                    <span class="meta-label">Sectors</span>
+                    <span>AI/ML,Space/Satellites,Manufacturing/Production</span>
+                </div>
+            </div>
+            <div class="deal-insight">
+                <p>This funding enables D-Orbit to pursue acquisitions focused on dual-use space technologies serving government, defense, and commercial markets. The company's expansion into in-space servicing, assembly, and manufacturing (ISAM) capabilities positions it to address growing defense needs for space debris removal and beyond-Earth orbit operations.</p>
+            </div>
+        </div>
+
+        <div class="deal-card-footer">
+            <a href="https://www.google.com/url?rct=j&sa=t&url=https://payloadspace.com/d-orbit-raises-53m-to-fund-acquisition-efforts/&ct=ga&cd=CAIyHDMxNmE1OTNkZTEyZjQ2YTM6Y29tOmVuOlVTOlI&usg=AOvVaw1nM6lZ9VmO1Bwjt5A2vySs" target="_blank" rel="noopener" class="deal-source-link">
+                Read Full Article on payloadspace.com →
+            </a>
+        </div>
+    </div>
+
+    <div class="deal-card" data-deal-type="internal investment" data-sectors="aerospace,manufacturing-production,munitions-weapons" data-capital="internal-self-funded">
+        <div class="deal-card-header">
+            <div class="deal-header-line">
+                <span class="deal-type-label">INTERNAL INVESTMENT</span>
+                <span class="deal-date">Jan 22, 2026</span>
+            </div>
+        </div>
+
+        <div class="deal-card-body">
+            <h3 class="deal-company-name">Castelion Creates New $220M Hypersonics Manufacturing Facility</h3>
+            <div class="deal-metadata">
+                <div class="deal-meta-line">
+                    <span class="meta-label">Amount</span>
+                    <span>$220,000,000</span>
+                </div>
+                <div class="deal-meta-line">
+                    <span class="meta-label">Investors</span>
+                    <span>Castelion</span>
+                </div>
+                <div class="deal-meta-line">
+                    <span class="meta-label">Capital</span>
+                    <span>Internal/Self-funded</span>
+                </div>
+                <div class="deal-meta-line">
+                    <span class="meta-label">Sectors</span>
+                    <span>Aerospace,Manufacturing/Production,Munitions/Weapons</span>
+                </div>
+            </div>
+            <div class="deal-insight">
+                <p>The 1,000-acre facility will be used to produce hypersonic weapons.</p>
+            </div>
+        </div>
+
+        <div class="deal-card-footer">
+            <a href="https://www.google.com/url?rct=j&sa=t&url=https://www.prnewswire.com/news-releases/castelion-breaks-ground-on-project-ranger-advancing-scaled-hypersonic-manufacturing-in-new-mexico-302667290.html&ct=ga&cd=CAIyGmEyZWM3MTRjMDNiY2Y1ZGI6Y29tOmVuOlVT&usg=AOvVaw3whMRZxW9zfgwVTzjXbFxF" target="_blank" rel="noopener" class="deal-source-link">
+                Read Full Article on prnewswire.com →
+            </a>
+        </div>
+    </div>
+
+    <div class="deal-card" data-deal-type="funding" data-sectors="advanced-materials,manufacturing-production" data-capital="strategic-partner">
+        <div class="deal-card-header">
+            <div class="deal-header-line">
+                <span class="deal-type-label">FUNDING</span>
+                <span class="deal-date">Jan 22, 2026</span>
+            </div>
+        </div>
+
+        <div class="deal-card-body">
+            <h3 class="deal-company-name">Metallium Announces Completion of A$75 Million Strategic Capital Raise Led by U.S. Institutions</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -1915,7 +2489,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="funding">
+    <div class="deal-card" data-deal-type="funding" data-sectors="advanced-materials,manufacturing-production" data-capital="private-equity">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">FUNDING</span>
@@ -1924,7 +2498,87 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">Dominion Dynamics <b>Raises</b> $21M CAD Seed Round Led by Georgian to Build Interoperable ...</h3>
+            <h3 class="deal-company-name">Noveon Raises $215M for NdFeB Magnet Production</h3>
+            <div class="deal-metadata">
+                <div class="deal-meta-line">
+                    <span class="meta-label">Amount</span>
+                    <span>$215,000,000</span>
+                </div>
+                <div class="deal-meta-line">
+                    <span class="meta-label">Investors</span>
+                    <span>One Investment Management</span>
+                </div>
+                <div class="deal-meta-line">
+                    <span class="meta-label">Capital</span>
+                    <span>Private Equity</span>
+                </div>
+                <div class="deal-meta-line">
+                    <span class="meta-label">Sectors</span>
+                    <span>Advanced Materials,Manufacturing/Production</span>
+                </div>
+            </div>
+            <div class="deal-insight">
+                <p>Noveon is currently the only operational American manufacturer of sintered NdFeB magnets.</p>
+            </div>
+        </div>
+
+        <div class="deal-card-footer">
+            <a href="https://www.google.com/url?rct=j&sa=t&url=https://rareearthexchanges.com/news/noveons-215m-raise-capital-with-consequence-not-just-a-headline/&ct=ga&cd=CAIyHDMxNmE1OTNkZTEyZjQ2YTM6Y29tOmVuOlVTOlI&usg=AOvVaw2qFH8r2EcuWguqS1tmkwsT" target="_blank" rel="noopener" class="deal-source-link">
+                Read Full Article on rareearthexchanges.com →
+            </a>
+        </div>
+    </div>
+
+    <div class="deal-card" data-deal-type="funding" data-sectors="autonomous-systems-drones,ai-ml,software-it,communications" data-capital="private-equity">
+        <div class="deal-card-header">
+            <div class="deal-header-line">
+                <span class="deal-type-label">FUNDING</span>
+                <span class="deal-date">Jan 19, 2026</span>
+            </div>
+        </div>
+
+        <div class="deal-card-body">
+            <h3 class="deal-company-name">Dominion Dynamics Raises $21M in VC for Autonomy Software</h3>
+            <div class="deal-metadata">
+                <div class="deal-meta-line">
+                    <span class="meta-label">Amount</span>
+                    <span>$21,000,000</span>
+                </div>
+                <div class="deal-meta-line">
+                    <span class="meta-label">Investors</span>
+                    <span>Georgian, Bessemer Venture Partners, British Columbia Investment Management</span>
+                </div>
+                <div class="deal-meta-line">
+                    <span class="meta-label">Capital</span>
+                    <span>Private Equity</span>
+                </div>
+                <div class="deal-meta-line">
+                    <span class="meta-label">Sectors</span>
+                    <span>Autonomous Systems/Drones,AI/ML,Software/IT,Communications</span>
+                </div>
+            </div>
+            <div class="deal-insight">
+                <p>Dominion aims to create an "Arctic autonomy" software tech stack, focusing on low-cost, software-defined systems that can be risked in combat.</p>
+            </div>
+        </div>
+
+        <div class="deal-card-footer">
+            <a href="https://www.google.com/url?rct=j&sa=t&url=https://pulse2.com/dominion-dynamics-c21-million-seed-round-closed-for-arctic-focused-defense-systems/&ct=ga&cd=CAIyHDMxNmE1OTNkZTEyZjQ2YTM6Y29tOmVuOlVTOlI&usg=AOvVaw0wdcfseJ5T75yZ_grdPAfh" target="_blank" rel="noopener" class="deal-source-link">
+                Read Full Article on pulse2.com →
+            </a>
+        </div>
+    </div>
+
+    <div class="deal-card" data-deal-type="funding" data-sectors="autonomous-systems-drones,ai-ml,software-it,communications" data-capital="venture-capital,corporate-venture">
+        <div class="deal-card-header">
+            <div class="deal-header-line">
+                <span class="deal-type-label">FUNDING</span>
+                <span class="deal-date">Jan 19, 2026</span>
+            </div>
+        </div>
+
+        <div class="deal-card-body">
+            <h3 class="deal-company-name">Dominion Dynamics Raises $21M CAD Seed Round Led by Georgian to Build Interoperable ...</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -1955,7 +2609,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="funding">
+    <div class="deal-card" data-deal-type="funding" data-sectors="autonomous-systems-drones,ai-ml,communications" data-capital="venture-capital">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">FUNDING</span>
@@ -1964,7 +2618,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">StirlingX <b>Raises</b> $11 Million to Scale Drone Operations in the UK | Commercial UAV News</h3>
+            <h3 class="deal-company-name">StirlingX Raises $11 Million to Scale Drone Operations in the UK</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -1995,7 +2649,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="funding">
+    <div class="deal-card" data-deal-type="funding" data-sectors="ai-ml,space-satellites" data-capital="venture-capital">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">FUNDING</span>
@@ -2004,7 +2658,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">Space Startup SkyFi <b>Raises</b> $12.7 Million In Series A Round | Aviation Week Network</h3>
+            <h3 class="deal-company-name">Space Startup SkyFi Raises $12.7 Million In Series A Round</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -2035,7 +2689,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="acquisition">
+    <div class="deal-card" data-deal-type="acquisition" data-capital="private-equity">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">ACQUISITION</span>
@@ -2044,7 +2698,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">Nukkleus Inc. Completes Strategic <b>Acquisition</b> of Star 26 <b>Capital</b>, Expanding <b>Defense</b> AI and ...</h3>
+            <h3 class="deal-company-name">Nukkleus Inc. Completes Strategic Acquisition of Star 26 Capital, Expanding Defense AI and ...</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -2071,7 +2725,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="funding">
+    <div class="deal-card" data-deal-type="funding" data-sectors="intelligence" data-capital="venture-capital">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">FUNDING</span>
@@ -2080,7 +2734,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">Terra Industries <b>Raises</b> $11.75M as <b>Defense Capital</b> Expands Into African Security Infrastructure</h3>
+            <h3 class="deal-company-name">Terra Industries Raises $11.75M as Defense Capital Expands Into African Security Infrastructure</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -2113,7 +2767,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="strategic investment">
+    <div class="deal-card" data-deal-type="strategic investment" data-sectors="ai" data-capital="venture-capital">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">STRATEGIC INVESTMENT</span>
@@ -2122,7 +2776,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">Harmattan AI <b>raises</b> $200M Series B led by Dassault Aviation, becomes <b>defense</b> unicorn</h3>
+            <h3 class="deal-company-name">Harmattan AI raises $200M Series B led by Dassault Aviation, becomes defense unicorn</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -2155,7 +2809,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="acquisition">
+    <div class="deal-card" data-deal-type="acquisition" data-capital="corporate-investment">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">ACQUISITION</span>
@@ -2164,7 +2818,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">Aurex Acquires Alpha 2 - EIN Presswire</h3>
+            <h3 class="deal-company-name">Aurex Acquires Alpha 2</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -2193,7 +2847,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="other - facility expansion">
+    <div class="deal-card" data-deal-type="other - facility expansion" data-capital="corporate-investment">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">OTHER - FACILITY EXPANSION</span>
@@ -2202,7 +2856,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">Kratos <b>Defense</b> (KTOS) adds 40000-sq-ft <b>facility</b> in Birmingham - Stock Titan</h3>
+            <h3 class="deal-company-name">Kratos Defense (KTOS) adds 40000-sq-ft facility in Birmingham</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -2229,7 +2883,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="funding">
+    <div class="deal-card" data-deal-type="funding" data-capital="venture-capital">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">FUNDING</span>
@@ -2238,7 +2892,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">Valinor Enterprises: $54 Million Series A <b>Raised</b> To Expand <b>Defense</b>-Tech Holding Company Model</h3>
+            <h3 class="deal-company-name">Valinor Enterprises: $54 Million Series A Raised To Expand Defense-Tech Holding Company Model</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -2265,7 +2919,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="other">
+    <div class="deal-card" data-deal-type="other" data-capital="venture-capital">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">OTHER</span>
@@ -2274,7 +2928,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">Andreessen Horowitz <b>raises</b> $15 billion, as VC firm goes big in infrastructure, <b>defense</b></h3>
+            <h3 class="deal-company-name">Andreessen Horowitz raises $15 billion, as VC firm goes big in infrastructure, defense</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -2301,7 +2955,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="funding">
+    <div class="deal-card" data-deal-type="funding" data-sectors="materials" data-capital="venture-capital">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">FUNDING</span>
@@ -2310,7 +2964,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">Advanced materials firm Cambium <b>raises</b> $100 million - Evertiq</h3>
+            <h3 class="deal-company-name">Advanced materials firm Cambium raises $100 million</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -2341,7 +2995,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="acquisition">
+    <div class="deal-card" data-deal-type="acquisition" data-capital="corporate-investment">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">ACQUISITION</span>
@@ -2350,7 +3004,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">Arxis buys Arizona-based elastomeric, metal component maker - Rubber News</h3>
+            <h3 class="deal-company-name">Arxis buys Arizona-based elastomeric, metal component maker</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -2377,7 +3031,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="public-private partnership">
+    <div class="deal-card" data-deal-type="public-private partnership" data-capital="grant-sbir">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">PUBLIC-PRIVATE PARTNERSHIP</span>
@@ -2386,7 +3040,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">Velo3D Awarded <b>New</b> $32.6M Contract to Support <b>Defense Manufacturing</b></h3>
+            <h3 class="deal-company-name">Velo3D Awarded New $32.6M Contract to Support Defense Manufacturing</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -2422,7 +3076,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">Trive-Backed Space and <b>Defense</b> Firm Karman Files for US IPO - MSN</h3>
+            <h3 class="deal-company-name">Trive-Backed Space and Defense Firm Karman Files for US IPO</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -2445,7 +3099,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="acquisition">
+    <div class="deal-card" data-deal-type="acquisition" data-capital="private-equity">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">ACQUISITION</span>
@@ -2454,7 +3108,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">McNally <b>Capital</b> Acquires PT6A MRO Specialist ATS - ePlaneAI</h3>
+            <h3 class="deal-company-name">McNally Capital Acquires PT6A MRO Specialist ATS - ePlaneAI</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -2481,7 +3135,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="acquisition">
+    <div class="deal-card" data-deal-type="acquisition" data-capital="private-equity">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">ACQUISITION</span>
@@ -2490,7 +3144,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">McNally <b>Capital</b> Makes Strategic <b>Investment</b> in Airforce Turbine Service, a Leading Global ...</h3>
+            <h3 class="deal-company-name">McNally Capital Makes Strategic Investment in Airforce Turbine Service, a Leading Global ...</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -2517,7 +3171,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="acquisition">
+    <div class="deal-card" data-deal-type="acquisition" data-capital="private-equity">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">ACQUISITION</span>
@@ -2526,7 +3180,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">Vantage Group Holdings to be acquired by Howard Hughes for $2.1B | CG Stock News</h3>
+            <h3 class="deal-company-name">Vantage Group Holdings to be acquired by Howard Hughes for $2.1B</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -2553,7 +3207,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="acquisition">
+    <div class="deal-card" data-deal-type="acquisition" data-capital="corporate-investment">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">ACQUISITION</span>
@@ -2562,7 +3216,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">Nukkleus Inc. Receives Shareholder Approval to Acquire Star 26 <b>Capital</b> Inc. - Stock Titan</h3>
+            <h3 class="deal-company-name">Nukkleus Inc. Receives Shareholder Approval to Acquire Star 26 Capital Inc.</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -2589,7 +3243,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="acquisition">
+    <div class="deal-card" data-deal-type="acquisition" data-capital="corporate-investment">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">ACQUISITION</span>
@@ -2598,7 +3252,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">Aretum Announces <b>Acquisition</b> of Veterans Engineering, Expanding Federal IT, Cyber, and ...</h3>
+            <h3 class="deal-company-name">Aretum Announces Acquisition of Veterans Engineering, Expanding Federal IT, Cyber, and ...</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -2625,7 +3279,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="acquisition">
+    <div class="deal-card" data-deal-type="acquisition" data-capital="private-equity">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">ACQUISITION</span>
@@ -2661,7 +3315,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="strategic investment">
+    <div class="deal-card" data-deal-type="strategic investment" data-capital="corporate-investment">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">STRATEGIC INVESTMENT</span>
@@ -2670,7 +3324,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">Holland & Knight Advises Electrosoft Services in Strategic <b>Investment</b> from DigitalNet.ai</h3>
+            <h3 class="deal-company-name">Holland & Knight Advises Electrosoft Services in Strategic Investment from DigitalNet.ai</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -2697,7 +3351,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="merger">
+    <div class="deal-card" data-deal-type="merger" data-capital="private-equity">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">MERGER</span>
@@ -2706,7 +3360,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">Greenbriar unveils Applied Aerospace & <b>Defense</b> - PE Hub</h3>
+            <h3 class="deal-company-name">Greenbriar unveils Applied Aerospace & Defense</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -2733,7 +3387,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="acquisition">
+    <div class="deal-card" data-deal-type="acquisition" data-capital="corporate-investment">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">ACQUISITION</span>
@@ -2742,7 +3396,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">Synergy ECP Expands <b>Defense</b> & Intelligence Capabilities With NetServices <b>Acquisition</b></h3>
+            <h3 class="deal-company-name">Synergy ECP Expands Defense & Intelligence Capabilities With NetServices Acquisition</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -2769,7 +3423,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="capital investment/facility expansion">
+    <div class="deal-card" data-deal-type="capital investment/facility expansion" data-capital="corporate-investment">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">CAPITAL INVESTMENT/FACILITY EXPANSION</span>
@@ -2778,7 +3432,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">Hanwha Systems Completes Major Expansion of Gumi Production <b>Facility</b></h3>
+            <h3 class="deal-company-name">Hanwha Systems Completes Major Expansion of Gumi Production Facility</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -2805,7 +3459,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="acquisition">
+    <div class="deal-card" data-deal-type="acquisition" data-capital="corporate-investment">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">ACQUISITION</span>
@@ -2814,7 +3468,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">Palladyne AI Establishes Vertically Integrated U.S. <b>Defense</b> Technology Pioneer Through ...</h3>
+            <h3 class="deal-company-name">Palladyne AI Establishes Vertically Integrated U.S. Defense Technology Pioneer Through ...</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -2841,7 +3495,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="other">
+    <div class="deal-card" data-deal-type="other" data-capital="corporate-investment">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">OTHER</span>
@@ -2850,7 +3504,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">Kratos Opens <b>New</b> 60000 Sq Ft Jerusalem <b>Facility</b> for Microwave Electronics Division</h3>
+            <h3 class="deal-company-name">Kratos Opens New 60000 Sq Ft Jerusalem Facility for Microwave Electronics Division</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -2877,7 +3531,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
     </div>
 
-    <div class="deal-card" data-deal-type="unknown">
+    <div class="deal-card" data-deal-type="unknown" data-sectors="mineral-refining" data-capital="corporate-investment">
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-type-label">UNKNOWN</span>
@@ -2886,7 +3540,7 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         </div>
 
         <div class="deal-card-body">
-            <h3 class="deal-company-name">Rare earth refinery in N.H. challenges China — in a small way - The Boston Globe</h3>
+            <h3 class="deal-company-name">Rare earth refinery in N.H. challenges China — in a small way</h3>
             <div class="deal-metadata">
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -2928,14 +3582,18 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
     </div>
 
     <footer>
-        <p>Defense Capital Dashboard</p>
+        <p><strong>Defense Capital Dashboard</strong></p>
         <p>Deal intelligence curated from open sources</p>
+        <p style="font-size: 0.75rem; opacity: 0.7; margin-top: 0.5rem;">This product uses the FRED&reg; API but is not endorsed or certified by the Federal Reserve Bank of St. Louis.</p>
+        <p>Created by Sam Moyer | <a href="https://github.com/samuelmoyer91-sketch">GitHub</a></p>
     </footer>
 
     <script src="../js/main.js"></script>
     <script>
         // Pagination and filtering
         const searchBox = document.getElementById('searchBox');
+        const sectorFilter = document.getElementById('sectorFilter');
+        const capitalFilter = document.getElementById('capitalFilter');
         const dealFeed = document.getElementById('dealFeed');
         const deals = Array.from(dealFeed.querySelectorAll('.deal-card'));
         const emptyState = document.getElementById('emptyState');
@@ -2945,12 +3603,98 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         let currentPage = 1;
         let filteredDeals = deals;
 
+        // Merge aliases into canonical slugs
+        const sectorAliases = {
+            'ai': 'ai-ml',
+            'materials': 'advanced-materials',
+            'mineral-refining': 'advanced-materials'
+        };
+        function normalizeSector(s) {
+            return sectorAliases[s] || s;
+        }
+
+        // Populate filter dropdowns from card data attributes
+        (function populateFilters() {
+            // Canonical labels for display
+            const sectorLabels = {
+                'advanced-materials': 'Advanced Materials',
+                'aerospace': 'Aerospace',
+                'ai-ml': 'AI/ML',
+                'autonomous-systems-drones': 'Autonomous Systems/Drones',
+                'communications': 'Communications',
+                'cybersecurity': 'Cybersecurity',
+                'intelligence': 'Intelligence',
+                'manufacturing-production': 'Manufacturing/Production',
+                'munitions-weapons': 'Munitions/Weapons',
+                'semiconductors-electronics': 'Semiconductors/Electronics',
+                'software-it': 'Software/IT',
+                'space-satellites': 'Space/Satellites'
+            };
+            const capitalLabels = {
+                'corporate-venture': 'Corporate Venture',
+                'corporate-investment': 'Corporate Investment',
+                'family-office': 'Family Office',
+                'government-contract': 'Government Contract',
+                'grant-sbir': 'Grant/SBIR',
+                'internal-self-funded': 'Internal/Self-Funded',
+                'private-equity': 'Private Equity',
+                'public-markets': 'Public Markets',
+                'strategic-partner': 'Strategic Partner',
+                'venture-capital': 'Venture Capital'
+            };
+
+            const sectorCounts = {};
+            const capitalCounts = {};
+
+            deals.forEach(deal => {
+                const sectors = deal.dataset.sectors;
+                if (sectors) {
+                    sectors.split(',').forEach(s => {
+                        const ns = normalizeSector(s);
+                        sectorCounts[ns] = (sectorCounts[ns] || 0) + 1;
+                    });
+                }
+                const capital = deal.dataset.capital;
+                if (capital) {
+                    capital.split(',').forEach(c => {
+                        capitalCounts[c] = (capitalCounts[c] || 0) + 1;
+                    });
+                }
+            });
+
+            Object.keys(sectorCounts).sort((a, b) => {
+                const la = sectorLabels[a] || a;
+                const lb = sectorLabels[b] || b;
+                return la.localeCompare(lb);
+            }).forEach(slug => {
+                const opt = document.createElement('option');
+                opt.value = slug;
+                opt.textContent = (sectorLabels[slug] || slug) + ' (' + sectorCounts[slug] + ')';
+                sectorFilter.appendChild(opt);
+            });
+
+            Object.keys(capitalCounts).sort((a, b) => {
+                const la = capitalLabels[a] || a;
+                const lb = capitalLabels[b] || b;
+                return la.localeCompare(lb);
+            }).forEach(slug => {
+                const opt = document.createElement('option');
+                opt.value = slug;
+                opt.textContent = (capitalLabels[slug] || slug) + ' (' + capitalCounts[slug] + ')';
+                capitalFilter.appendChild(opt);
+            });
+        })();
+
         function filterDeals() {
             const searchTerm = searchBox.value.toLowerCase();
+            const sectorVal = sectorFilter.value;
+            const capitalVal = capitalFilter.value;
 
             filteredDeals = deals.filter(deal => {
-                const text = deal.textContent.toLowerCase();
-                return text.includes(searchTerm);
+                const matchesSearch = deal.textContent.toLowerCase().includes(searchTerm);
+                const matchesSector = !sectorVal || (deal.dataset.sectors && deal.dataset.sectors.split(',').map(normalizeSector).includes(sectorVal));
+                const matchesCapital = !capitalVal || (deal.dataset.capital && deal.dataset.capital.split(',').includes(capitalVal));
+                return matchesSearch && matchesSector && matchesCapital;
             });
 
             currentPage = 1;
@@ -3011,6 +3755,8 @@ This marks the 12th facility ribbon cutting in support of the Army's munitions p
         }
 
         searchBox.addEventListener('input', filterDeals);
+        sectorFilter.addEventListener('change', filterDeals);
+        capitalFilter.addEventListener('change', filterDeals);
 
         // Mobile menu toggle
         document.querySelector('.mobile-menu-toggle').addEventListener('click', function() {
