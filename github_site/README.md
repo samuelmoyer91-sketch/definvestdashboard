@@ -13,7 +13,7 @@ This dashboard combines macro and micro perspectives on the defense capital land
 ## Features
 
 - **Interactive Charts**: Hover to see exact values, fully responsive
-- **Searchable Deals**: Filter by sector, capital type, or search terms
+- **Searchable Deals**: Dropdown filters for sector and capital type, plus free-text search — all combinable with pagination
 - **Mobile-Friendly**: Works on all devices
 - **Fast Loading**: Static site with optimized assets
 - **Professional Design**: Navy and green theme with B3 logo
