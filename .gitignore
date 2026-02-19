@@ -52,3 +52,6 @@ databases/
 # Temporary files
 *.tmp
 temp/
+
+# Wrangler (Cloudflare CLI)
+.wrangler/
