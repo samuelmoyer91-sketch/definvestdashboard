@@ -393,11 +393,19 @@ def generate_deal_card(master, raw, ai):
 
         <div class="deal-card-body">"""
 
-    # Deal title (curated title overrides RSS title)
-    title_display = master.title if master and master.title else raw.title
-    # Strip publication name suffixes from RSS titles (e.g., "- SpaceNews", "| Aviation Week")
-    if title_display and not (master and master.title):
-        title_display = re.split(r'\s+[-|–—]\s+(?=[A-Z][\w\s]*$)', title_display)[0].strip()
+    # Deal title priority: curated > AI-rewritten > raw RSS
+    if master and master.title:
+        title_display = master.title
+    elif ai and ai.title:
+        title_display = ai.title
+    else:
+        title_display = raw.title
+        # Strip publication name suffixes from raw RSS titles (e.g., "- SpaceNews", "| Aviation Week")
+        if title_display:
+            title_display = re.split(r'\s+[-|–—]\s+(?=[A-Z][\w\s]*$)', title_display)[0].strip()
+    # Strip any HTML tags leaked from RSS (e.g., <b> from Google News)
+    if title_display:
+        title_display = re.sub(r'</?[^>]+>', '', title_display)
     if title_display:
         card_html += f"""
             <h3 class="deal-company-name">{title_display}</h3>"""
