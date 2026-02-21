@@ -175,6 +175,7 @@ def generate_html_page(deals, deals_per_page=10):
                     <rect x="44" y="44" width="16" height="16" rx="2" fill="white"/>
                 </svg>
                 Defense Capital Dashboard
+            </a>
             <button class="mobile-menu-toggle">☰</button>
             <ul>
                 <li><a href="../index.html">Home</a></li>
