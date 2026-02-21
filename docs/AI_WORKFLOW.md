@@ -6,12 +6,12 @@ This document explains how to use the AI-powered intelligence briefing feature f
 
 The dashboard includes AI-assisted deal curation using Claude (Anthropic). The AI analyzes scraped articles and **drafts suggestions** for:
 
-- **Company name** and description
-- **Transaction type** (Equity Funding Round, Acquisition, Merger, Contract/Award, etc.)
-- **Capital sources** (multi-select: Venture Capital, Corporate Venture, Private Equity, Government/Contract, etc.)
+- **Title** — analyst-style headline (5-10 words, action verb, includes amount)
+- **Company name** and **location** (city/state/country)
+- **Capital sources** (multi-select: Venture Capital, Private Equity, Government/Contract, etc.)
 - **Sectors** (multi-select: AI/ML, Autonomous Systems/Drones, Space/Satellites, Aerospace, Cybersecurity, etc.)
-- **Deal amount** and investors
-- **Summary** combining strategic significance and market implications
+- **Deal amount** and **investors** (clean comma-separated list)
+- **Summary** — pre-drafted from strategic significance + market implications (you edit before publishing)
 
 **Critical distinction:** AI suggestions are drafts that pre-populate the triage form. You review and edit everything. The published dashboard shows only what you approve - never raw AI output.
 
@@ -153,12 +153,12 @@ Open: http://127.0.0.1:8000
 - Full article preview for validation
 - **Backward compatibility**: Old deals with legacy fields still display correctly
 
-### Step 5: Publish to GitHub Pages
+### Step 5: Publish to Cloudflare Pages
 
-**Recommended: Use the automated workflow script**
+**Recommended: Trigger the GitHub Actions workflow**
 
 ```bash
-./update_workflow.sh publish
+gh workflow run publish.yml
 ```
 
 This automatically:
@@ -166,18 +166,16 @@ This automatically:
 - Refreshes Yahoo Finance market data
 - Generates all chart pages
 - Exports accepted deals to intelligence briefing format
-- Commits changes
-- Deploys to GitHub Pages
+- Deploys to Cloudflare Pages via `wrangler pages deploy`
 
-**Manual alternative (advanced):**
+This also runs on a daily cron at 8 PM ET — you only need to trigger manually if you want changes live before the scheduled run.
+
+**Manual local generation (for testing only):**
 
 ```bash
 python3 generate_site.py
-cd github_site
-git add .
-git commit -m "Update deal feed and charts"
-git push
-git subtree push --prefix github_site origin gh-pages
+# Then preview locally:
+cd github_site && python3 -m http.server 8080
 ```
 
 ## Database Schema
@@ -188,16 +186,17 @@ Stores AI-extracted deal information:
 
 | Column | Type | Description |
 |--------|------|-------------|
+| `title` | String | Analyst-style headline (AI-generated, editable in triage) |
 | `company` | String | Company name |
-| `company_description` | Text | What the company does (1 sentence) |
-| `transaction_type` | String | **NEW**: Single-select transaction type |
-| `capital_sources` | Text | **NEW**: Comma-separated capital sources (multi-select) |
-| `sectors` | Text | **NEW**: Comma-separated sectors (multi-select) |
-| `deal_type` | String | **LEGACY**: VC, M&A, IPO, etc. (kept for backward compatibility) |
+| `capital_sources` | Text | Comma-separated capital sources (multi-select) |
+| `sectors` | Text | Comma-separated sectors (multi-select) |
+| `deal_type` | String | **LEGACY**: VC, M&A, IPO, etc. (no longer requested from AI; kept for old records) |
 | `deal_amount` | String | Investment amount (e.g., "$300M") |
-| `investors` | Text | Key investors/acquirers |
+| `investors` | Text | Key investors/acquirers (clean comma-separated list) |
+| `location` | String | Company HQ or deal location (e.g., "San Diego, CA, USA") |
 | `strategic_significance` | Text | Why this matters (2-3 sentences) |
 | `market_implications` | Text | What this signals (1-2 sentences) |
+| `company_description` | Text | **UNUSED**: No longer requested from AI; column retained for old records |
 | `summary_complete` | Boolean | Was extraction successful? |
 | `model_used` | String | Claude model used |
 | `extracted_at` | DateTime | When extracted |
@@ -248,13 +247,13 @@ Stores human-curated deals ready for publication:
 The generated deal feed (`github_site/deals/index.html`) includes:
 
 - **Professional Layout**: Intelligence briefing style, analyst-friendly
-- **Deal Cards**: Clean, scannable cards with human-curated content
+- **Deal Cards**: Clean, scannable cards with human-curated content — fields: Amount, Investors, Capital, Sectors, Location
 - **100% Human-Curated**: Published content is exactly what you approved in triage
 - **No AI Substitution**: AI drafts are never shown on the public dashboard
-- **Category Badges**: Color-coded transaction type, capital sources, and sector tags
-- **Search**: Real-time filtering by keywords
-- **Transaction Type Filters**: Filter by funding rounds, acquisitions, contracts, etc.
-- **Mobile Responsive**: Works on all devices
+- **Transaction Type Label**: Color-coded deal type badge (FUNDING, ACQUISITION, MERGER, IPO, CONTRACT, STRATEGIC, INTERNAL)
+- **Search**: Real-time filtering by keywords across all card text
+- **Sector & Capital Type Filters**: Dropdown filters populated from actual deal data
+- **Mobile Responsive**: Tested and optimized for all screen sizes
 
 ### Data Priority in Published Output
 
