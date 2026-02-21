@@ -223,7 +223,7 @@ def generate_html_page(deals, deals_per_page=10):
         <p><strong>Defense Capital Dashboard</strong></p>
         <p>Deal intelligence curated from open sources</p>
         <p style="font-size: 0.75rem; opacity: 0.7; margin-top: 0.5rem;">This product uses the FRED&reg; API but is not endorsed or certified by the Federal Reserve Bank of St. Louis.</p>
-        <p>Created by Sam Moyer | <a href="https://github.com/samuelmoyer91-sketch">GitHub</a></p>
+        <p>Created by Sam Moyer | <a href="https://github.com/samuelmoyer91-sketch" target="_blank" rel="noopener noreferrer">GitHub</a></p>
     </footer>
 
     <script src="../js/main.js"></script>
@@ -438,10 +438,10 @@ def generate_deal_card(master, raw, ai):
             deal_type_class = 'badge-warning'
         elif 'CONTRACT' in dt or 'AWARD' in dt:
             deal_type = 'CONTRACT'
-            deal_type_class = 'badge-info'
+            deal_type_class = 'badge-secondary'
         elif 'STRATEGIC' in dt or 'PARTNERSHIP' in dt or 'JOINT' in dt:
             deal_type = 'STRATEGIC'
-            deal_type_class = 'badge-info'
+            deal_type_class = 'badge-secondary'
         elif 'INTERNAL' in dt:
             deal_type = 'INTERNAL'
             deal_type_class = 'badge-secondary'
@@ -581,6 +581,15 @@ def generate_deal_card(master, raw, ai):
                 <div class="deal-meta-line">
                     <span class="meta-label">Sectors</span>
                     <span>{sectors_display}</span>
+                </div>"""
+
+    # Location: from master_list (curated in triage), fallback to AI extraction
+    location = master.location if master and master.location else (ai.location if ai else None)
+    if location:
+        card_html += f"""
+                <div class="deal-meta-line">
+                    <span class="meta-label">Location</span>
+                    <span>{location}</span>
                 </div>"""
 
     # Close metadata section

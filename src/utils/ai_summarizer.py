@@ -3,11 +3,11 @@
 AI-powered article summarizer for defense investment deals.
 
 Uses Claude API to extract structured information from scraped articles:
-- Company name and description
-- Deal type (VC/M&A/IPO) and amount
+- Company name, location
+- Capital type and deal amount
 - Key investors/acquirers
-- Strategic significance
-- Market implications
+- Sectors (technology areas)
+- Strategic significance and market implications
 """
 
 import os
@@ -33,8 +33,6 @@ def summarize_deal_article(article_text, article_title, article_url):
         print("⚠️  Warning: ANTHROPIC_API_KEY not set. Returning empty summary.")
         return {
             'company_name': None,
-            'company_description': None,
-            'deal_type': None,
             'deal_amount': None,
             'investors': None,
             'strategic_significance': None,
@@ -58,7 +56,6 @@ Extract the following information (use "Unknown" if not found):
 
 1. TITLE: Write a concise analyst-style headline (5-10 words). Always lead with the company name. Use present-tense action verbs: "Raises", "Acquires", "Builds", "Invests", "Opens". Include the dollar amount when known. Strip all journalistic fluff — no "to meet growing demand", no source attributions, no filler. Use industry shorthand where appropriate (e.g., "PE Fund", "PNT", "Space Tech"). Never be vague — always name the company (not "Startup raises..." or "Company confirms..."). Examples: "Safran Acquires Syntony for PNT", "GRVTY Invests $8M in Virginia Facility", "Veritas Raises $15.3B PE Fund for Defense Investments", "GE Aerospace Builds Manufacturing Facilities". Do NOT copy the article headline — rewrite it shorter and cleaner.
 2. COMPANY NAME: The company being invested in or acquired
-2. COMPANY DESCRIPTION: One sentence describing what the company does (focus on defense/tech capabilities)
 3. CAPITAL TYPE: Choose ALL that apply from: Seed, Venture Capital, Private Equity, Corporate M&A, Government/Contract, Public Markets, Internal/Self-funded, Fund Raise. Most deals have one type, but select multiple when genuinely applicable (e.g., a round with both VC and Government/Contract components). "Seed" = pre-Series A/angel. "Venture Capital" = Series A through late-stage VC rounds. "Private Equity" = PE acquisitions, PE growth equity. "Corporate M&A" = operating company acquires another (no PE sponsor). "Government/Contract" = government contracts, SBIR, grants, government equity stakes. "Public Markets" = IPO, SPAC, secondary offerings. "Internal/Self-funded" = capex, facility builds from balance sheet. "Fund Raise" = VC or PE fund raising capital from LPs (e.g., "Veritas raises $15B fund"), NOT deploying capital into a company. Return as array.
 5. SECTORS: Choose ALL that apply from: Autonomous Systems/Drones, AI/ML, Space/Satellites, Aerospace, Cybersecurity, Advanced Materials, Semiconductors/Electronics, Manufacturing/Production, Software/IT, Munitions/Weapons, Communications, Electronic Warfare, Other (return as array)
 6. DEAL AMOUNT: Dollar value if mentioned (e.g., "$300M" or "$4.7B")
@@ -71,10 +68,8 @@ Format your response as JSON:
 {{
   "title": "...",
   "company_name": "...",
-  "company_description": "...",
   "capital_source": ["...", "..."],
   "sectors": ["...", "..."],
-  "deal_type": "...",
   "deal_amount": "...",
   "investors": "...",
   "location": "City, State, Country",
@@ -84,7 +79,6 @@ Format your response as JSON:
 
 Notes:
 - capital_source is an array — include all that apply, but don't over-select; most deals have one type
-- deal_type is a legacy field (still include for backward compatibility, use VC/M&A/IPO style values)
 - For sectors: include all relevant technology areas the company operates in
 - Be professional and analytical (intelligence briefing tone). If information is missing or unclear, use "Unknown" rather than guessing.
 
@@ -132,8 +126,6 @@ Special handling for EARNINGS CALLS, ANNUAL REPORTS, and INVESTOR PRESENTATIONS:
         print(f"⚠️  Error generating AI summary: {e}")
         return {
             'company_name': None,
-            'company_description': None,
-            'deal_type': None,
             'deal_amount': None,
             'investors': None,
             'strategic_significance': None,

@@ -484,6 +484,7 @@ footer a {
 .badge-primary { background-color: var(--primary-blue); color: white; }
 .badge-success { background-color: var(--success); color: white; }
 .badge-warning { background-color: var(--warning); color: white; }
+.badge-info { background-color: var(--primary-blue-light); color: white; }
 
 /* Data Summary Stats */
 .data-summary {
