@@ -402,11 +402,6 @@ def generate_html_page(deals, deals_per_page=10):
         sectorFilter.addEventListener('change', filterDeals);
         capitalFilter.addEventListener('change', filterDeals);
 
-        // Mobile menu toggle
-        document.querySelector('.mobile-menu-toggle').addEventListener('click', function() {{
-            document.querySelector('nav ul').classList.toggle('active');
-        }});
-
         // Initial render
         renderPage();
     </script>
