@@ -78,12 +78,14 @@ def generate_summaries(limit=5, force_regenerate=False):
             # Check if extraction exists
             extraction = session.query(AIExtraction).filter_by(item_id=item.id).first()
 
-            # capital_source is now a single string; fall back to old array format
-            cap_src = summary.get('capital_source')
-            if not cap_src and summary.get('capital_sources'):
-                # Old-format response (array) — take first element
-                sources = summary.get('capital_sources', [])
-                cap_src = sources[0] if sources else None
+            # capital_source is now an array; join to comma-separated string for storage
+            cap_src_raw = summary.get('capital_source') or summary.get('capital_sources')
+            if isinstance(cap_src_raw, list):
+                cap_src = ','.join(cap_src_raw) if cap_src_raw else None
+            elif isinstance(cap_src_raw, str):
+                cap_src = cap_src_raw if cap_src_raw else None
+            else:
+                cap_src = None
 
             if extraction:
                 # Update existing

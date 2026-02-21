@@ -52,7 +52,7 @@
                 {% endif %}
             </div>
             <div style="display: flex; align-items: center; gap: 5px;">
-                {% if item.company or item.capital_type or item.summary %}
+                {% if item.company or item.capital_type or item.capital_sources or item.summary %}
                 <span style="color: #4c9173;">✓</span>
                 <span style="font-size: 13px;">Manually Curated</span>
                 {% else %}
@@ -79,17 +79,22 @@
         </div>
         {% endif %}
 
-        {% if item.capital_type %}
+        {% if item.capital_sources or item.capital_type %}
         <div>
             <strong style="font-size: 12px; color: #666;">Type:</strong>
-            <div style="margin-top: 4px;"><span class="badge badge-info">{{ item.capital_type }}</span></div>
+            <div style="margin-top: 4px;">
+                {% set cap_display = item.capital_sources or item.capital_type %}
+                {% for cap in cap_display.split(',') %}
+                <span class="badge badge-info">{{ cap.strip() }}</span>
+                {% endfor %}
+            </div>
         </div>
         {% endif %}
 
-        {% if item.sector %}
+        {% if item.sectors or item.sector %}
         <div>
             <strong style="font-size: 12px; color: #666;">Sector:</strong>
-            <div style="font-size: 14px; margin-top: 4px;">{{ item.sector }}</div>
+            <div style="font-size: 14px; margin-top: 4px;">{{ (item.sectors or item.sector).replace(',', ', ') }}</div>
         </div>
         {% endif %}
 

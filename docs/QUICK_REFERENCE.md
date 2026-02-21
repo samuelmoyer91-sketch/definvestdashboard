@@ -6,104 +6,18 @@
 
 ## ⭐ Primary Workflow (Use This)
 
-### Complete Weekly Update
+The pipeline runs automatically via GitHub Actions — you only need to triage.
+
+| Stage | Schedule | How |
+|-------|----------|-----|
+| **Ingest** (RSS fetch, scrape, AI summaries) | Daily 6 AM ET | GitHub Actions (`ingest.yml`) |
+| **Triage** (review/accept/reject deals) | Anytime | Railway app at your Railway URL |
+| **Publish** (data refresh + site deploy) | Daily 8 PM ET | GitHub Actions (`publish.yml`) |
+
+To trigger either workflow manually:
 ```bash
-cd ~/Documents/"Claude - Defense PC Dashboard"
-
-# 1. Fetch new deals and generate AI summaries
-./update_workflow.sh all
-
-# 2. Review deals in triage UI
-uvicorn src.web.app:app --reload
-# Open http://127.0.0.1:8000
-# Accept/reject deals with collapsible cards
-
-# 3. Publish everything (auto-deploys)
-./update_workflow.sh publish
-```
-
-**Done!** Site updates at https://capitalfordefense.com (deployed via Cloudflare Pages)
-
----
-
-## 🚀 Initial Setup (Do Once)
-
-### 1. Get FRED API Key
-```bash
-# Visit: https://fred.stlouisfed.org/docs/api/api_key.html
-# Then set it:
-export FRED_API_KEY='your_key_here'
-
-# Make permanent:
-echo "export FRED_API_KEY='your_key_here'" >> ~/.zshrc
-```
-
-### 2. Generate Site
-```bash
-cd ~/Documents/"Claude - Defense PC Dashboard"
-python3 generate_site.py
-```
-
-### 3. Test Locally
-```bash
-cd github_site
-python3 -m http.server 8080
-# Open: http://localhost:8080
-```
-
-### 4. Deploy to GitHub
-```bash
-cd ~/Documents/"Claude - Defense PC Dashboard"/github_site
-
-# First time
-git init
-git add .
-git commit -m "Initial commit"
-git branch -M main
-git remote add origin https://github.com/samuelmoyer91-sketch/defense-dashboard.git
-git push -u origin main
-
-# Enable Pages in repo Settings > Pages
-```
-
----
-
-## 📊 Alternative Workflows
-
-### Manual Update (Advanced - If Workflow Script Fails)
-
-**Update Deal Tracker + Data:**
-```bash
-cd ~/Documents/"Claude - Defense PC Dashboard"
-
-# 1. Fetch new articles
-python3 src/ingest/rss_fetcher.py
-python3 src/scraper/article_scraper.py
-python3 src/scraper/generate_ai_summaries.py
-
-# 2. Review in triage UI
-uvicorn src.web.app:app --reload
-# Open: http://127.0.0.1:8000
-# Accept/reject articles
-
-# 3. Generate site
-python3 generate_site.py
-
-# 4. Deploy manually
-git add github_site/
-git commit -m "Weekly update"
-git push origin main
-git subtree push --prefix github_site origin gh-pages
-```
-
-**Update Data Only (No New Deals):**
-```bash
-cd ~/Documents/"Claude - Defense PC Dashboard"
-python3 generate_site.py
-git add github_site/
-git commit -m "Data refresh"
-git push origin main
-git subtree push --prefix github_site origin gh-pages
+gh workflow run ingest.yml
+gh workflow run publish.yml
 ```
 
 ---
@@ -112,37 +26,50 @@ git subtree push --prefix github_site origin gh-pages
 
 ### Test Site Locally
 ```bash
-cd ~/Documents/"Claude - Defense PC Dashboard"/github_site
+cd ~/Documents/Claude/"PC Dashboard"/github_site
 python3 -m http.server 8080
 # Open: http://localhost:8080
 # Press Ctrl+C to stop
 ```
 
+### Run Triage App Locally (if Railway is down)
+```bash
+cd ~/Documents/Claude/"PC Dashboard"
+uvicorn src.web.app:app --reload
+# Open: http://127.0.0.1:8000
+```
+
+### Regenerate Site Locally (fetches fresh data + rebuilds all pages)
+```bash
+cd ~/Documents/Claude/"PC Dashboard"
+python3 generate_site.py
+```
+
 ### Fetch FRED Data Only
 ```bash
-cd ~/Documents/"Claude - Defense PC Dashboard"
+cd ~/Documents/Claude/"PC Dashboard"
 python3 src/data_fetchers/fred_fetcher.py
 ```
 
 ### Fetch Market Data Only
 ```bash
-cd ~/Documents/"Claude - Defense PC Dashboard"
+cd ~/Documents/Claude/"PC Dashboard"
 python3 src/data_fetchers/finance_fetcher.py
 ```
 
-### Regenerate Chart Pages
+### Regenerate Chart Pages Only
 ```bash
-cd ~/Documents/"Claude - Defense PC Dashboard"
+cd ~/Documents/Claude/"PC Dashboard"
 python3 src/export/generate_chart_pages_v2.py
 ```
 
-### Export Deal Tracker HTML
+### Export Deal Tracker HTML Only
 ```bash
-cd ~/Documents/"Claude - Defense PC Dashboard"
+cd ~/Documents/Claude/"PC Dashboard"
 python3 src/export/export_to_html_v2.py
 ```
 
-**Note:** These are called automatically by `generate_site.py`, rarely need to run manually.
+**Note:** These are called automatically by `generate_site.py` and `publish.yml`. Rarely need to run manually.
 
 ---
 
@@ -150,14 +77,17 @@ python3 src/export/export_to_html_v2.py
 
 | What | Where |
 |------|-------|
-| GitHub Pages Site | `~/Documents/Claude - Defense PC Dashboard/github_site/` |
+| Public site files | `github_site/` |
 | Homepage | `github_site/index.html` |
 | Deal Tracker | `github_site/deals/index.html` |
 | Charts | `github_site/charts/*.html` |
 | Styles | `github_site/css/style.css` |
 | Data Files | `github_site/data/*.json` |
-| Database | `data/tracker.db` |
+| Database (local replica) | `turso_replica.db` |
 | Site Generator | `generate_site.py` |
+| Triage App | `src/web/` |
+| AI Summarizer | `src/utils/ai_summarizer.py` |
+| GitHub Actions | `.github/workflows/` |
 
 ---
 
@@ -165,26 +95,11 @@ python3 src/export/export_to_html_v2.py
 
 | What | URL |
 |------|-----|
-| Local Test | http://localhost:8080 |
-| Triage UI | http://127.0.0.1:8000 |
 | Live Site | https://capitalfordefense.com |
+| Local Test | http://localhost:8080 |
+| Local Triage UI | http://127.0.0.1:8000 |
 | GitHub Repo | https://github.com/samuelmoyer91-sketch/defense-dashboard |
 | FRED API Key | https://fred.stlouisfed.org/docs/api/api_key.html |
-
----
-
-## 📋 Checklist: Before Going Public
-
-- [ ] Test locally (http://localhost:8080)
-- [ ] All charts load correctly
-- [ ] Deal tracker shows deals properly
-- [ ] Search/filter works
-- [ ] Mobile view looks good
-- [ ] No sensitive info visible
-- [ ] Footer attribution correct
-- [ ] Links work in navigation
-- [ ] Review GitHub repo is PRIVATE
-- [ ] Ready to share? Change repo to PUBLIC
 
 ---
 
@@ -194,8 +109,8 @@ python3 src/export/export_to_html_v2.py
 Edit: `github_site/css/style.css`
 ```css
 :root {
-  --primary-teal: #226E93;  /* Main color */
-  --accent-teal: #88c0d0;   /* Accent */
+  --primary-blue: #1e456e;  /* Navy */
+  --accent-green: #88c540;  /* Green */
 }
 ```
 
@@ -203,8 +118,7 @@ Edit: `github_site/css/style.css`
 Edit: `github_site/index.html`
 
 ### Add FRED Series
-Edit: `src/data_fetchers/fred_fetcher.py`
-Add to `FRED_SERIES` dict, then run `publish.py`
+Edit: `src/data_fetchers/fred_fetcher.py` — add to `FRED_SERIES` dict, then run `generate_site.py`
 
 ---
 
@@ -213,41 +127,34 @@ Add to `FRED_SERIES` dict, then run `publish.py`
 ### Charts Not Showing
 ```bash
 # Check data files exist
-ls ~/Documents/"Claude - Defense PC Dashboard"/github_site/data/
+ls ~/Documents/Claude/"PC Dashboard"/github_site/data/
 
-# Re-fetch data
-cd ~/Documents/"Claude - Defense PC Dashboard"
-python3 publish.py
+# Re-generate site
+cd ~/Documents/Claude/"PC Dashboard"
+python3 generate_site.py
 ```
 
 ### Deal Tracker Empty
 ```bash
-# Check database has deals
-cd ~/Documents/"Claude - Defense PC Dashboard"
-python3 src/utils/view_data.py
-
-# Re-export
-python3 src/export/export_to_html.py
+# Re-export deals
+cd ~/Documents/Claude/"PC Dashboard"
+python3 src/export/export_to_html_v2.py
 ```
 
 ### "FRED API Key Not Set"
 ```bash
-# Set API key
 export FRED_API_KEY='your_key_here'
-
-# Verify it's set
-echo $FRED_API_KEY
+echo $FRED_API_KEY  # verify
 ```
 
-### GitHub Push Fails
-```bash
-# Check remote is set
-cd github_site
-git remote -v
+### Turso Reads Blocked
+- Free tier limit: 500M rows/month. Resets on the 1st of each month.
+- If blocked mid-month: upgrade to Developer ($4.99/mo) in Turso dashboard.
+- Root cause of spikes: each GitHub Actions runner does a fresh DB sync on startup. Avoid running publish.yml repeatedly in short succession.
 
-# If not set:
-git remote add origin https://github.com/samuelmoyer91-sketch/defense-dashboard.git
-```
+### Railway App Down
+- Upgrade to Hobby plan ($5/mo) in Railway dashboard if trial expired.
+- Or run triage locally: `uvicorn src.web.app:app --reload`
 
 ---
 
@@ -255,39 +162,10 @@ git remote add origin https://github.com/samuelmoyer91-sketch/defense-dashboard.
 
 | Doc | What's In It |
 |-----|--------------|
-| NIGHT_BUILD_SUMMARY.md | Everything built tonight |
-| GITHUB_PAGES_SETUP.md | Detailed deployment guide |
-| QUICK_REFERENCE.md | This file (commands) |
-| PROJECT_HANDOFF.md | Original project spec |
-
----
-
-## 🎯 Quick Win: 5-Minute Deploy
-
-```bash
-# 1. Set API key
-export FRED_API_KEY='your_key_here'
-
-# 2. Generate
-cd ~/Documents/"Claude - Defense PC Dashboard"
-python3 generate_site.py
-
-# 3. Test
-cd github_site
-python3 -m http.server 8080
-# Open browser, verify looks good, Ctrl+C
-
-# 4. Deploy
-git init
-git add .
-git commit -m "Initial commit"
-git branch -M main
-git remote add origin https://github.com/samuelmoyer91-sketch/defense-dashboard.git
-git push -u origin main
-
-# 5. Enable Pages (via GitHub website)
-# Done! 🎉
-```
+| `1 - README.md` | Full project overview, architecture, data sources |
+| `docs/AI_WORKFLOW.md` | AI extraction and triage workflow detail |
+| `docs/QUICK_REFERENCE.md` | This file |
+| `_Session_Logs/` | Per-session change logs |
 
 ---
 

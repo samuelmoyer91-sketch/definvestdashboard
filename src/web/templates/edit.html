@@ -73,22 +73,60 @@
                 </div>
             </div>
 
-            <!-- Row 3: Capital Type -->
+            <!-- Row 3: Capital Type (Multi-select) -->
             <div style="margin-bottom: 10px;">
-                <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #555;">Capital Type</label>
-                {% set current_cap = master.capital_sources or '' %}
-                <select name="capital_source"
-                        style="width: 100%; padding: 7px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;">
-                    <option value="">-- Select --</option>
-                    <option value="Seed" {% if current_cap == 'Seed' %}selected{% endif %}>Seed</option>
-                    <option value="Venture Capital" {% if current_cap == 'Venture Capital' %}selected{% endif %}>Venture Capital</option>
-                    <option value="Private Equity" {% if current_cap == 'Private Equity' %}selected{% endif %}>Private Equity</option>
-                    <option value="Corporate M&A" {% if current_cap == 'Corporate M&A' %}selected{% endif %}>Corporate M&amp;A</option>
-                    <option value="Government/Contract" {% if current_cap == 'Government/Contract' %}selected{% endif %}>Government/Contract</option>
-                    <option value="Public Markets" {% if current_cap == 'Public Markets' %}selected{% endif %}>Public Markets</option>
-                    <option value="Internal/Self-funded" {% if current_cap == 'Internal/Self-funded' %}selected{% endif %}>Internal/Self-funded</option>
-                    <option value="Fund Raise" {% if current_cap == 'Fund Raise' %}selected{% endif %}>Fund Raise</option>
-                </select>
+                <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #555;">Capital Type (select all that apply)</label>
+                {% set current_cap_list = master.capital_sources.split(',') | map('trim') | list if master.capital_sources else [] %}
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px 8px; padding: 6px 10px; background: #f9f9f9; border-radius: 4px;">
+                    <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                        <input type="checkbox" name="capital_source" value="Seed"
+                               {% if 'Seed' in current_cap_list %}checked{% endif %}
+                               style="margin-right: 5px; width: 14px; height: 14px;">
+                        Seed
+                    </label>
+                    <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                        <input type="checkbox" name="capital_source" value="Venture Capital"
+                               {% if 'Venture Capital' in current_cap_list %}checked{% endif %}
+                               style="margin-right: 5px; width: 14px; height: 14px;">
+                        Venture Capital
+                    </label>
+                    <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                        <input type="checkbox" name="capital_source" value="Private Equity"
+                               {% if 'Private Equity' in current_cap_list %}checked{% endif %}
+                               style="margin-right: 5px; width: 14px; height: 14px;">
+                        Private Equity
+                    </label>
+                    <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                        <input type="checkbox" name="capital_source" value="Corporate M&A"
+                               {% if 'Corporate M&A' in current_cap_list %}checked{% endif %}
+                               style="margin-right: 5px; width: 14px; height: 14px;">
+                        Corporate M&amp;A
+                    </label>
+                    <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                        <input type="checkbox" name="capital_source" value="Government/Contract"
+                               {% if 'Government/Contract' in current_cap_list %}checked{% endif %}
+                               style="margin-right: 5px; width: 14px; height: 14px;">
+                        Government/Contract
+                    </label>
+                    <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                        <input type="checkbox" name="capital_source" value="Public Markets"
+                               {% if 'Public Markets' in current_cap_list %}checked{% endif %}
+                               style="margin-right: 5px; width: 14px; height: 14px;">
+                        Public Markets
+                    </label>
+                    <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                        <input type="checkbox" name="capital_source" value="Internal/Self-funded"
+                               {% if 'Internal/Self-funded' in current_cap_list %}checked{% endif %}
+                               style="margin-right: 5px; width: 14px; height: 14px;">
+                        Internal/Self-funded
+                    </label>
+                    <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                        <input type="checkbox" name="capital_source" value="Fund Raise"
+                               {% if 'Fund Raise' in current_cap_list %}checked{% endif %}
+                               style="margin-right: 5px; width: 14px; height: 14px;">
+                        Fund Raise
+                    </label>
+                </div>
             </div>
 
             <!-- Row 5: Sectors (Multi-select) -->

@@ -123,7 +123,7 @@ python3 src/scraper/generate_ai_summaries.py --force
 Review AI-extracted deals and approve for publication using the FastAPI triage interface:
 
 ```bash
-cd ~/Documents/"Claude - Defense PC Dashboard"
+cd ~/Documents/Claude/"PC Dashboard"
 uvicorn src.web.app:app --reload
 ```
 

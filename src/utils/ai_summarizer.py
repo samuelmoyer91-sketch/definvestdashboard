@@ -59,10 +59,10 @@ Extract the following information (use "Unknown" if not found):
 1. TITLE: Write a concise analyst-style headline (5-10 words). Always lead with the company name. Use present-tense action verbs: "Raises", "Acquires", "Builds", "Invests", "Opens". Include the dollar amount when known. Strip all journalistic fluff — no "to meet growing demand", no source attributions, no filler. Use industry shorthand where appropriate (e.g., "PE Fund", "PNT", "Space Tech"). Never be vague — always name the company (not "Startup raises..." or "Company confirms..."). Examples: "Safran Acquires Syntony for PNT", "GRVTY Invests $8M in Virginia Facility", "Veritas Raises $15.3B PE Fund for Defense Investments", "GE Aerospace Builds Manufacturing Facilities". Do NOT copy the article headline — rewrite it shorter and cleaner.
 2. COMPANY NAME: The company being invested in or acquired
 2. COMPANY DESCRIPTION: One sentence describing what the company does (focus on defense/tech capabilities)
-3. CAPITAL TYPE: Choose ONE from: Seed, Venture Capital, Private Equity, Corporate M&A, Government/Contract, Public Markets, Internal/Self-funded, Fund Raise. This is the primary source of capital. "Seed" = pre-Series A/angel. "Venture Capital" = Series A through late-stage VC rounds. "Private Equity" = PE acquisitions, PE growth equity. "Corporate M&A" = operating company acquires another (no PE sponsor). "Government/Contract" = government contracts, SBIR, grants, government equity stakes. "Public Markets" = IPO, SPAC, secondary offerings. "Internal/Self-funded" = capex, facility builds from balance sheet. "Fund Raise" = VC or PE fund raising capital from LPs (e.g., "Veritas raises $15B fund"), NOT deploying capital into a company.
+3. CAPITAL TYPE: Choose ALL that apply from: Seed, Venture Capital, Private Equity, Corporate M&A, Government/Contract, Public Markets, Internal/Self-funded, Fund Raise. Most deals have one type, but select multiple when genuinely applicable (e.g., a round with both VC and Government/Contract components). "Seed" = pre-Series A/angel. "Venture Capital" = Series A through late-stage VC rounds. "Private Equity" = PE acquisitions, PE growth equity. "Corporate M&A" = operating company acquires another (no PE sponsor). "Government/Contract" = government contracts, SBIR, grants, government equity stakes. "Public Markets" = IPO, SPAC, secondary offerings. "Internal/Self-funded" = capex, facility builds from balance sheet. "Fund Raise" = VC or PE fund raising capital from LPs (e.g., "Veritas raises $15B fund"), NOT deploying capital into a company. Return as array.
 5. SECTORS: Choose ALL that apply from: Autonomous Systems/Drones, AI/ML, Space/Satellites, Aerospace, Cybersecurity, Advanced Materials, Semiconductors/Electronics, Manufacturing/Production, Software/IT, Munitions/Weapons, Communications, Electronic Warfare, Other (return as array)
 6. DEAL AMOUNT: Dollar value if mentioned (e.g., "$300M" or "$4.7B")
-7. INVESTORS/ACQUIRERS: Key firms or companies involved
+7. INVESTORS/ACQUIRERS: Key firms or companies involved. Return as a clean comma-separated list of names only — no descriptions, no parentheticals, no "led by", "backed by", "with participation from", or other connective language. Example: "8VC, Lux Capital, Founders Fund". For self-funded/internal deals, return "Self-funded".
 8. LOCATION: Where the company is headquartered or where the deal/project is located. Format as "City, State, Country" for US locations (e.g., "San Diego, CA, USA") or "City, Country" for international (e.g., "London, UK"). Use null if not mentioned.
 9. STRATEGIC SIGNIFICANCE: Why does this deal matter for defense sector? (2-3 sentences max)
 10. MARKET IMPLICATIONS: What does this signal about defense tech trends? (1-2 sentences)
@@ -72,7 +72,7 @@ Format your response as JSON:
   "title": "...",
   "company_name": "...",
   "company_description": "...",
-  "capital_source": "...",
+  "capital_source": ["...", "..."],
   "sectors": ["...", "..."],
   "deal_type": "...",
   "deal_amount": "...",
@@ -83,7 +83,7 @@ Format your response as JSON:
 }}
 
 Notes:
-- capital_source is a single string (not an array) — pick the ONE best fit
+- capital_source is an array — include all that apply, but don't over-select; most deals have one type
 - deal_type is a legacy field (still include for backward compatibility, use VC/M&A/IPO style values)
 - For sectors: include all relevant technology areas the company operates in
 - Be professional and analytical (intelligence briefing tone). If information is missing or unclear, use "Unknown" rather than guessing.

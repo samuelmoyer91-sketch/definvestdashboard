@@ -434,7 +434,7 @@ async def accept_item(
     company: str = Form(""),
     investors: str = Form(""),
     investment_amount: str = Form(""),
-    capital_source: str = Form(""),
+    capital_source: list[str] = Form([]),
     sectors: list[str] = Form([]),
     location: str = Form(""),
     summary: str = Form(""),
@@ -468,8 +468,8 @@ async def accept_item(
                 company=company if company else None,
                 investors=investors if investors else None,
                 investment_amount=formatted_amount,
-                # Capital source (single-select, stored in capital_sources column)
-                capital_sources=capital_source if capital_source else None,
+                # Capital source (multi-select, stored as comma-separated in capital_sources column)
+                capital_sources=",".join(capital_source) if capital_source else None,
                 sectors=",".join(sectors) if sectors else None,
                 # Legacy fields
                 transaction_type=transaction_type if transaction_type else None,
@@ -685,7 +685,7 @@ async def save_edit(
     company: str = Form(""),
     investors: str = Form(""),
     investment_amount: str = Form(""),
-    capital_source: str = Form(""),
+    capital_source: list[str] = Form([]),
     sectors: list[str] = Form([]),
     location: str = Form(""),
     summary: str = Form(""),
@@ -710,7 +710,7 @@ async def save_edit(
         master.company = company if company else None
         master.investors = investors if investors else None
         master.investment_amount = formatted_amount
-        master.capital_sources = capital_source if capital_source else None
+        master.capital_sources = ",".join(capital_source) if capital_source else None
         master.sectors = ",".join(sectors) if sectors else None
         master.location = location if location else None
         master.summary = summary if summary else None
