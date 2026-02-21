@@ -572,18 +572,20 @@ def generate_deal_card(master, raw, ai):
 
     # Capital Sources (already extracted above for data attributes)
     if capital_sources:
+        capital_display = capital_sources.replace(',', ', ')
         card_html += f"""
                 <div class="deal-meta-line">
                     <span class="meta-label">Capital</span>
-                    <span>{capital_sources}</span>
+                    <span>{capital_display}</span>
                 </div>"""
 
     # Sectors (already extracted above for data attributes)
     if sectors:
+        sectors_display = sectors.replace(',', ', ')
         card_html += f"""
                 <div class="deal-meta-line">
                     <span class="meta-label">Sectors</span>
-                    <span>{sectors}</span>
+                    <span>{sectors_display}</span>
                 </div>"""
 
     # Close metadata section

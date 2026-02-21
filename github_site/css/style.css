@@ -1011,15 +1011,25 @@ footer a {
     padding: var(--spacing-md);
   }
 
-  /* Hero banner: stack SVG icon above text, reduce font sizes */
+  /* Hero banner: reduce padding, stack SVG above text, scale down font sizes */
+  .hero-banner {
+    padding: 32px 16px 28px !important;
+  }
+
   .hero-inner {
     flex-direction: column !important;
-    gap: 20px !important;
+    gap: 16px !important;
     text-align: center;
   }
 
+  .hero-inner svg {
+    width: 56px !important;
+    height: 56px !important;
+  }
+
   .hero-banner h1 {
-    font-size: 24px !important;
+    font-size: 22px !important;
+    letter-spacing: 0 !important;
   }
 
   .hero-banner p {
@@ -1074,5 +1084,19 @@ footer a {
     flex-direction: column;
     align-items: flex-start;
     gap: var(--spacing-xs);
+  }
+
+  /* Deal cards: smaller company name, tighter body padding */
+  .deal-company-name {
+    font-size: 1.1rem;
+  }
+
+  .deal-card-body {
+    padding: 1rem;
+  }
+
+  .deal-card-header,
+  .deal-card-footer {
+    padding: 0.75rem 1rem;
   }
 }
