@@ -295,6 +295,7 @@ async def home(request: Request):
     """Home page showing triage queue."""
     from sqlalchemy.orm import joinedload
 
+    sync_turso()  # Pull latest data from Turso cloud before reading
     session = get_session()
 
     try:
