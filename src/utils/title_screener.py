@@ -113,8 +113,7 @@ Be selective. When in doubt about borderline cases, mark as relevant — a human
 
     except Exception as e:
         print(f"  Error in title screening: {e}")
-        # On error, pass everything through (fail open)
-        return {item['id']: {"relevant": True, "reason": f"Error: {e}"} for item in items}
+        raise
 
 
 def screen_titles(items):

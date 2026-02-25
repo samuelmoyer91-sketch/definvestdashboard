@@ -50,7 +50,7 @@ Article Title: {article_title}
 Article URL: {article_url}
 
 Article Text:
-{article_text[:8000]}
+{article_text[:25000]}
 
 Extract the following information (use "Unknown" if not found):
 
@@ -94,7 +94,7 @@ Special handling for EARNINGS CALLS, ANNUAL REPORTS, and INVESTOR PRESENTATIONS:
         # Call Claude API
         message = client.messages.create(
             model="claude-sonnet-4-20250514",  # Latest Sonnet model
-            max_tokens=1024,
+            max_tokens=2048,
             messages=[
                 {"role": "user", "content": prompt}
             ]

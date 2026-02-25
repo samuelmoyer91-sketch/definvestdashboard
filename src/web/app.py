@@ -640,7 +640,7 @@ def _sync_investor_links(session, master):
             session.add(investor)
             session.flush()
 
-        if now > (investor.last_seen or now):
+        if investor.last_seen is None or now > investor.last_seen:
             investor.last_seen = now
 
         affected_investor_ids.add(investor.id)
