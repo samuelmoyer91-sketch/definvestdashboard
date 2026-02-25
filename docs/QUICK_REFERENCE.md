@@ -96,9 +96,10 @@ python3 src/export/export_to_html_v2.py
 | What | URL |
 |------|-----|
 | Live Site | https://capitalfordefense.com |
+| Triage App (Railway) | https://capitalfordefense.up.railway.app |
 | Local Test | http://localhost:8080 |
 | Local Triage UI | http://127.0.0.1:8000 |
-| GitHub Repo | https://github.com/samuelmoyer91-sketch/defense-dashboard |
+| GitHub Repo | https://github.com/samuelmoyer91-sketch/definvestdashboard |
 | FRED API Key | https://fred.stlouisfed.org/docs/api/api_key.html |
 
 ---
@@ -147,13 +148,26 @@ export FRED_API_KEY='your_key_here'
 echo $FRED_API_KEY  # verify
 ```
 
+### Triage Queue Empty (No New Items)
+The triage app syncs the Turso replica on every page load. If the queue looks empty despite recent ingest runs:
+1. Check GitHub Actions — confirm ingest.yml completed successfully
+2. Check for a GitHub issue notification — pipeline failures now create one automatically
+3. If ingest succeeded but queue is empty, run the triage app locally to rule out Railway issues:
+   ```bash
+   cd ~/Documents/Claude/"PC Dashboard"
+   uvicorn src.web.app:app --reload
+   # Open: http://127.0.0.1:8000
+   ```
+
+### Pipeline Failure Notifications
+Both `ingest.yml` and `publish.yml` create a GitHub issue if they fail. Check the repo's Issues tab if you suspect something broke. The issue includes a direct link to the failed run's logs.
+
 ### Turso Reads Blocked
-- Free tier limit: 500M rows/month. Resets on the 1st of each month.
-- If blocked mid-month: upgrade to Developer ($4.99/mo) in Turso dashboard.
+- If blocked: upgrade plan in Turso dashboard.
 - Root cause of spikes: each GitHub Actions runner does a fresh DB sync on startup. Avoid running publish.yml repeatedly in short succession.
 
 ### Railway App Down
-- Upgrade to Hobby plan ($5/mo) in Railway dashboard if trial expired.
+- Check Railway dashboard — ensure plan is active (paid plan required for 24/7 uptime).
 - Or run triage locally: `uvicorn src.web.app:app --reload`
 
 ---
