@@ -520,6 +520,7 @@ async def reject_item(item_id: int):
 @app.get("/master", response_class=HTMLResponse)
 async def master_list(request: Request):
     """View master list of accepted items."""
+    sync_turso()
     session = get_session()
 
     try:
@@ -546,6 +547,7 @@ async def master_list(request: Request):
 @app.get("/rejected", response_class=HTMLResponse)
 async def rejected_list(request: Request):
     """View rejected items."""
+    sync_turso()
     session = get_session()
 
     try:
@@ -573,6 +575,7 @@ async def stats(request: Request):
     """Show statistics."""
     from sqlalchemy import func
 
+    sync_turso()
     session = get_session()
 
     try:
