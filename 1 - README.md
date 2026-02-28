@@ -24,7 +24,7 @@ Both workflows can also be triggered manually: `gh workflow run ingest.yml` or `
 
 The dashboard provides visibility into the defense industrial base and capital markets through four lenses:
 
-**Deal Tracker** — Curated private capital investments (VC, PE, M&A, contracts) in defense companies, with AI-assisted triage and human-curated summaries.
+**Deal Tracker** — Curated private capital investments (VC, PE, M&A, contracts) in defense companies, with AI-assisted triage and human-curated summaries. Includes an investor analytics view with searchable list and per-investor drill-down showing deal history.
 
 **Defense Investment Trends** — Capital flows including defense capital goods orders, VC/M&A activity, and market sentiment (ITA ETF).
 
@@ -93,7 +93,7 @@ PC Dashboard/
 │   ├── data_fetchers/        # FRED and Yahoo Finance data fetchers
 │   ├── export/               # HTML generators (chart pages, deal feed)
 │   ├── scraper/              # RSS fetcher, article scraper, AI summarizer
-│   ├── utils/                # AI summarizer (Claude API)
+│   ├── utils/                # AI summarizer (Claude API), investor parser
 │   ├── web/                  # Triage app (FastAPI + templates)
 │   └── database/             # SQLAlchemy models, Turso connection
 ├── .github/workflows/
@@ -113,7 +113,8 @@ PC Dashboard/
 3. **Article Scraping** — Full article text retrieved for AI processing
 4. **AI Extraction** — Claude extracts structured data (company, amount, investors, sectors) and drafts an analytical summary
 5. **Human Triage** — Reviewer accepts/rejects deals, edits any field before publication
-6. **Export** — Only human-approved content appears on the public site (raw AI and RSS data never shown)
+6. **Investor Normalization** — On accept/edit, investor text is parsed into structured `Investor` records linked to deals. The parser strips AI prose artifacts ("led by", "backed by", "with participation from", semicolons, trailing annotations like "as acquirer") to extract clean entity names. Investor records are deduplicated by slug.
+7. **Export** — Only human-approved content appears on the public site (raw AI and RSS data never shown)
 
 Capital type taxonomy: Seed, Venture Capital, Private Equity, Corporate M&A, Government/Contract, Public Markets, Internal/Self-funded, Fund Raise.
 
