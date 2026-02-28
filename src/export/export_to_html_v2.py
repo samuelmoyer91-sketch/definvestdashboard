@@ -511,7 +511,6 @@ def generate_deal_card(master, raw, ai):
     <div class="deal-card" data-deal-type="{deal_type.lower()}"{sectors_attr}{capital_attr}>
         <div class="deal-card-header">
             <div class="deal-header-line">
-                <span class="deal-type-label">{deal_type}</span>
                 <span class="deal-date">{date_str}</span>
             </div>
         </div>

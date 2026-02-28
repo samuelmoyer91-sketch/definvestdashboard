@@ -41,11 +41,45 @@ def parse_investors(text):
     results = []
     seen_slugs = set()
 
-    # Split on commas
-    parts = text.split(',')
+    # Split on commas and semicolons
+    parts = re.split(r'[,;]', text)
+
+    # Prose phrases that prefix real names (AI extraction artifacts)
+    _PROSE_PREFIXES = re.compile(
+        r'^(?:'
+        r'also\s+including|including'
+        r'|as\s+well\s+as|along\s+with|alongside'
+        r'|backed\s+by|led\s+by|co-?led\s+by|joined\s+by'
+        r'|with\s+participation\s+from|with\s+participation\s+by'
+        r'|with\s+previous\s+backers|previous\s+backers'
+        r'|existing\s+backers|new\s+investors\s+include'
+        r'|and\s+also|and|also|plus|with'
+        r')\s+',
+        re.IGNORECASE
+    )
+
+    # Trailing annotations to strip (e.g. "as acquirer", "as seller")
+    _TRAILING_JUNK = re.compile(
+        r'\s+(?:as\s+acquirer|as\s+seller|as\s+lead\s+investor|private\s+equity\s+firm.*)',
+        re.IGNORECASE
+    )
 
     for part in parts:
         part = part.strip()
+        if not part:
+            continue
+
+        # Skip tokens that are prose sentences, not investor names
+        if len(part) > 80:
+            continue
+
+        # Strip leading prose phrases — apply repeatedly to handle stacked phrases
+        # e.g. "with previous backers including Foo" → "including Foo" → "Foo"
+        while True:
+            stripped = _PROSE_PREFIXES.sub('', part).strip()
+            if stripped == part:
+                break
+            part = stripped
         if not part:
             continue
 
@@ -57,7 +91,11 @@ def parse_investors(text):
             part = part[:lead_match.start()] + part[lead_match.end():]
 
         # Strip other parentheticals (e.g., "(co-lead)", "(existing investor)")
-        part = re.sub(r'\s*\([^)]*\)\s*', '', part).strip()
+        # Replace with a space to avoid adjacent words merging ("Holdingsas acquirer")
+        part = re.sub(r'\s*\([^)]*\)\s*', ' ', part).strip()
+
+        # Strip trailing prose annotations (e.g. "as acquirer", "as seller")
+        part = _TRAILING_JUNK.sub('', part).strip()
 
         if not part:
             continue

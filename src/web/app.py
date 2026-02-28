@@ -734,6 +734,9 @@ async def save_edit(
 @app.get("/investors", response_class=HTMLResponse)
 async def investors_list(request: Request):
     """View all investors sorted by deal count."""
+    from sqlalchemy import func
+
+    sync_turso()
     session = get_session()
 
     try:
@@ -742,9 +745,82 @@ async def investors_list(request: Request):
             Investor.name.asc()
         ).all()
 
+        # Lead counts: {investor_id: count_as_lead}
+        lead_rows = session.query(
+            DealInvestor.investor_id,
+            func.count(DealInvestor.id)
+        ).filter(
+            DealInvestor.is_lead == True
+        ).group_by(DealInvestor.investor_id).all()
+        lead_counts = {inv_id: cnt for inv_id, cnt in lead_rows}
+
+        total_investors = len(investors)
+        total_with_investors = session.query(MasterItem).filter(
+            MasterItem.investors != None,
+            MasterItem.investors != ''
+        ).count()
+
         return templates.TemplateResponse("investors.html", {
             "request": request,
             "investors": investors,
+            "lead_counts": lead_counts,
+            "total_investors": total_investors,
+            "total_with_investors": total_with_investors,
+        })
+    finally:
+        session.close()
+
+
+@app.post("/investors/{investor_id}/delete")
+async def delete_investor(investor_id: int):
+    """Delete an investor and all their deal links."""
+    session = get_session()
+
+    try:
+        investor = session.query(Investor).filter_by(id=investor_id).first()
+        if investor:
+            session.query(DealInvestor).filter_by(investor_id=investor_id).delete()
+            session.delete(investor)
+            session.commit()
+            sync_turso()
+        return RedirectResponse(url="/investors", status_code=303)
+    finally:
+        session.close()
+
+
+@app.get("/investors/{slug}", response_class=HTMLResponse)
+async def investor_detail(request: Request, slug: str):
+    """Drill-down page for a single investor."""
+    sync_turso()
+    session = get_session()
+
+    try:
+        investor = session.query(Investor).filter_by(slug=slug).first()
+        if not investor:
+            return HTMLResponse(content="<h1>Investor not found</h1>", status_code=404)
+
+        # Get all deals for this investor with deal info
+        links = session.query(DealInvestor).filter_by(investor_id=investor.id).all()
+
+        deals = []
+        for link in links:
+            master = session.query(MasterItem).filter_by(id=link.master_item_id).first()
+            if not master:
+                continue
+            raw = session.query(RawItem).filter_by(id=master.item_id).first()
+            deals.append({
+                "master": master,
+                "raw": raw,
+                "is_lead": link.is_lead,
+            })
+
+        # Sort by curated_at desc
+        deals.sort(key=lambda d: d["master"].curated_at or datetime.min, reverse=True)
+
+        return templates.TemplateResponse("investor_detail.html", {
+            "request": request,
+            "investor": investor,
+            "deals": deals,
         })
     finally:
         session.close()

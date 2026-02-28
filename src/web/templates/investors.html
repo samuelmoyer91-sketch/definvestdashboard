@@ -3,7 +3,66 @@
 {% block title %}Investors - Defense Capital Tracker{% endblock %}
 
 {% block content %}
-<h2 style="margin-bottom: 20px;">Investors ({{ investors | length }})</h2>
+<style>
+.inv-table th {
+    padding: 10px 14px;
+    font-size: 11px;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: #f9f9f9;
+    border-bottom: 2px solid #e8e8e8;
+    text-align: left;
+}
+.inv-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 14px;
+    vertical-align: middle;
+}
+.inv-table tr:hover td { background: #f5f8ff; }
+.inv-table tr:last-child td { border-bottom: none; }
+.inv-link {
+    color: #1a1a2e;
+    text-decoration: none;
+    font-weight: 500;
+}
+.inv-link:hover { color: #5e81ac; text-decoration: underline; }
+.search-box {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    margin-bottom: 16px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+.search-box:focus { border-color: #5e81ac; }
+.stats-line {
+    font-size: 13px;
+    color: #888;
+    margin-bottom: 16px;
+}
+.btn-delete {
+    padding: 3px 8px;
+    font-size: 11px;
+    background: transparent;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    color: #aaa;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.btn-delete:hover { background: #fee; border-color: #f99; color: #d94654; }
+</style>
+
+<div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 16px;">
+    <h2>Investors</h2>
+    <span class="stats-line">
+        {{ total_investors }} investors tracked &nbsp;·&nbsp; {{ total_with_investors }} deals with investor data
+    </span>
+</div>
 
 {% if investors | length == 0 %}
 <div class="card">
@@ -13,30 +72,70 @@
 </div>
 {% else %}
 
-<div class="card">
-    <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+<div class="card" style="padding-bottom: 4px;">
+    <input
+        id="inv-search"
+        class="search-box"
+        type="search"
+        placeholder="Search investors…"
+        autocomplete="off"
+    >
+
+    <table class="inv-table" style="width: 100%; border-collapse: collapse;">
         <thead>
-            <tr style="border-bottom: 2px solid #ddd; text-align: left;">
-                <th style="padding: 10px 12px; font-size: 12px; color: #666; text-transform: uppercase;">Investor</th>
-                <th style="padding: 10px 12px; font-size: 12px; color: #666; text-transform: uppercase; text-align: center;">Deals</th>
-                <th style="padding: 10px 12px; font-size: 12px; color: #666; text-transform: uppercase;">Last Seen</th>
+            <tr>
+                <th>Investor</th>
+                <th style="text-align: center;">Deals</th>
+                <th style="text-align: center;">As Lead</th>
+                <th></th>
             </tr>
         </thead>
-        <tbody>
+        <tbody id="inv-tbody">
             {% for inv in investors %}
-            <tr style="border-bottom: 1px solid #eee;">
-                <td style="padding: 10px 12px; font-weight: 500;">{{ inv.name }}</td>
-                <td style="padding: 10px 12px; text-align: center;">
+            <tr data-name="{{ inv.name | lower }}">
+                <td>
+                    <a class="inv-link" href="/investors/{{ inv.slug }}">{{ inv.name }}</a>
+                </td>
+                <td style="text-align: center;">
                     <span class="badge badge-info">{{ inv.deal_count }}</span>
                 </td>
-                <td style="padding: 10px 12px; color: #666;">
-                    {{ inv.last_seen.strftime('%Y-%m-%d') if inv.last_seen else 'Unknown' }}
+                <td style="text-align: center;">
+                    {% set leads = lead_counts.get(inv.id, 0) %}
+                    {% if leads > 0 %}
+                        <span class="badge badge-success">{{ leads }}</span>
+                    {% else %}
+                        <span style="color: #ccc;">—</span>
+                    {% endif %}
+                </td>
+                <td style="text-align: right;">
+                    <form method="post" action="/investors/{{ inv.id }}/delete"
+                          onsubmit="return confirm('Delete {{ inv.name }}?')">
+                        <button type="submit" class="btn-delete" title="Delete investor">✕</button>
+                    </form>
                 </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
+    <p id="no-results" style="display:none; text-align:center; color:#999; padding: 20px 0; font-size:14px;">
+        No investors match your search.
+    </p>
 </div>
+
+<script>
+document.getElementById('inv-search').addEventListener('input', function() {
+    const q = this.value.toLowerCase().trim();
+    const rows = document.querySelectorAll('#inv-tbody tr');
+    let visible = 0;
+    rows.forEach(row => {
+        const name = row.dataset.name || '';
+        const show = !q || name.includes(q);
+        row.style.display = show ? '' : 'none';
+        if (show) visible++;
+    });
+    document.getElementById('no-results').style.display = visible === 0 ? 'block' : 'none';
+});
+</script>
 
 {% endif %}
 {% endblock %}

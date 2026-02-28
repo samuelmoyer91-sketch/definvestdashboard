@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}{{ investor.name }} - Defense Capital Tracker{% endblock %}
+
+{% block content %}
+<style>
+.deal-table th {
+    padding: 10px 14px;
+    font-size: 11px;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: #f9f9f9;
+    border-bottom: 2px solid #e8e8e8;
+    text-align: left;
+}
+.deal-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 14px;
+    vertical-align: middle;
+}
+.deal-table tr:hover td { background: #f5f8ff; }
+.deal-table tr:last-child td { border-bottom: none; }
+.deal-link {
+    color: #1a1a2e;
+    text-decoration: none;
+    font-weight: 500;
+}
+.deal-link:hover { color: #5e81ac; text-decoration: underline; }
+.badge-lead { background: #a3be8c; color: white; }
+.badge-participant { background: #d8dee9; color: #555; }
+</style>
+
+<div style="margin-bottom: 20px;">
+    <a href="/investors" style="color: #5e81ac; text-decoration: none; font-size: 13px;">
+        ← All Investors
+    </a>
+</div>
+
+<div class="card" style="margin-bottom: 20px;">
+    <h2 style="margin-bottom: 12px;">{{ investor.name }}</h2>
+    <div style="display: flex; gap: 32px; flex-wrap: wrap;">
+        <div>
+            <div style="font-size: 28px; font-weight: 700; color: #5e81ac;">{{ investor.deal_count }}</div>
+            <div style="font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 0.05em;">Total Deals</div>
+        </div>
+        <div>
+            <div style="font-size: 28px; font-weight: 700; color: #a3be8c;">
+                {{ deals | selectattr('is_lead') | list | length }}
+            </div>
+            <div style="font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 0.05em;">As Lead</div>
+        </div>
+        <div>
+            <div style="font-size: 16px; font-weight: 600; color: #555; padding-top: 4px;">
+                {{ investor.first_seen.strftime('%b %Y') if investor.first_seen else '—' }}
+            </div>
+            <div style="font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 0.05em;">First Seen</div>
+        </div>
+    </div>
+</div>
+
+{% if deals | length == 0 %}
+<div class="card">
+    <p style="text-align: center; color: #666;">No deals linked to this investor.</p>
+</div>
+{% else %}
+<div class="card" style="padding-bottom: 4px;">
+    <table class="deal-table" style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Company / Title</th>
+                <th style="text-align: right;">Amount</th>
+                <th style="text-align: center;">Role</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for d in deals %}
+            {% set master = d.master %}
+            {% set raw = d.raw %}
+            <tr>
+                <td style="color: #888; white-space: nowrap;">
+                    {{ master.curated_at.strftime('%Y-%m-%d') if master.curated_at else '—' }}
+                </td>
+                <td>
+                    {% if master.title or (raw and raw.title) %}
+                    <a class="deal-link" href="/item/{{ master.item_id }}">
+                        {{ master.title or raw.title }}
+                    </a>
+                    {% if master.company %}
+                    <div style="font-size: 12px; color: #888; margin-top: 2px;">{{ master.company }}</div>
+                    {% endif %}
+                    {% else %}
+                    <a class="deal-link" href="/item/{{ master.item_id }}">
+                        Deal #{{ master.id }}{% if master.company %} — {{ master.company }}{% endif %}
+                    </a>
+                    {% endif %}
+                </td>
+                <td style="text-align: right; white-space: nowrap; color: #555;">
+                    {{ master.investment_amount or '—' }}
+                </td>
+                <td style="text-align: center;">
+                    {% if d.is_lead %}
+                    <span class="badge badge-lead">Lead</span>
+                    {% else %}
+                    <span class="badge badge-participant">Participant</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+{% endblock %}
