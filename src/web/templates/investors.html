@@ -86,7 +86,6 @@
             <tr>
                 <th>Investor</th>
                 <th style="text-align: center;">Deals</th>
-                <th style="text-align: center;">As Lead</th>
                 <th></th>
             </tr>
         </thead>
@@ -98,14 +97,6 @@
                 </td>
                 <td style="text-align: center;">
                     <span class="badge badge-info">{{ inv.deal_count }}</span>
-                </td>
-                <td style="text-align: center;">
-                    {% set leads = lead_counts.get(inv.id, 0) %}
-                    {% if leads > 0 %}
-                        <span class="badge badge-success">{{ leads }}</span>
-                    {% else %}
-                        <span style="color: #ccc;">—</span>
-                    {% endif %}
                 </td>
                 <td style="text-align: right;">
                     <form method="post" action="/investors/{{ inv.id }}/delete"

@@ -734,8 +734,6 @@ async def save_edit(
 @app.get("/investors", response_class=HTMLResponse)
 async def investors_list(request: Request):
     """View all investors sorted by deal count."""
-    from sqlalchemy import func
-
     sync_turso()
     session = get_session()
 
@@ -744,15 +742,6 @@ async def investors_list(request: Request):
             Investor.deal_count.desc(),
             Investor.name.asc()
         ).all()
-
-        # Lead counts: {investor_id: count_as_lead}
-        lead_rows = session.query(
-            DealInvestor.investor_id,
-            func.count(DealInvestor.id)
-        ).filter(
-            DealInvestor.is_lead == True
-        ).group_by(DealInvestor.investor_id).all()
-        lead_counts = {inv_id: cnt for inv_id, cnt in lead_rows}
 
         total_investors = len(investors)
         total_with_investors = session.query(MasterItem).filter(
@@ -763,7 +752,6 @@ async def investors_list(request: Request):
         return templates.TemplateResponse("investors.html", {
             "request": request,
             "investors": investors,
-            "lead_counts": lead_counts,
             "total_investors": total_investors,
             "total_with_investors": total_with_investors,
         })
