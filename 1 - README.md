@@ -22,15 +22,14 @@ Both workflows can also be triggered manually: `gh workflow run ingest.yml` or `
 
 ## Overview
 
-The dashboard provides visibility into the defense industrial base and capital markets through four lenses:
+The dashboard provides visibility into the defense industrial base and capital markets through two lenses:
 
 **Deal Tracker** — Curated private capital investments (VC, PE, M&A, contracts) in defense companies, with AI-assisted triage and human-curated summaries. Includes an investor analytics view with searchable list and per-investor drill-down showing deal history.
 
-**Defense Investment Trends** — Capital flows including defense capital goods orders, VC/M&A activity, and market sentiment (ITA ETF).
-
-**Defense Industrial Health** — Production capacity metrics: aircraft orders, defense equipment output, federal spending, manufacturing construction.
-
-**US Industrial Health** — Broader economic context: industrial production, business investment, lending standards, interest rates.
+**Business Environment Indicators** — 17 indicators on a single page, organized into three sections:
+- *Capital Flows* — defense capital goods orders, VC/M&A activity, public company capex & R&D, market sentiment (ITA ETF)
+- *Industrial Capacity* — aircraft orders & parts, defense equipment production, federal defense spending, manufacturing construction
+- *Macro Environment* — industrial production, business investment, lending standards, ETFs (XLI, PLD), Treasury yields
 
 ---
 
@@ -48,7 +47,7 @@ The dashboard provides visibility into the defense industrial base and capital m
 - New articles flow in automatically every morning
 - You triage deals from any device via the Railway app
 - Accepted deals and fresh economic data publish automatically every evening
-- The public site regenerates chart pages and deal cards from templates on each publish
+- The public site regenerates the indicators page and deal cards from templates on each publish
 
 ---
 
@@ -83,7 +82,7 @@ This product uses the FRED API but is not endorsed or certified by the Federal R
 PC Dashboard/
 ├── github_site/              # Published website (deployed to Cloudflare Pages)
 │   ├── index.html            # Homepage with hero banner
-│   ├── charts/               # 16 chart pages + 3 category overview pages
+│   ├── charts/               # indicators.html (single page, 17 charts)
 │   ├── deals/                # Deal tracker (intelligence briefing style)
 │   ├── data/                 # JSON datasets (FRED, finance, custom)
 │   ├── css/style.css         # Global styles
