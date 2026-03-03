@@ -9,7 +9,7 @@ from pathlib import Path
 # Navigation categories with key insights
 CATEGORIES = {
     'defense-investment': {
-        'title': 'Defense Investment Trends',
+        'title': 'Capital Flows',
         'description': 'Tracking capital flows and investment activity in the defense sector',
         'charts': ['dgorder', 'public_defense_companies', 'vc_defense', 'ma_defense'],
         'insights': [
@@ -19,7 +19,7 @@ CATEGORIES = {
         ]
     },
     'defense-industrial': {
-        'title': 'Defense Industrial Health',
+        'title': 'Industrial Capacity',
         'description': 'Measuring the production capacity and health of the defense industrial base',
         'charts': ['adefno', 'adapno', 'ipb52300s', 'fdefx', 'prmfgcons', 'ita'],
         'insights': [
@@ -30,7 +30,7 @@ CATEGORIES = {
         ]
     },
     'us-industrial': {
-        'title': 'Overall US Industrial Health',
+        'title': 'Macro Environment',
         'description': 'Broader economic indicators affecting defense manufacturing capabilities',
         'charts': ['indpro', 'pnfi', 'gpdi', 'drtscilm', 'xli', 'pld', 'dgs10'],
         'insights': [
@@ -357,18 +357,14 @@ CHARTS = {
     }
 }
 
-def generate_navigation(current_category=None):
-    """Generate navigation HTML with category dropdowns"""
-
+def generate_navigation(active_page=None):
+    """Generate navigation HTML"""
+    active_attr = ' class="active"' if active_page == 'indicators' else ''
     nav_items = [
         '<li><a href="../index.html">Home</a></li>',
-        '<li><a href="../deals/index.html">Deal Tracker</a></li>'
+        '<li><a href="../deals/index.html">Deal Tracker</a></li>',
+        f'<li><a href="../charts/indicators.html"{active_attr}>Indicators</a></li>',
     ]
-
-    for cat_id, cat_info in CATEGORIES.items():
-        active = 'class="active"' if cat_id == current_category else ''
-        nav_items.append(f'<li><a href="../charts/{cat_id}.html" {active}>{cat_info["title"]}</a></li>')
-
     return '\n                '.join(nav_items)
 
 def get_source_url(chart_id):
@@ -396,398 +392,139 @@ def get_source_url(chart_id):
         return None
 
 
-def generate_chart_page(chart_id, chart_info):
-    """Generate HTML page for a single chart"""
-
-    category = chart_info['category']
-    nav_html = generate_navigation(category)
-
-    # Determine if this is market data
-    is_market = chart_id in ['ita', 'xli', 'pld', 'dgs10']
-    is_yahoo = chart_id in ['ita', 'xli', 'pld']
-    is_custom = chart_id in ['vc_defense', 'ma_defense', 'public_defense_companies']
-    data_file = f'../data/{chart_id.lower()}.json'
-
-    # Get source URL
-    source_url = get_source_url(chart_id)
-
-    # Determine source name
-    if chart_id in ['vc_defense', 'ma_defense', 'public_defense_companies']:
-        source_name = 'Custom Research'
-        source_link = source_name  # No link for custom data
-    elif is_yahoo:
-        source_name = 'Yahoo Finance'
-        source_link = f'<a href="{source_url}" target="_blank" rel="noopener" style="color: rgba(255,255,255,0.9); text-decoration: underline;">{source_name}</a>' if source_url else source_name
+def get_source_name(chart_id):
+    """Get the display source name for a chart"""
+    fred_series = ['dgorder', 'fdefx', 'adefno', 'adapno', 'ipb52300s', 'prmfgcons',
+                   'indpro', 'pnfi', 'gpdi', 'drtscilm', 'dgs10']
+    yahoo_tickers = ['ita', 'xli', 'pld']
+    if chart_id in fred_series:
+        return 'Federal Reserve Economic Data (FRED)'
+    elif chart_id in yahoo_tickers:
+        return 'Yahoo Finance'
     else:
-        source_name = 'Federal Reserve Economic Data (FRED)'
-        source_link = f'<a href="{source_url}" target="_blank" rel="noopener" style="color: rgba(255,255,255,0.9); text-decoration: underline;">{source_name}</a>' if source_url else source_name
+        return 'Custom Research'
 
-    # Find related charts in the same category
-    related_charts = [cid for cid, cinfo in CHARTS.items()
-                     if cinfo['category'] == category and cid != chart_id][:3]
 
-    related_links = '\n                '.join([
-        f'<a href="{get_chart_filename(cid)}" class="btn btn-secondary">{CHARTS[cid]["title"]}</a>'
-        for cid in related_charts
-    ])
+def generate_indicators_page():
+    """Generate the merged Defense Business Environment Indicators page"""
 
-    if not related_links:
-        related_links = f'<a href="{category}.html" class="btn btn-secondary">Back to {CATEGORIES[category]["title"]}</a>'
+    nav_html = generate_navigation("indicators")
 
-    html = f"""<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{chart_info['title']} - Defense Capital Dashboard</title>
-    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
-    <link rel="stylesheet" href="../css/style.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-</head>
-<body>
-    <nav>
-        <div class="container">
-            <a href="../index.html" class="logo" style="display: flex; align-items: center; gap: 10px;">
-                <svg width="24" height="24" viewBox="0 0 64 64" fill="none">
-                    <rect x="4" y="4" width="16" height="16" rx="2" stroke="white" stroke-width="1.5" opacity="0.15"/>
-                    <rect x="24" y="4" width="16" height="16" rx="2" stroke="white" stroke-width="1.5" opacity="0.15"/>
-                    <rect x="44" y="4" width="16" height="16" rx="2" stroke="white" stroke-width="1.5" opacity="0.25"/>
-                    <rect x="4" y="24" width="16" height="16" rx="2" stroke="white" stroke-width="1.5" opacity="0.15"/>
-                    <rect x="24" y="24" width="16" height="16" rx="2" stroke="white" stroke-width="1.5" opacity="0.35"/>
-                    <rect x="44" y="24" width="16" height="16" rx="2" fill="white" opacity="0.55"/>
-                    <rect x="4" y="44" width="16" height="16" rx="2" stroke="white" stroke-width="1.5" opacity="0.25"/>
-                    <rect x="24" y="44" width="16" height="16" rx="2" fill="white" opacity="0.55"/>
-                    <rect x="44" y="44" width="16" height="16" rx="2" fill="white"/>
-                </svg>
-                Defense Capital Dashboard
-            </a>
-            <button class="mobile-menu-toggle">☰</button>
-            <ul>
-                {nav_html}
-            </ul>
-        </div>
-    </nav>
-
-    <div class="container">
-        <div class="page-header">
-            <h1>{chart_info['title']}</h1>
-            <p>{chart_info['subtitle']}</p>
-            <p style="margin-top: 0.5rem; font-size: 0.9rem;">
-                Source: {source_link}
-            </p>
-            <p class="last-updated" id="lastUpdated"></p>
-        </div>
-
-        <div class="card">
-            <div class="chart-container" style="height: 500px;">
-                <canvas id="mainChart"></canvas>
-            </div>
-        </div>
-
-        <!-- Data Summary Stats -->
-        <div class="data-summary" id="dataSummary" style="display: none;">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
-                <h2 style="margin: 0;">Key Statistics</h2>
-                {'<button class="btn btn-download" id="downloadBtn">Download CSV</button>' if not is_yahoo else ''}
-            </div>
-            <div class="summary-grid">
-                <div class="summary-item">
-                    <div class="summary-label">Latest Value</div>
-                    <div class="summary-value" id="latestValue">--</div>
-                    <div class="summary-change" id="latestDate">--</div>
-                </div>
-                <div class="summary-item">
-                    <div class="summary-label">Period Change</div>
-                    <div class="summary-value" id="monthChange">--</div>
-                    <div class="summary-change" id="monthChangePercent">--</div>
-                </div>
-                <div class="summary-item">
-                    <div class="summary-label">Year-over-Year</div>
-                    <div class="summary-value" id="yearChange">--</div>
-                    <div class="summary-change" id="yearChangePercent">--</div>
-                </div>
-                <div class="summary-item">
-                    <div class="summary-label">Trend</div>
-                    <div class="summary-value"><span id="trendIndicator" class="trend-indicator">→</span></div>
-                    <div class="summary-change">Recent direction</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="card">
-            <h2>About This Metric</h2>
-            <p>{chart_info['description']}</p>
-            <p>{chart_info['context']}</p>
-            <p style="margin-top: 1rem; font-size: 0.9rem;">Units: {chart_info['units']}</p>
-        </div>
-
-        <div class="card">
-            <h2>Related Charts</h2>
-            <div class="grid grid-3">
-                {related_links}
-            </div>
-        </div>
-    </div>
-
-    <footer>
-        <p><strong>Defense Capital Dashboard</strong></p>
-        <p>Data source: {'Yahoo Finance (delayed, informational purposes only)' if is_yahoo else 'Custom Research' if is_custom else 'Federal Reserve Economic Data (FRED)'}</p>
-        <p style="font-size: 0.75rem; opacity: 0.7; margin-top: 0.5rem;">This product uses the FRED&reg; API but is not endorsed or certified by the Federal Reserve Bank of St. Louis.</p>
-        <p>Created by Sam Moyer | <a href="https://github.com/samuelmoyer91-sketch">GitHub</a></p>
-    </footer>
-
-    <script src="../js/main.js"></script>
-    <script>
-        let chartData = null;
-
-        document.addEventListener('DOMContentLoaded', async function() {{
-            try {{
-                // Load data
-                const response = await fetch('{data_file}');
-                chartData = await response.json();
-
-                // Calculate and display stats
-                const stats = ChartUtils.calculateStats(chartData.data);
-                if (stats) {{
-                    document.getElementById('dataSummary').style.display = 'block';
-                    document.getElementById('latestValue').textContent = ChartUtils.formatNumber(stats.latest.toFixed(2));
-                    document.getElementById('latestDate').textContent = stats.latestDate;
-
-                    if (stats.monthChange !== null) {{
-                        const monthChangeElem = document.getElementById('monthChange');
-                        const monthChangePercentElem = document.getElementById('monthChangePercent');
-                        monthChangeElem.textContent = (stats.monthChange >= 0 ? '+' : '') + ChartUtils.formatNumber(stats.monthChange.toFixed(2));
-                        monthChangePercentElem.textContent = (stats.monthChangePercent >= 0 ? '+' : '') + stats.monthChangePercent.toFixed(2) + '%';
-                        monthChangePercentElem.className = 'summary-change ' + (stats.monthChangePercent > 0 ? 'positive' : stats.monthChangePercent < 0 ? 'negative' : 'neutral');
-                    }}
-
-                    const yearChangeElem = document.getElementById('yearChange');
-                    const yearChangePercentElem = document.getElementById('yearChangePercent');
-                    yearChangeElem.textContent = (stats.yearChange >= 0 ? '+' : '') + ChartUtils.formatNumber(stats.yearChange.toFixed(2));
-                    yearChangePercentElem.textContent = (stats.yearChangePercent >= 0 ? '+' : '') + stats.yearChangePercent.toFixed(2) + '%';
-                    yearChangePercentElem.className = 'summary-change ' + (stats.yearChangePercent > 0 ? 'positive' : stats.yearChangePercent < 0 ? 'negative' : 'neutral');
-
-                    document.getElementById('trendIndicator').textContent = stats.trend;
-                }}
-
-                // Display last updated
-                if (chartData.last_updated) {{
-                    document.getElementById('lastUpdated').textContent = 'Last updated: ' + chartData.last_updated;
-                }}
-
-                // Filter data to 2019-present for consistent visualization
-                // Exception: Annual investment charts (VC, M&A, PDC) show all available data
-                const limitedDataCharts = ['public_defense_companies', 'vc_defense', 'ma_defense'];
-                let displayData = chartData;
-
-                if (!limitedDataCharts.includes('{chart_id}')) {{
-                    const filteredData = chartData.data.filter(d => new Date(d.date) >= new Date('{DEFAULT_START_DATE}'));
-                    if (filteredData.length > 0) {{
-                        displayData = {{
-                            ...chartData,
-                            data: filteredData
-                        }};
-                    }}
-                }}
-
-                // Create year labels from the filtered data
-                const yearLabels = displayData.data.map(d => {{
-                    const date = new Date(d.date);
-                    const year = date.getFullYear();
-                    return `${{year}}`;
-                }});
-
-                // Modify displayData to include year labels
-                displayData = {{
-                    ...displayData,
-                    yearLabels: yearLabels
-                }};
-
-                // Render chart with year labels and gridlines
-                const chartOptions = {{
-                    fill: true,
-                    scales: {{
-                        x: {{
-                            grid: {{
-                                display: true,
-                                color: '#e0e0e0'
-                            }},
-                            ticks: {{
-                                autoSkip: true,
-                                maxRotation: 45,
-                                minRotation: 45,
-                                maxTicksLimit: 20
-                            }}
-                        }},
-                        y: {{
-                            // Start at zero for investment/dollar amount charts
-                            beginAtZero: ['public_defense_companies', 'vc_defense', 'ma_defense', 'dgorder', 'fdefx', 'pnfi', 'gpdi', 'prmfgcons', 'adefno', 'adapno'].includes('{chart_id}'),
-                            ticks: {{
-                                callback: function(value) {{
-                                    const formats = {str(Y_AXIS_FORMATS.get(chart_id, {'prefix': '', 'suffix': '', 'divisor': 1}))};
-                                    const displayValue = value / formats.divisor;
-                                    return formats.prefix + displayValue.toLocaleString() + formats.suffix;
-                                }}
-                            }}
-                        }}
-                    }},
-                    plugins: {{
-                        tooltip: {{
-                            callbacks: {{
-                                label: function(context) {{
-                                    return `Value: ${{context.parsed.y.toFixed(2)}}`;
-                                }}
-                            }}
-                        }}
-                    }}
-                }};
-
-                ChartUtils.createLineChart('mainChart', displayData, chartOptions);
-            }} catch (error) {{
-                console.error('Error loading chart:', error);
-            }}
-
-            // Download button handler
-            const downloadBtn = document.getElementById('downloadBtn');
-            if (downloadBtn) {{
-                downloadBtn.addEventListener('click', function() {{
-                    if (chartData) {{
-                        ChartUtils.downloadCSV(chartData, '{chart_id}.csv');
-                    }}
-                }});
-            }}
-        }});
-    </script>
-</body>
-</html>"""
-
-    return html
-
-def generate_category_page(cat_id, cat_info):
-    """Generate overview page for a category"""
-
-    nav_html = generate_navigation(cat_id)
-
-    # Get all charts in this category
-    category_charts = [(cid, CHARTS[cid]) for cid in cat_info['charts'] if cid in CHARTS]
-
-    # Generate chart cards
-    chart_cards = []
-    for cid, cinfo in category_charts:
-        filename = get_chart_filename(cid)
-        chart_cards.append(f"""
-            <div class="card">
-                <h3><a href="{filename}">{cinfo['title']}</a></h3>
-                <p>{cinfo['subtitle']}</p>
-                <div class="chart-container" style="height: 250px;">
-                    <canvas id="chart_{cid}"></canvas>
-                </div>
-                <a href="{filename}" class="btn btn-primary" style="margin-top: 1rem;">View Details</a>
-            </div>
-        """)
-
-    chart_cards_html = '\n            '.join(chart_cards)
-
-    # Generate key insights HTML
-    insights_html = ''
-    if 'insights' in cat_info and cat_info['insights']:
-        insights_items = '\n                    '.join([f'<li>{insight}</li>' for insight in cat_info['insights']])
-        insights_html = f"""
-        <div class="key-insights">
-            <h3>Key Insights</h3>
-            <ul>
-                {insights_items}
-            </ul>
-        </div>"""
-
-    # Generate chart loading scripts with 2019+ filtering and clean year labels
+    # Build all sections
+    sections_parts = []
     chart_scripts = []
-    for cid, cinfo in category_charts:
-        # Check if this is a limited data chart (annual investment charts)
-        is_limited = cid in ['public_defense_companies', 'vc_defense', 'ma_defense']
 
-        chart_scripts.append(f"""
-            fetch('../data/{cid.lower()}.json')
-                .then(response => response.json())
-                .then(data => {{
-                    const ctx = document.getElementById('chart_{cid}');
-                    if (!ctx) return;
+    for cat_id, cat_info in CATEGORIES.items():
+        insights_html = ''
 
-                    // Filter to 2019+ for consistency (except annual investment charts)
-                    const limitedDataChart = {str(is_limited).lower()};
-                    let displayData = data.data;
+        # Chart rows for this category
+        chart_rows = []
+        for cid in cat_info['charts']:
+            if cid not in CHARTS:
+                continue
+            cinfo = CHARTS[cid]
+            source_url = get_source_url(cid)
+            source_name = get_source_name(cid)
+            source_display = f'<a href="{source_url}" target="_blank" rel="noopener noreferrer">{source_name}</a>' if source_url else source_name
+            desc = cinfo['description'].strip()
+            chart_rows.append(f"""        <div class="indicators-row">
+            <div class="indicators-chart-col is-loading">
+                <div class="chart-loading">Loading…</div>
+                <div class="chart-error">Data unavailable</div>
+                <canvas id="chart_{cid}"></canvas>
+            </div>
+            <div class="indicators-desc-col">
+                <h3>{cinfo['title']}</h3>
+                <p class="indicators-subtitle">{cinfo['subtitle']}</p>
+                <p>{desc}</p>
+                <p class="indicators-source">Source: {source_display}</p>
+            </div>
+        </div>""")
 
-                    if (!limitedDataChart) {{
-                        displayData = data.data.filter(d => new Date(d.date) >= new Date('{DEFAULT_START_DATE}'));
-                    }}
-
-                    // Create year labels
-                    const yearLabels = displayData.map(d => {{
-                        const date = new Date(d.date);
-                        const year = date.getFullYear();
-                        return `${{year}}`;
-                    }});
-
-                    new Chart(ctx, {{
-                        type: 'line',
-                        data: {{
-                            labels: yearLabels,
-                            datasets: [{{
-                                label: data.name,
-                                data: displayData.map(d => d.value || d.close),
-                                borderColor: '#1e456e',
-                                backgroundColor: 'rgba(93, 120, 144, 0.12)',
-                                borderWidth: 2,
-                                fill: true,
-                                tension: 0.1,
-                                pointRadius: 0
-                            }}]
-                        }},
-                        options: {{
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {{
-                                legend: {{ display: false }}
+            # Chart loading script for this chart
+            is_limited = cid in ['public_defense_companies', 'vc_defense', 'ma_defense']
+            chart_scripts.append(f"""            (function() {{
+                const col = document.getElementById('chart_{cid}')?.parentElement;
+                fetch('../data/{cid.lower()}.json')
+                    .then(response => {{
+                        if (!response.ok) throw new Error('HTTP ' + response.status);
+                        return response.json();
+                    }})
+                    .then(data => {{
+                        const ctx = document.getElementById('chart_{cid}');
+                        if (!ctx || !data || !data.data) throw new Error('Missing data');
+                        const limitedDataChart = {str(is_limited).lower()};
+                        let displayData = data.data;
+                        if (!limitedDataChart) {{
+                            displayData = data.data.filter(d => new Date(d.date) >= new Date('{DEFAULT_START_DATE}'));
+                        }}
+                        const yearLabels = displayData.map(d => {{
+                            const date = new Date(d.date);
+                            return `${{date.getFullYear()}}`;
+                        }});
+                        new Chart(ctx, {{
+                            type: 'line',
+                            data: {{
+                                labels: yearLabels,
+                                datasets: [{{
+                                    label: data.name,
+                                    data: displayData.map(d => d.value || d.close),
+                                    borderColor: '#1e456e',
+                                    backgroundColor: 'rgba(93, 120, 144, 0.12)',
+                                    borderWidth: 2,
+                                    fill: true,
+                                    tension: 0.1,
+                                    pointRadius: 0
+                                }}]
                             }},
-                            scales: {{
-                                x: {{
-                                    display: true,
-                                    grid: {{
+                            options: {{
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {{ legend: {{ display: false }} }},
+                                scales: {{
+                                    x: {{
                                         display: true,
-                                        color: '#e0e0e0'
+                                        grid: {{ display: true, color: '#e0e0e0' }},
+                                        ticks: {{ maxRotation: 45, minRotation: 45, maxTicksLimit: 12 }}
                                     }},
-                                    ticks: {{
-                                        maxRotation: 45,
-                                        minRotation: 45,
-                                        maxTicksLimit: 12
-                                    }}
-                                }},
-                                y: {{
-                                    grid: {{ color: '#e0e0e0' }},
-                                    beginAtZero: {str(cid in ['public_defense_companies', 'vc_defense', 'ma_defense', 'dgorder', 'fdefx', 'pnfi', 'gpdi', 'prmfgcons', 'adefno', 'adapno']).lower()},
-                                    ticks: {{
-                                        callback: function(value) {{
-                                            const formats = {str(Y_AXIS_FORMATS.get(cid, {'prefix': '', 'suffix': '', 'divisor': 1}))};
-                                            const displayValue = value / formats.divisor;
-                                            return formats.prefix + displayValue.toLocaleString() + formats.suffix;
+                                    y: {{
+                                        grid: {{ color: '#e0e0e0' }},
+                                        beginAtZero: {str(cid in ['public_defense_companies', 'vc_defense', 'ma_defense', 'dgorder', 'fdefx', 'pnfi', 'gpdi', 'prmfgcons', 'adefno', 'adapno']).lower()},
+                                        ticks: {{
+                                            callback: function(value) {{
+                                                const formats = {str(Y_AXIS_FORMATS.get(cid, {'prefix': '', 'suffix': '', 'divisor': 1}))};
+                                                const displayValue = value / formats.divisor;
+                                                return formats.prefix + displayValue.toLocaleString() + formats.suffix;
+                                            }}
                                         }}
                                     }}
                                 }}
                             }}
-                        }}
+                        }});
+                        if (col) col.classList.remove('is-loading');
+                    }})
+                    .catch(err => {{
+                        console.error('Could not load {cid}:', err);
+                        if (col) {{ col.classList.remove('is-loading'); col.classList.add('is-error'); }}
                     }});
-                }})
-                .catch(err => console.log('Could not load {cid}:', err));
-        """)
+            }})();""")
 
-    chart_scripts_html = '\n            '.join(chart_scripts)
+        chart_rows_html = '\n'.join(chart_rows)
+        sections_parts.append(f"""    <div class="indicators-section">
+        <h2 class="indicators-section-header">{cat_info['title']}</h2>
+{insights_html}
+{chart_rows_html}
+    </div>""")
+
+    sections_html = '\n\n'.join(sections_parts)
+    chart_scripts_html = '\n'.join(chart_scripts)
 
     html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{cat_info['title']} - Defense Capital Dashboard</title>
+    <title>Defense Business Environment Indicators - Defense Capital Dashboard</title>
     <link rel="icon" type="image/svg+xml" href="../favicon.svg">
     <link rel="stylesheet" href="../css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -796,7 +533,7 @@ def generate_category_page(cat_id, cat_info):
     <nav>
         <div class="container">
             <a href="../index.html" class="logo" style="display: flex; align-items: center; gap: 10px;">
-                <svg width="24" height="24" viewBox="0 0 64 64" fill="none">
+                <svg width="24" height="24" viewBox="0 0 64 64" fill="none" aria-hidden="true">
                     <rect x="4" y="4" width="16" height="16" rx="2" stroke="white" stroke-width="1.5" opacity="0.15"/>
                     <rect x="24" y="4" width="16" height="16" rx="2" stroke="white" stroke-width="1.5" opacity="0.15"/>
                     <rect x="44" y="4" width="16" height="16" rx="2" stroke="white" stroke-width="1.5" opacity="0.25"/>
@@ -809,24 +546,22 @@ def generate_category_page(cat_id, cat_info):
                 </svg>
                 Defense Capital Dashboard
             </a>
-            <button class="mobile-menu-toggle">☰</button>
+            <button class="mobile-menu-toggle" aria-label="Toggle navigation">☰</button>
             <ul>
                 {nav_html}
             </ul>
         </div>
     </nav>
 
+    <div class="page-header">
+        <div class="page-header-inner">
+            <p class="page-header-title">Selected indicators for the U.S. defense business environment</p>
+            <p class="page-header-updated" id="indicatorsUpdated"></p>
+        </div>
+    </div>
+
     <div class="container">
-        <div class="page-header">
-            <h1>{cat_info['title']}</h1>
-            <p>{cat_info['description']}</p>
-        </div>
-
-        {insights_html}
-
-        <div class="grid grid-2">
-            {chart_cards_html}
-        </div>
+{sections_html}
     </div>
 
     <footer>
@@ -839,7 +574,15 @@ def generate_category_page(cat_id, cat_info):
     <script src="../js/main.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async function() {{
-            {chart_scripts_html}
+            fetch('../data/dgorder.json')
+                .then(r => r.json())
+                .then(d => {{
+                    if (d.last_updated) {{
+                        document.getElementById('indicatorsUpdated').textContent = 'Data as of ' + d.last_updated;
+                    }}
+                }})
+                .catch(() => {{}});
+{chart_scripts_html}
         }});
     </script>
 </body>
@@ -847,28 +590,7 @@ def generate_category_page(cat_id, cat_info):
 
     return html
 
-def get_chart_filename(chart_id):
-    """Get the HTML filename for a chart"""
-    filename_map = {
-        'fdefx': 'defense-spending.html',
-        'drtscilm': 'lending-standards.html',
-        'dgorder': 'defense-goods-orders.html',
-        'indpro': 'industrial-production.html',
-        'pnfi': 'investment-trends.html',
-        'adefno': 'aircraft-orders.html',
-        'adapno': 'aircraft-parts-orders.html',
-        'gpdi': 'gdp-investment.html',
-        'prmfgcons': 'manufacturing-construction.html',
-        'ipb52300s': 'manufacturing-production.html',
-        'ita': 'ita.html',
-        'xli': 'xli.html',
-        'pld': 'pld.html',
-        'dgs10': 'dgs10.html',
-        'public_defense_companies': 'public-defense-companies.html',
-        'vc_defense': 'vc-investment.html',
-        'ma_defense': 'ma-activity.html'
-    }
-    return filename_map.get(chart_id, f'{chart_id}.html')
+
 
 def generate_all_pages(output_dir=None):
     """Generate all chart and category pages"""
@@ -881,24 +603,12 @@ def generate_all_pages(output_dir=None):
 
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    # Generate individual chart pages
-    for chart_id, chart_info in CHARTS.items():
-        html = generate_chart_page(chart_id, chart_info)
-        filename = get_chart_filename(chart_id)
-        output_file = output_dir / filename
-        with open(output_file, 'w', encoding='utf-8') as f:
-            f.write(html)
-        print(f"✓ Generated {filename}")
-
-    # Generate category overview pages
-    for cat_id, cat_info in CATEGORIES.items():
-        html = generate_category_page(cat_id, cat_info)
-        output_file = output_dir / f'{cat_id}.html'
-        with open(output_file, 'w', encoding='utf-8') as f:
-            f.write(html)
-        print(f"✓ Generated {cat_id}.html (category page)")
-
-    print(f"\n✓ Generated {len(CHARTS)} chart pages + {len(CATEGORIES)} category pages")
+    # Generate indicators page
+    html = generate_indicators_page()
+    output_file = output_dir / 'indicators.html'
+    with open(output_file, 'w', encoding='utf-8') as f:
+        f.write(html)
+    print("✓ Generated indicators.html")
 
 if __name__ == '__main__':
     generate_all_pages()

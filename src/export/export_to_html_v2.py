@@ -163,7 +163,7 @@ def generate_html_page(deals, deals_per_page=10):
     <nav>
         <div class="container">
             <a href="../index.html" class="logo" style="display: flex; align-items: center; gap: 10px;">
-                <svg width="24" height="24" viewBox="0 0 64 64" fill="none">
+                <svg width="24" height="24" viewBox="0 0 64 64" fill="none" aria-hidden="true">
                     <rect x="4" y="4" width="16" height="16" rx="2" stroke="white" stroke-width="1.5" opacity="0.15"/>
                     <rect x="24" y="4" width="16" height="16" rx="2" stroke="white" stroke-width="1.5" opacity="0.15"/>
                     <rect x="44" y="4" width="16" height="16" rx="2" stroke="white" stroke-width="1.5" opacity="0.25"/>
@@ -176,24 +176,23 @@ def generate_html_page(deals, deals_per_page=10):
                 </svg>
                 Defense Capital Dashboard
             </a>
-            <button class="mobile-menu-toggle">☰</button>
+            <button class="mobile-menu-toggle" aria-label="Toggle navigation">☰</button>
             <ul>
                 <li><a href="../index.html">Home</a></li>
                 <li><a href="index.html" class="active">Deal Tracker</a></li>
-                <li><a href="../charts/defense-investment.html">Defense Investment Trends</a></li>
-                <li><a href="../charts/defense-industrial.html">Defense Industrial Health</a></li>
-                <li><a href="../charts/us-industrial.html">Overall US Industrial Health</a></li>
+                <li><a href="../charts/indicators.html">Indicators</a></li>
             </ul>
         </div>
     </nav>
 
-    <div class="container">
-        <div class="page-header">
-            <h1>Defense Investment Activity</h1>
-            <p>Curated intelligence on venture capital, M&A, and funding activity in the defense sector</p>
-            <p class="last-updated">Last updated: {datetime.now().strftime('%B %d, %Y')}</p>
+    <div class="page-header">
+        <div class="page-header-inner">
+            <p class="page-header-title">Curated intelligence on venture capital, M&amp;A, and funding activity in the defense sector</p>
+            <p class="page-header-updated">Last updated: {datetime.now().strftime('%B %d, %Y')}</p>
         </div>
+    </div>
 
+    <div class="container">
         <!-- Search & Filter Controls -->
         <div class="briefing-controls">
             <input type="text" id="searchBox" placeholder="Search deals..." class="search-input">

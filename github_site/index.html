@@ -7,19 +7,16 @@
     <meta name="description" content="Tracking defense sector investments, economic indicators, and market trends">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="stylesheet" href="css/style.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
     <nav>
         <div class="container">
             <a href="index.html" class="logo" style="display: none;"></a>
-            <button class="mobile-menu-toggle">☰</button>
+            <button class="mobile-menu-toggle" aria-label="Toggle navigation">☰</button>
             <ul>
                 <li><a href="index.html" class="active">Home</a></li>
                 <li><a href="deals/index.html">Deal Tracker</a></li>
-                <li><a href="charts/defense-investment.html">Defense Investment</a></li>
-                <li><a href="charts/defense-industrial.html">Defense Industrial</a></li>
-                <li><a href="charts/us-industrial.html">US Industrial</a></li>
+                <li><a href="charts/indicators.html">Indicators</a></li>
             </ul>
         </div>
     </nav>
@@ -35,7 +32,7 @@
         "></div>
         <div class="hero-inner" style="position: relative; z-index: 2; max-width: 1400px; margin: 0 auto; display: flex; align-items: center; gap: 40px;">
             <div style="flex-shrink: 0;">
-                <svg width="80" height="80" viewBox="0 0 64 64" fill="none">
+                <svg width="80" height="80" viewBox="0 0 64 64" fill="none" aria-hidden="true">
                     <rect x="4" y="4" width="16" height="16" rx="2" stroke="#88c540" stroke-width="1.5" opacity="0.25"/>
                     <rect x="24" y="4" width="16" height="16" rx="2" stroke="#88c540" stroke-width="1.5" opacity="0.25"/>
                     <rect x="44" y="4" width="16" height="16" rx="2" stroke="#88c540" stroke-width="1.5" opacity="0.35"/>
@@ -49,7 +46,7 @@
             </div>
             <div>
                 <h1 style="color: white; font-size: 34px; font-weight: 700; margin: 0 0 10px 0; letter-spacing: -0.5px;">Defense Capital Dashboard</h1>
-                <p style="color: rgba(255,255,255,0.7); font-size: 16px; margin: 0; max-width: 600px; line-height: 1.5;">Comprehensive tracking of defense sector investments, industrial health, and economic indicators</p>
+                <p style="color: rgba(255,255,255,0.7); font-size: 16px; margin: 0; max-width: 600px; line-height: 1.5;">A real-time view of capital flows and industrial capacity across the U.S. defense sector</p>
             </div>
         </div>
     </div>
@@ -58,7 +55,7 @@
 
         <div class="grid grid-2">
             <div class="card">
-                <h2>💰 Deal Tracker</h2>
+                <h2>Deal Tracker</h2>
                 <p>Monitor private capital investments in the defense sector:</p>
                 <ul style="margin: 1rem 0; padding-left: 1.5rem;">
                     <li>Venture capital deals</li>
@@ -70,89 +67,38 @@
             </div>
 
             <div class="card">
-                <h2>📈 Defense Investment Trends</h2>
-                <p>Track capital flows into the defense sector:</p>
+                <h2>Business Environment Indicators</h2>
+                <p>17 indicators tracking the defense business environment:</p>
                 <ul style="margin: 1rem 0; padding-left: 1.5rem;">
-                    <li>Defense capital goods orders</li>
-                    <li>Investment activity indicators</li>
-                    <li>Investor sentiment (ITA ETF)</li>
+                    <li>Capital flows — defense orders, VC, M&A, public company investment</li>
+                    <li>Industrial base — aircraft production, equipment output, defense spending</li>
+                    <li>Macro context — industrial production, lending standards, Treasury yields</li>
                 </ul>
-                <a href="charts/defense-investment.html" class="btn btn-primary">View Trends</a>
-            </div>
-
-            <div class="card">
-                <h2>🏭 Defense Industrial Health</h2>
-                <p>Measure the production capacity of the defense industrial base:</p>
-                <ul style="margin: 1rem 0; padding-left: 1.5rem;">
-                    <li>Aircraft orders & production</li>
-                    <li>Defense equipment output</li>
-                    <li>Federal defense spending</li>
-                    <li>Manufacturing construction</li>
-                </ul>
-                <a href="charts/defense-industrial.html" class="btn btn-primary">View Health</a>
-            </div>
-
-            <div class="card">
-                <h2>🇺🇸 Overall US Industrial Health</h2>
-                <p>Broader economic indicators affecting defense manufacturing:</p>
-                <ul style="margin: 1rem 0; padding-left: 1.5rem;">
-                    <li>Industrial production index</li>
-                    <li>Business investment trends</li>
-                    <li>Lending standards</li>
-                    <li>Market indicators</li>
-                </ul>
-                <a href="charts/us-industrial.html" class="btn btn-primary">View Economy</a>
+                <a href="charts/indicators.html" class="btn btn-primary">View Indicators</a>
             </div>
         </div>
 
         <div class="card">
-            <h2>Featured Charts</h2>
-            <div class="grid grid-2">
-                <div class="chart-card">
-                    <h3>Defense Capital Goods Orders</h3>
-                    <p class="chart-description">New orders for military equipment and technology</p>
-                    <div class="chart-container">
-                        <canvas id="defenseOrdersChart"></canvas>
-                    </div>
-                </div>
-
-                <div class="chart-card">
-                    <h3>Defense Equipment Production</h3>
-                    <p class="chart-description">Output of U.S. defense and space equipment manufacturers</p>
-                    <div class="chart-container">
-                        <canvas id="defenseProductionChart"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="card">
-            <h2>About This Dashboard</h2>
-            <p>
-                This dashboard provides a comprehensive view of the defense capital landscape through four lenses:
-            </p>
+            <h2>About This Project</h2>
+            <p>A personal research tool tracking the business environment for the U.S. defense sector. Built to surface data that is publicly available but rarely aggregated in one place.</p>
             <div class="grid grid-2" style="margin: 1.5rem 0;">
                 <div>
-                    <h3 style="color: var(--primary-blue); font-size: 1.125rem;">Deal Tracker</h3>
-                    <p>Curated micro-level tracking of private capital investments in defense companies and projects from venture capital, private equity, and corporate sources.</p>
+                    <h3 style="color: var(--primary-blue); font-size: 1.125rem;">Sources</h3>
+                    <p>Federal Reserve Economic Data (FRED), Yahoo Finance, U.S. Census Bureau, and curated news intelligence from defense-sector publications.</p>
                 </div>
                 <div>
-                    <h3 style="color: var(--primary-blue); font-size: 1.125rem;">Defense Investment Trends</h3>
-                    <p>Capital flows and new orders showing where money is moving in the defense sector and what the market expects.</p>
+                    <h3 style="color: var(--primary-blue); font-size: 1.125rem;">Coverage &amp; Updates</h3>
+                    <p>Indicators cover 2019–present (monthly unless otherwise noted). Deal tracker and indicator data refresh automatically on a daily basis.</p>
                 </div>
                 <div>
-                    <h3 style="color: var(--primary-blue); font-size: 1.125rem;">Defense Industrial Health</h3>
-                    <p>Production capacity, output, and procurement activity measuring the health and capability of the defense industrial base.</p>
+                    <h3 style="color: var(--primary-blue); font-size: 1.125rem;">Scope</h3>
+                    <p>U.S. defense sector. Excludes classified programs, foreign defense markets, and government-to-government transfers.</p>
                 </div>
                 <div>
-                    <h3 style="color: var(--primary-blue); font-size: 1.125rem;">US Industrial Health</h3>
-                    <p>Broader economic conditions including industrial production, business investment, credit availability, and market sentiment affecting defense manufacturing.</p>
+                    <h3 style="color: var(--primary-blue); font-size: 1.125rem;">Methodology</h3>
+                    <p>Investment data is custom-compiled from public filings and reports. Macro indicators are sourced directly from official statistical releases with no adjustments.</p>
                 </div>
             </div>
-            <p>
-                Data is updated regularly from public sources including Federal Reserve Economic Data (FRED),
-                financial market APIs, and curated news alerts.
-            </p>
         </div>
     </div>
 
@@ -164,31 +110,5 @@
     </footer>
 
     <script src="js/main.js"></script>
-    <script>
-        // Load preview charts on homepage
-        document.addEventListener('DOMContentLoaded', async function() {
-            // Defense Capital Goods Orders
-            try {
-                await ChartUtils.loadAndRenderChart(
-                    'data/dgorder.json',
-                    'defenseOrdersChart',
-                    { fill: true }
-                );
-            } catch (error) {
-                console.log('Defense orders chart not available yet');
-            }
-
-            // Defense Equipment Production
-            try {
-                await ChartUtils.loadAndRenderChart(
-                    'data/ipb52300s.json',
-                    'defenseProductionChart',
-                    { fill: true }
-                );
-            } catch (error) {
-                console.log('Defense production chart not available yet');
-            }
-        });
-    </script>
 </body>
 </html>

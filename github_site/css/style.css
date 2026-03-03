@@ -175,16 +175,11 @@ nav ul li a.active {
   padding: var(--spacing-lg);
 }
 
-/* Page header */
+/* Page header — full-bleed banner, sits outside .container */
 .page-header {
   position: relative;
   background: linear-gradient(180deg, var(--primary-blue) 0%, var(--primary-blue-dark) 100%);
-  padding: var(--spacing-lg) var(--spacing-md);
-  margin: 0 calc(-1 * var(--spacing-md)) var(--spacing-lg);
-  margin-top: calc(-1 * var(--spacing-md));
-  border-radius: 0;
-  box-shadow: none;
-  border-top: none;
+  padding: var(--spacing-md) 0;
   overflow: hidden;
 }
 
@@ -200,16 +195,131 @@ nav ul li a.active {
   pointer-events: none;
 }
 
-.page-header h1 {
+.page-header-inner {
   position: relative;
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 var(--spacing-lg);
+}
+
+.page-header h1 {
   color: white;
   margin-bottom: var(--spacing-xs);
 }
 
 .page-header p {
-  position: relative;
   color: rgba(255,255,255,0.7);
   font-size: var(--font-size-lg);
+}
+
+.page-header-title {
+  font-size: 1.35rem;
+  font-weight: 500;
+  color: rgba(255,255,255,0.92);
+  line-height: 1.4;
+  margin-bottom: var(--spacing-xs);
+}
+
+.page-header-source {
+  font-size: var(--font-size-sm);
+  color: rgba(255,255,255,0.6);
+  margin-top: 0.25rem;
+}
+
+.page-header-updated {
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.5);
+  margin-top: 0.25rem;
+}
+
+/* Indicators page two-column layout */
+.indicators-section {
+  margin-bottom: var(--spacing-xl);
+}
+
+.indicators-section-header {
+  border-bottom: 2px solid var(--accent-green);
+  padding-bottom: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+  color: var(--text-primary);
+  text-align: center;
+}
+
+.indicators-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--spacing-lg);
+  align-items: start;
+  margin-bottom: var(--spacing-lg);
+}
+
+.indicators-desc-col {
+  background: var(--bg-light);
+  padding: var(--spacing-md);
+  border-radius: var(--border-radius);
+  border-left: 3px solid var(--accent-green);
+}
+
+.indicators-desc-col h3 {
+  font-size: var(--font-size-lg);
+  margin-bottom: var(--spacing-xs);
+  color: var(--text-primary);
+}
+
+.indicators-subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  font-style: italic;
+  margin-bottom: var(--spacing-sm);
+}
+
+.indicators-chart-col {
+  position: relative;
+  height: 350px;
+}
+
+.chart-loading,
+.chart-error {
+  display: none;
+  position: absolute;
+  inset: 0;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.indicators-chart-col.is-loading .chart-loading {
+  display: flex;
+}
+
+.indicators-chart-col.is-loading canvas {
+  opacity: 0;
+}
+
+.indicators-chart-col.is-error .chart-error {
+  display: flex;
+}
+
+.indicators-chart-col.is-error canvas {
+  display: none;
+}
+
+.chart-error-msg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-secondary);
+  font-style: italic;
+  font-size: var(--font-size-sm);
+}
+
+.indicators-source {
+  font-size: var(--font-size-sm);
+  color: var(--text-light);
+  margin-top: var(--spacing-sm);
 }
 
 /* Cards */
@@ -1008,6 +1118,10 @@ footer a {
 
 /* Responsive */
 @media (max-width: 768px) {
+  .indicators-row {
+    grid-template-columns: 1fr;
+  }
+
   .container {
     padding: var(--spacing-md);
   }
@@ -1037,8 +1151,8 @@ footer a {
     font-size: 14px !important;
   }
 
-  .page-header {
-    padding: var(--spacing-md);
+  .page-header-inner {
+    padding: 0 var(--spacing-md);
   }
 
   .chart-container {

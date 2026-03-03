@@ -1,0 +1,1442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Defense Business Environment Indicators - Defense Capital Dashboard</title>
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <nav>
+        <div class="container">
+            <a href="../index.html" class="logo" style="display: flex; align-items: center; gap: 10px;">
+                <svg width="24" height="24" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+                    <rect x="4" y="4" width="16" height="16" rx="2" stroke="white" stroke-width="1.5" opacity="0.15"/>
+                    <rect x="24" y="4" width="16" height="16" rx="2" stroke="white" stroke-width="1.5" opacity="0.15"/>
+                    <rect x="44" y="4" width="16" height="16" rx="2" stroke="white" stroke-width="1.5" opacity="0.25"/>
+                    <rect x="4" y="24" width="16" height="16" rx="2" stroke="white" stroke-width="1.5" opacity="0.15"/>
+                    <rect x="24" y="24" width="16" height="16" rx="2" stroke="white" stroke-width="1.5" opacity="0.35"/>
+                    <rect x="44" y="24" width="16" height="16" rx="2" fill="white" opacity="0.55"/>
+                    <rect x="4" y="44" width="16" height="16" rx="2" stroke="white" stroke-width="1.5" opacity="0.25"/>
+                    <rect x="24" y="44" width="16" height="16" rx="2" fill="white" opacity="0.55"/>
+                    <rect x="44" y="44" width="16" height="16" rx="2" fill="white"/>
+                </svg>
+                Defense Capital Dashboard
+            </a>
+            <button class="mobile-menu-toggle" aria-label="Toggle navigation">☰</button>
+            <ul>
+                <li><a href="../index.html">Home</a></li>
+                <li><a href="../deals/index.html">Deal Tracker</a></li>
+                <li><a href="../charts/indicators.html" class="active">Indicators</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="page-header">
+        <div class="page-header-inner">
+            <p class="page-header-title">Selected indicators for the U.S. defense business environment</p>
+            <p class="page-header-updated" id="indicatorsUpdated"></p>
+        </div>
+    </div>
+
+    <div class="container">
+    <div class="indicators-section">
+        <h2 class="indicators-section-header">Capital Flows</h2>
+
+        <div class="indicators-row">
+            <div class="indicators-chart-col is-loading">
+                <div class="chart-loading">Loading…</div>
+                <div class="chart-error">Data unavailable</div>
+                <canvas id="chart_dgorder"></canvas>
+            </div>
+            <div class="indicators-desc-col">
+                <h3>Defense Capital Goods Orders</h3>
+                <p class="indicators-subtitle">Manufacturers' new orders for defense capital goods</p>
+                <p>Manufacturers' New Orders: Defense Capital Goods is a data set released monthly by the US Census Bureau.
+            This data set tracks how much money US manufacturers are receiving in new orders for military equipment and technology,
+            from aircraft and missiles to small arms and communication systems. It gives us a snapshot of how active the defense
+            industry is at any given time.</p>
+                <p class="indicators-source">Source: <a href="https://fred.stlouisfed.org/series/DGORDER" target="_blank" rel="noopener noreferrer">Federal Reserve Economic Data (FRED)</a></p>
+            </div>
+        </div>
+        <div class="indicators-row">
+            <div class="indicators-chart-col is-loading">
+                <div class="chart-loading">Loading…</div>
+                <div class="chart-error">Data unavailable</div>
+                <canvas id="chart_public_defense_companies"></canvas>
+            </div>
+            <div class="indicators-desc-col">
+                <h3>Public Defense Companies - Capex & R&D</h3>
+                <p class="indicators-subtitle">Capital expenditures and R&D investment by publicly traded defense companies</p>
+                <p>Public Defense Companies - Capex & R&D tracks the annual capital expenditures and research & development
+            investment by publicly traded defense and aerospace companies. This measures how much these companies are investing in
+            facilities, equipment, and innovation to support future growth and capabilities.</p>
+                <p class="indicators-source">Source: Custom Research</p>
+            </div>
+        </div>
+        <div class="indicators-row">
+            <div class="indicators-chart-col is-loading">
+                <div class="chart-loading">Loading…</div>
+                <div class="chart-error">Data unavailable</div>
+                <canvas id="chart_vc_defense"></canvas>
+            </div>
+            <div class="indicators-desc-col">
+                <h3>Venture Capital Investment in Defense</h3>
+                <p class="indicators-subtitle">Annual VC investment in defense and dual-use companies</p>
+                <p>Venture Capital Investment in Defense tracks the volume of venture capital dollars flowing into U.S.
+            defense-focused and dual-use companies. This data is updated annually and reflects early-stage investment activity
+            in defense technology and innovation.</p>
+                <p class="indicators-source">Source: Custom Research</p>
+            </div>
+        </div>
+        <div class="indicators-row">
+            <div class="indicators-chart-col is-loading">
+                <div class="chart-loading">Loading…</div>
+                <div class="chart-error">Data unavailable</div>
+                <canvas id="chart_ma_defense"></canvas>
+            </div>
+            <div class="indicators-desc-col">
+                <h3>M&A Activity in Defense</h3>
+                <p class="indicators-subtitle">Annual merger and acquisition activity in aerospace and defense</p>
+                <p>M&A Activity in Defense tracks the dollar value of mergers and acquisitions in the U.S. aerospace and
+            defense sector. This includes private equity buyouts, strategic acquisitions by defense primes, and consolidation activity
+            across the defense industrial base.</p>
+                <p class="indicators-source">Source: Custom Research</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="indicators-section">
+        <h2 class="indicators-section-header">Industrial Capacity</h2>
+
+        <div class="indicators-row">
+            <div class="indicators-chart-col is-loading">
+                <div class="chart-loading">Loading…</div>
+                <div class="chart-error">Data unavailable</div>
+                <canvas id="chart_adefno"></canvas>
+            </div>
+            <div class="indicators-desc-col">
+                <h3>Defense Aircraft Orders</h3>
+                <p class="indicators-subtitle">Manufacturers' new orders for defense aircraft</p>
+                <p>Defense Aircraft Orders (ADEFNO) tracks new orders for complete military aircraft from manufacturers.
+            This includes fighter jets, transport aircraft, helicopters, and other defense aviation platforms. These are typically
+            large, multi-year contracts that represent major defense procurement programs.</p>
+                <p class="indicators-source">Source: <a href="https://fred.stlouisfed.org/series/ADEFNO" target="_blank" rel="noopener noreferrer">Federal Reserve Economic Data (FRED)</a></p>
+            </div>
+        </div>
+        <div class="indicators-row">
+            <div class="indicators-chart-col is-loading">
+                <div class="chart-loading">Loading…</div>
+                <div class="chart-error">Data unavailable</div>
+                <canvas id="chart_adapno"></canvas>
+            </div>
+            <div class="indicators-desc-col">
+                <h3>Defense Aircraft Parts Orders</h3>
+                <p class="indicators-subtitle">Manufacturers' new orders for defense aircraft parts and components</p>
+                <p>Defense Aircraft Parts Orders (ADAPNO) measures orders for aircraft components, subassemblies, and
+            replacement parts used in military aviation. This includes everything from engines and avionics to structural components
+            and weapons systems integration.</p>
+                <p class="indicators-source">Source: <a href="https://fred.stlouisfed.org/series/ADAPNO" target="_blank" rel="noopener noreferrer">Federal Reserve Economic Data (FRED)</a></p>
+            </div>
+        </div>
+        <div class="indicators-row">
+            <div class="indicators-chart-col is-loading">
+                <div class="chart-loading">Loading…</div>
+                <div class="chart-error">Data unavailable</div>
+                <canvas id="chart_ipb52300s"></canvas>
+            </div>
+            <div class="indicators-desc-col">
+                <h3>Industrial Production: Defense Equipment</h3>
+                <p class="indicators-subtitle">Production output of defense and space equipment</p>
+                <p>The data set "Equipment: Defense and Space Equipment" measures how much the U.S. is producing in terms
+            of military and space-related technology and machinery. Tracked monthly by the Federal Reserve, this index reflects the
+            real output of U.S.-based manufacturers that build everything from weapons systems and armored vehicles to satellites
+            and space launch components.</p>
+                <p class="indicators-source">Source: <a href="https://fred.stlouisfed.org/series/IPB52300S" target="_blank" rel="noopener noreferrer">Federal Reserve Economic Data (FRED)</a></p>
+            </div>
+        </div>
+        <div class="indicators-row">
+            <div class="indicators-chart-col is-loading">
+                <div class="chart-loading">Loading…</div>
+                <div class="chart-error">Data unavailable</div>
+                <canvas id="chart_fdefx"></canvas>
+            </div>
+            <div class="indicators-desc-col">
+                <h3>National Defense Spending</h3>
+                <p class="indicators-subtitle">Federal defense consumption expenditures and procurement</p>
+                <p>National Defense Consumption Expenditures (FDEFX) measures the total federal government spending
+            on defense goods and services. This includes military personnel, operations, procurement of weapons systems,
+            and research & development.</p>
+                <p class="indicators-source">Source: <a href="https://fred.stlouisfed.org/series/FDEFX" target="_blank" rel="noopener noreferrer">Federal Reserve Economic Data (FRED)</a></p>
+            </div>
+        </div>
+        <div class="indicators-row">
+            <div class="indicators-chart-col is-loading">
+                <div class="chart-loading">Loading…</div>
+                <div class="chart-error">Data unavailable</div>
+                <canvas id="chart_prmfgcons"></canvas>
+            </div>
+            <div class="indicators-desc-col">
+                <h3>Manufacturing Construction</h3>
+                <p class="indicators-subtitle">Construction spending in the manufacturing sector</p>
+                <p>Manufacturing Construction Spending (PRMFGCONS) tracks expenditures on new manufacturing
+            facilities, expansions, and renovations. This includes both defense-specific manufacturing facilities and
+            the broader industrial base that supports defense production.</p>
+                <p class="indicators-source">Source: <a href="https://fred.stlouisfed.org/series/PRMFGCONS" target="_blank" rel="noopener noreferrer">Federal Reserve Economic Data (FRED)</a></p>
+            </div>
+        </div>
+        <div class="indicators-row">
+            <div class="indicators-chart-col is-loading">
+                <div class="chart-loading">Loading…</div>
+                <div class="chart-error">Data unavailable</div>
+                <canvas id="chart_ita"></canvas>
+            </div>
+            <div class="indicators-desc-col">
+                <h3>Aerospace & Defense ETF (ITA)</h3>
+                <p class="indicators-subtitle">iShares U.S. Aerospace & Defense ETF investor sentiment</p>
+                <p>The iShares U.S. Aerospace & Defense ETF (ITA) tracks ETFs focused on the aerospace and defense
+            sectors, reflecting investor sentiment. It is a basket of stocks of companies in the defense industrial base.</p>
+                <p class="indicators-source">Source: <a href="https://finance.yahoo.com/quote/ITA" target="_blank" rel="noopener noreferrer">Yahoo Finance</a></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="indicators-section">
+        <h2 class="indicators-section-header">Macro Environment</h2>
+
+        <div class="indicators-row">
+            <div class="indicators-chart-col is-loading">
+                <div class="chart-loading">Loading…</div>
+                <div class="chart-error">Data unavailable</div>
+                <canvas id="chart_indpro"></canvas>
+            </div>
+            <div class="indicators-desc-col">
+                <h3>Industrial Production Index</h3>
+                <p class="indicators-subtitle">Overall U.S. industrial production output</p>
+                <p>Industrial Production Index (INDPRO) measures the real output of manufacturing, mining, and
+            electric and gas utilities industries. The index is benchmarked to 2017=100 and provides a broad measure of
+            industrial activity across the entire U.S. economy.</p>
+                <p class="indicators-source">Source: <a href="https://fred.stlouisfed.org/series/INDPRO" target="_blank" rel="noopener noreferrer">Federal Reserve Economic Data (FRED)</a></p>
+            </div>
+        </div>
+        <div class="indicators-row">
+            <div class="indicators-chart-col is-loading">
+                <div class="chart-loading">Loading…</div>
+                <div class="chart-error">Data unavailable</div>
+                <canvas id="chart_pnfi"></canvas>
+            </div>
+            <div class="indicators-desc-col">
+                <h3>Business Investment Trends</h3>
+                <p class="indicators-subtitle">Private nonresidential fixed investment in structures and equipment</p>
+                <p>Private Nonresidential Fixed Investment (PNFI) measures business investment in structures, equipment,
+            and intellectual property. This excludes residential construction and focuses on productive capital investments
+            by businesses.</p>
+                <p class="indicators-source">Source: <a href="https://fred.stlouisfed.org/series/PNFI" target="_blank" rel="noopener noreferrer">Federal Reserve Economic Data (FRED)</a></p>
+            </div>
+        </div>
+        <div class="indicators-row">
+            <div class="indicators-chart-col is-loading">
+                <div class="chart-loading">Loading…</div>
+                <div class="chart-error">Data unavailable</div>
+                <canvas id="chart_gpdi"></canvas>
+            </div>
+            <div class="indicators-desc-col">
+                <h3>GDP Investment Component</h3>
+                <p class="indicators-subtitle">Gross private domestic investment</p>
+                <p>Gross Private Domestic Investment (GPDI) measures business investment, residential
+            investment, and changes in private inventories. This is a major component of GDP
+            and represents the total investment activity in the economy.</p>
+                <p class="indicators-source">Source: <a href="https://fred.stlouisfed.org/series/GPDI" target="_blank" rel="noopener noreferrer">Federal Reserve Economic Data (FRED)</a></p>
+            </div>
+        </div>
+        <div class="indicators-row">
+            <div class="indicators-chart-col is-loading">
+                <div class="chart-loading">Loading…</div>
+                <div class="chart-error">Data unavailable</div>
+                <canvas id="chart_drtscilm"></canvas>
+            </div>
+            <div class="indicators-desc-col">
+                <h3>Bank Lending Standards</h3>
+                <p class="indicators-subtitle">Net percentage of banks tightening standards for commercial loans</p>
+                <p>Lending Standards (DRTSCILM) measures the net percentage of domestic banks reporting tightened
+            lending standards for commercial and industrial loans. Positive values indicate tightening (harder to get loans),
+            while negative values indicate loosening (easier to get loans).</p>
+                <p class="indicators-source">Source: <a href="https://fred.stlouisfed.org/series/DRTSCILM" target="_blank" rel="noopener noreferrer">Federal Reserve Economic Data (FRED)</a></p>
+            </div>
+        </div>
+        <div class="indicators-row">
+            <div class="indicators-chart-col is-loading">
+                <div class="chart-loading">Loading…</div>
+                <div class="chart-error">Data unavailable</div>
+                <canvas id="chart_xli"></canvas>
+            </div>
+            <div class="indicators-desc-col">
+                <h3>Industrial Sector ETF (XLI)</h3>
+                <p class="indicators-subtitle">Industrial Select Sector SPDR Fund performance</p>
+                <p>XLI ETF tracks the Industrial sector of the S&P 500, including aerospace, defense,
+            construction, engineering, machinery companies, and industrial conglomerates. It provides a broader view
+            of industrial sector performance beyond just defense.</p>
+                <p class="indicators-source">Source: <a href="https://finance.yahoo.com/quote/XLI" target="_blank" rel="noopener noreferrer">Yahoo Finance</a></p>
+            </div>
+        </div>
+        <div class="indicators-row">
+            <div class="indicators-chart-col is-loading">
+                <div class="chart-loading">Loading…</div>
+                <div class="chart-error">Data unavailable</div>
+                <canvas id="chart_pld"></canvas>
+            </div>
+            <div class="indicators-desc-col">
+                <h3>Prologis Inc. (PLD)</h3>
+                <p class="indicators-subtitle">Industrial real estate REIT performance</p>
+                <p>Prologis (PLD) is the world's largest owner and operator of logistics real estate, including
+            warehouses, distribution centers, and industrial facilities. Their properties support industrial and manufacturing
+            activities across supply chains.</p>
+                <p class="indicators-source">Source: <a href="https://finance.yahoo.com/quote/PLD" target="_blank" rel="noopener noreferrer">Yahoo Finance</a></p>
+            </div>
+        </div>
+        <div class="indicators-row">
+            <div class="indicators-chart-col is-loading">
+                <div class="chart-loading">Loading…</div>
+                <div class="chart-error">Data unavailable</div>
+                <canvas id="chart_dgs10"></canvas>
+            </div>
+            <div class="indicators-desc-col">
+                <h3>10-Year Treasury Yield</h3>
+                <p class="indicators-subtitle">U.S. Treasury 10-year constant maturity rate</p>
+                <p>10-Year Treasury Yield (DGS10) is the yield on U.S. Treasury securities with a
+            10-year maturity. This is a key benchmark interest rate that influences borrowing costs across the economy.</p>
+                <p class="indicators-source">Source: <a href="https://fred.stlouisfed.org/series/DGS10" target="_blank" rel="noopener noreferrer">Federal Reserve Economic Data (FRED)</a></p>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <footer>
+        <p><strong>Defense Capital Dashboard</strong></p>
+        <p>Data sources: Federal Reserve Economic Data (FRED), Yahoo Finance, Custom Research</p>
+        <p style="font-size: 0.75rem; opacity: 0.7; margin-top: 0.5rem;">This product uses the FRED&reg; API but is not endorsed or certified by the Federal Reserve Bank of St. Louis.</p>
+        <p>Created by Sam Moyer | <a href="https://github.com/samuelmoyer91-sketch">GitHub</a></p>
+    </footer>
+
+    <script src="../js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            fetch('../data/dgorder.json')
+                .then(r => r.json())
+                .then(d => {
+                    if (d.last_updated) {
+                        document.getElementById('indicatorsUpdated').textContent = 'Data as of ' + d.last_updated;
+                    }
+                })
+                .catch(() => {});
+            (function() {
+                const col = document.getElementById('chart_dgorder')?.parentElement;
+                fetch('../data/dgorder.json')
+                    .then(response => {
+                        if (!response.ok) throw new Error('HTTP ' + response.status);
+                        return response.json();
+                    })
+                    .then(data => {
+                        const ctx = document.getElementById('chart_dgorder');
+                        if (!ctx || !data || !data.data) throw new Error('Missing data');
+                        const limitedDataChart = false;
+                        let displayData = data.data;
+                        if (!limitedDataChart) {
+                            displayData = data.data.filter(d => new Date(d.date) >= new Date('2019-01-01'));
+                        }
+                        const yearLabels = displayData.map(d => {
+                            const date = new Date(d.date);
+                            return `${date.getFullYear()}`;
+                        });
+                        new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels: yearLabels,
+                                datasets: [{
+                                    label: data.name,
+                                    data: displayData.map(d => d.value || d.close),
+                                    borderColor: '#1e456e',
+                                    backgroundColor: 'rgba(93, 120, 144, 0.12)',
+                                    borderWidth: 2,
+                                    fill: true,
+                                    tension: 0.1,
+                                    pointRadius: 0
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: { legend: { display: false } },
+                                scales: {
+                                    x: {
+                                        display: true,
+                                        grid: { display: true, color: '#e0e0e0' },
+                                        ticks: { maxRotation: 45, minRotation: 45, maxTicksLimit: 12 }
+                                    },
+                                    y: {
+                                        grid: { color: '#e0e0e0' },
+                                        beginAtZero: true,
+                                        ticks: {
+                                            callback: function(value) {
+                                                const formats = {'prefix': '$', 'suffix': 'B', 'divisor': 1000};
+                                                const displayValue = value / formats.divisor;
+                                                return formats.prefix + displayValue.toLocaleString() + formats.suffix;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                        if (col) col.classList.remove('is-loading');
+                    })
+                    .catch(err => {
+                        console.error('Could not load dgorder:', err);
+                        if (col) { col.classList.remove('is-loading'); col.classList.add('is-error'); }
+                    });
+            })();
+            (function() {
+                const col = document.getElementById('chart_public_defense_companies')?.parentElement;
+                fetch('../data/public_defense_companies.json')
+                    .then(response => {
+                        if (!response.ok) throw new Error('HTTP ' + response.status);
+                        return response.json();
+                    })
+                    .then(data => {
+                        const ctx = document.getElementById('chart_public_defense_companies');
+                        if (!ctx || !data || !data.data) throw new Error('Missing data');
+                        const limitedDataChart = true;
+                        let displayData = data.data;
+                        if (!limitedDataChart) {
+                            displayData = data.data.filter(d => new Date(d.date) >= new Date('2019-01-01'));
+                        }
+                        const yearLabels = displayData.map(d => {
+                            const date = new Date(d.date);
+                            return `${date.getFullYear()}`;
+                        });
+                        new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels: yearLabels,
+                                datasets: [{
+                                    label: data.name,
+                                    data: displayData.map(d => d.value || d.close),
+                                    borderColor: '#1e456e',
+                                    backgroundColor: 'rgba(93, 120, 144, 0.12)',
+                                    borderWidth: 2,
+                                    fill: true,
+                                    tension: 0.1,
+                                    pointRadius: 0
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: { legend: { display: false } },
+                                scales: {
+                                    x: {
+                                        display: true,
+                                        grid: { display: true, color: '#e0e0e0' },
+                                        ticks: { maxRotation: 45, minRotation: 45, maxTicksLimit: 12 }
+                                    },
+                                    y: {
+                                        grid: { color: '#e0e0e0' },
+                                        beginAtZero: true,
+                                        ticks: {
+                                            callback: function(value) {
+                                                const formats = {'prefix': '$', 'suffix': 'B', 'divisor': 1};
+                                                const displayValue = value / formats.divisor;
+                                                return formats.prefix + displayValue.toLocaleString() + formats.suffix;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                        if (col) col.classList.remove('is-loading');
+                    })
+                    .catch(err => {
+                        console.error('Could not load public_defense_companies:', err);
+                        if (col) { col.classList.remove('is-loading'); col.classList.add('is-error'); }
+                    });
+            })();
+            (function() {
+                const col = document.getElementById('chart_vc_defense')?.parentElement;
+                fetch('../data/vc_defense.json')
+                    .then(response => {
+                        if (!response.ok) throw new Error('HTTP ' + response.status);
+                        return response.json();
+                    })
+                    .then(data => {
+                        const ctx = document.getElementById('chart_vc_defense');
+                        if (!ctx || !data || !data.data) throw new Error('Missing data');
+                        const limitedDataChart = true;
+                        let displayData = data.data;
+                        if (!limitedDataChart) {
+                            displayData = data.data.filter(d => new Date(d.date) >= new Date('2019-01-01'));
+                        }
+                        const yearLabels = displayData.map(d => {
+                            const date = new Date(d.date);
+                            return `${date.getFullYear()}`;
+                        });
+                        new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels: yearLabels,
+                                datasets: [{
+                                    label: data.name,
+                                    data: displayData.map(d => d.value || d.close),
+                                    borderColor: '#1e456e',
+                                    backgroundColor: 'rgba(93, 120, 144, 0.12)',
+                                    borderWidth: 2,
+                                    fill: true,
+                                    tension: 0.1,
+                                    pointRadius: 0
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: { legend: { display: false } },
+                                scales: {
+                                    x: {
+                                        display: true,
+                                        grid: { display: true, color: '#e0e0e0' },
+                                        ticks: { maxRotation: 45, minRotation: 45, maxTicksLimit: 12 }
+                                    },
+                                    y: {
+                                        grid: { color: '#e0e0e0' },
+                                        beginAtZero: true,
+                                        ticks: {
+                                            callback: function(value) {
+                                                const formats = {'prefix': '$', 'suffix': 'B', 'divisor': 1};
+                                                const displayValue = value / formats.divisor;
+                                                return formats.prefix + displayValue.toLocaleString() + formats.suffix;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                        if (col) col.classList.remove('is-loading');
+                    })
+                    .catch(err => {
+                        console.error('Could not load vc_defense:', err);
+                        if (col) { col.classList.remove('is-loading'); col.classList.add('is-error'); }
+                    });
+            })();
+            (function() {
+                const col = document.getElementById('chart_ma_defense')?.parentElement;
+                fetch('../data/ma_defense.json')
+                    .then(response => {
+                        if (!response.ok) throw new Error('HTTP ' + response.status);
+                        return response.json();
+                    })
+                    .then(data => {
+                        const ctx = document.getElementById('chart_ma_defense');
+                        if (!ctx || !data || !data.data) throw new Error('Missing data');
+                        const limitedDataChart = true;
+                        let displayData = data.data;
+                        if (!limitedDataChart) {
+                            displayData = data.data.filter(d => new Date(d.date) >= new Date('2019-01-01'));
+                        }
+                        const yearLabels = displayData.map(d => {
+                            const date = new Date(d.date);
+                            return `${date.getFullYear()}`;
+                        });
+                        new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels: yearLabels,
+                                datasets: [{
+                                    label: data.name,
+                                    data: displayData.map(d => d.value || d.close),
+                                    borderColor: '#1e456e',
+                                    backgroundColor: 'rgba(93, 120, 144, 0.12)',
+                                    borderWidth: 2,
+                                    fill: true,
+                                    tension: 0.1,
+                                    pointRadius: 0
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: { legend: { display: false } },
+                                scales: {
+                                    x: {
+                                        display: true,
+                                        grid: { display: true, color: '#e0e0e0' },
+                                        ticks: { maxRotation: 45, minRotation: 45, maxTicksLimit: 12 }
+                                    },
+                                    y: {
+                                        grid: { color: '#e0e0e0' },
+                                        beginAtZero: true,
+                                        ticks: {
+                                            callback: function(value) {
+                                                const formats = {'prefix': '$', 'suffix': 'B', 'divisor': 1};
+                                                const displayValue = value / formats.divisor;
+                                                return formats.prefix + displayValue.toLocaleString() + formats.suffix;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                        if (col) col.classList.remove('is-loading');
+                    })
+                    .catch(err => {
+                        console.error('Could not load ma_defense:', err);
+                        if (col) { col.classList.remove('is-loading'); col.classList.add('is-error'); }
+                    });
+            })();
+            (function() {
+                const col = document.getElementById('chart_adefno')?.parentElement;
+                fetch('../data/adefno.json')
+                    .then(response => {
+                        if (!response.ok) throw new Error('HTTP ' + response.status);
+                        return response.json();
+                    })
+                    .then(data => {
+                        const ctx = document.getElementById('chart_adefno');
+                        if (!ctx || !data || !data.data) throw new Error('Missing data');
+                        const limitedDataChart = false;
+                        let displayData = data.data;
+                        if (!limitedDataChart) {
+                            displayData = data.data.filter(d => new Date(d.date) >= new Date('2019-01-01'));
+                        }
+                        const yearLabels = displayData.map(d => {
+                            const date = new Date(d.date);
+                            return `${date.getFullYear()}`;
+                        });
+                        new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels: yearLabels,
+                                datasets: [{
+                                    label: data.name,
+                                    data: displayData.map(d => d.value || d.close),
+                                    borderColor: '#1e456e',
+                                    backgroundColor: 'rgba(93, 120, 144, 0.12)',
+                                    borderWidth: 2,
+                                    fill: true,
+                                    tension: 0.1,
+                                    pointRadius: 0
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: { legend: { display: false } },
+                                scales: {
+                                    x: {
+                                        display: true,
+                                        grid: { display: true, color: '#e0e0e0' },
+                                        ticks: { maxRotation: 45, minRotation: 45, maxTicksLimit: 12 }
+                                    },
+                                    y: {
+                                        grid: { color: '#e0e0e0' },
+                                        beginAtZero: true,
+                                        ticks: {
+                                            callback: function(value) {
+                                                const formats = {'prefix': '$', 'suffix': 'B', 'divisor': 1000};
+                                                const displayValue = value / formats.divisor;
+                                                return formats.prefix + displayValue.toLocaleString() + formats.suffix;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                        if (col) col.classList.remove('is-loading');
+                    })
+                    .catch(err => {
+                        console.error('Could not load adefno:', err);
+                        if (col) { col.classList.remove('is-loading'); col.classList.add('is-error'); }
+                    });
+            })();
+            (function() {
+                const col = document.getElementById('chart_adapno')?.parentElement;
+                fetch('../data/adapno.json')
+                    .then(response => {
+                        if (!response.ok) throw new Error('HTTP ' + response.status);
+                        return response.json();
+                    })
+                    .then(data => {
+                        const ctx = document.getElementById('chart_adapno');
+                        if (!ctx || !data || !data.data) throw new Error('Missing data');
+                        const limitedDataChart = false;
+                        let displayData = data.data;
+                        if (!limitedDataChart) {
+                            displayData = data.data.filter(d => new Date(d.date) >= new Date('2019-01-01'));
+                        }
+                        const yearLabels = displayData.map(d => {
+                            const date = new Date(d.date);
+                            return `${date.getFullYear()}`;
+                        });
+                        new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels: yearLabels,
+                                datasets: [{
+                                    label: data.name,
+                                    data: displayData.map(d => d.value || d.close),
+                                    borderColor: '#1e456e',
+                                    backgroundColor: 'rgba(93, 120, 144, 0.12)',
+                                    borderWidth: 2,
+                                    fill: true,
+                                    tension: 0.1,
+                                    pointRadius: 0
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: { legend: { display: false } },
+                                scales: {
+                                    x: {
+                                        display: true,
+                                        grid: { display: true, color: '#e0e0e0' },
+                                        ticks: { maxRotation: 45, minRotation: 45, maxTicksLimit: 12 }
+                                    },
+                                    y: {
+                                        grid: { color: '#e0e0e0' },
+                                        beginAtZero: true,
+                                        ticks: {
+                                            callback: function(value) {
+                                                const formats = {'prefix': '$', 'suffix': 'B', 'divisor': 1000};
+                                                const displayValue = value / formats.divisor;
+                                                return formats.prefix + displayValue.toLocaleString() + formats.suffix;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                        if (col) col.classList.remove('is-loading');
+                    })
+                    .catch(err => {
+                        console.error('Could not load adapno:', err);
+                        if (col) { col.classList.remove('is-loading'); col.classList.add('is-error'); }
+                    });
+            })();
+            (function() {
+                const col = document.getElementById('chart_ipb52300s')?.parentElement;
+                fetch('../data/ipb52300s.json')
+                    .then(response => {
+                        if (!response.ok) throw new Error('HTTP ' + response.status);
+                        return response.json();
+                    })
+                    .then(data => {
+                        const ctx = document.getElementById('chart_ipb52300s');
+                        if (!ctx || !data || !data.data) throw new Error('Missing data');
+                        const limitedDataChart = false;
+                        let displayData = data.data;
+                        if (!limitedDataChart) {
+                            displayData = data.data.filter(d => new Date(d.date) >= new Date('2019-01-01'));
+                        }
+                        const yearLabels = displayData.map(d => {
+                            const date = new Date(d.date);
+                            return `${date.getFullYear()}`;
+                        });
+                        new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels: yearLabels,
+                                datasets: [{
+                                    label: data.name,
+                                    data: displayData.map(d => d.value || d.close),
+                                    borderColor: '#1e456e',
+                                    backgroundColor: 'rgba(93, 120, 144, 0.12)',
+                                    borderWidth: 2,
+                                    fill: true,
+                                    tension: 0.1,
+                                    pointRadius: 0
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: { legend: { display: false } },
+                                scales: {
+                                    x: {
+                                        display: true,
+                                        grid: { display: true, color: '#e0e0e0' },
+                                        ticks: { maxRotation: 45, minRotation: 45, maxTicksLimit: 12 }
+                                    },
+                                    y: {
+                                        grid: { color: '#e0e0e0' },
+                                        beginAtZero: false,
+                                        ticks: {
+                                            callback: function(value) {
+                                                const formats = {'prefix': '', 'suffix': '', 'divisor': 1};
+                                                const displayValue = value / formats.divisor;
+                                                return formats.prefix + displayValue.toLocaleString() + formats.suffix;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                        if (col) col.classList.remove('is-loading');
+                    })
+                    .catch(err => {
+                        console.error('Could not load ipb52300s:', err);
+                        if (col) { col.classList.remove('is-loading'); col.classList.add('is-error'); }
+                    });
+            })();
+            (function() {
+                const col = document.getElementById('chart_fdefx')?.parentElement;
+                fetch('../data/fdefx.json')
+                    .then(response => {
+                        if (!response.ok) throw new Error('HTTP ' + response.status);
+                        return response.json();
+                    })
+                    .then(data => {
+                        const ctx = document.getElementById('chart_fdefx');
+                        if (!ctx || !data || !data.data) throw new Error('Missing data');
+                        const limitedDataChart = false;
+                        let displayData = data.data;
+                        if (!limitedDataChart) {
+                            displayData = data.data.filter(d => new Date(d.date) >= new Date('2019-01-01'));
+                        }
+                        const yearLabels = displayData.map(d => {
+                            const date = new Date(d.date);
+                            return `${date.getFullYear()}`;
+                        });
+                        new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels: yearLabels,
+                                datasets: [{
+                                    label: data.name,
+                                    data: displayData.map(d => d.value || d.close),
+                                    borderColor: '#1e456e',
+                                    backgroundColor: 'rgba(93, 120, 144, 0.12)',
+                                    borderWidth: 2,
+                                    fill: true,
+                                    tension: 0.1,
+                                    pointRadius: 0
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: { legend: { display: false } },
+                                scales: {
+                                    x: {
+                                        display: true,
+                                        grid: { display: true, color: '#e0e0e0' },
+                                        ticks: { maxRotation: 45, minRotation: 45, maxTicksLimit: 12 }
+                                    },
+                                    y: {
+                                        grid: { color: '#e0e0e0' },
+                                        beginAtZero: true,
+                                        ticks: {
+                                            callback: function(value) {
+                                                const formats = {'prefix': '$', 'suffix': 'B', 'divisor': 1};
+                                                const displayValue = value / formats.divisor;
+                                                return formats.prefix + displayValue.toLocaleString() + formats.suffix;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                        if (col) col.classList.remove('is-loading');
+                    })
+                    .catch(err => {
+                        console.error('Could not load fdefx:', err);
+                        if (col) { col.classList.remove('is-loading'); col.classList.add('is-error'); }
+                    });
+            })();
+            (function() {
+                const col = document.getElementById('chart_prmfgcons')?.parentElement;
+                fetch('../data/prmfgcons.json')
+                    .then(response => {
+                        if (!response.ok) throw new Error('HTTP ' + response.status);
+                        return response.json();
+                    })
+                    .then(data => {
+                        const ctx = document.getElementById('chart_prmfgcons');
+                        if (!ctx || !data || !data.data) throw new Error('Missing data');
+                        const limitedDataChart = false;
+                        let displayData = data.data;
+                        if (!limitedDataChart) {
+                            displayData = data.data.filter(d => new Date(d.date) >= new Date('2019-01-01'));
+                        }
+                        const yearLabels = displayData.map(d => {
+                            const date = new Date(d.date);
+                            return `${date.getFullYear()}`;
+                        });
+                        new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels: yearLabels,
+                                datasets: [{
+                                    label: data.name,
+                                    data: displayData.map(d => d.value || d.close),
+                                    borderColor: '#1e456e',
+                                    backgroundColor: 'rgba(93, 120, 144, 0.12)',
+                                    borderWidth: 2,
+                                    fill: true,
+                                    tension: 0.1,
+                                    pointRadius: 0
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: { legend: { display: false } },
+                                scales: {
+                                    x: {
+                                        display: true,
+                                        grid: { display: true, color: '#e0e0e0' },
+                                        ticks: { maxRotation: 45, minRotation: 45, maxTicksLimit: 12 }
+                                    },
+                                    y: {
+                                        grid: { color: '#e0e0e0' },
+                                        beginAtZero: true,
+                                        ticks: {
+                                            callback: function(value) {
+                                                const formats = {'prefix': '$', 'suffix': 'B', 'divisor': 1000};
+                                                const displayValue = value / formats.divisor;
+                                                return formats.prefix + displayValue.toLocaleString() + formats.suffix;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                        if (col) col.classList.remove('is-loading');
+                    })
+                    .catch(err => {
+                        console.error('Could not load prmfgcons:', err);
+                        if (col) { col.classList.remove('is-loading'); col.classList.add('is-error'); }
+                    });
+            })();
+            (function() {
+                const col = document.getElementById('chart_ita')?.parentElement;
+                fetch('../data/ita.json')
+                    .then(response => {
+                        if (!response.ok) throw new Error('HTTP ' + response.status);
+                        return response.json();
+                    })
+                    .then(data => {
+                        const ctx = document.getElementById('chart_ita');
+                        if (!ctx || !data || !data.data) throw new Error('Missing data');
+                        const limitedDataChart = false;
+                        let displayData = data.data;
+                        if (!limitedDataChart) {
+                            displayData = data.data.filter(d => new Date(d.date) >= new Date('2019-01-01'));
+                        }
+                        const yearLabels = displayData.map(d => {
+                            const date = new Date(d.date);
+                            return `${date.getFullYear()}`;
+                        });
+                        new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels: yearLabels,
+                                datasets: [{
+                                    label: data.name,
+                                    data: displayData.map(d => d.value || d.close),
+                                    borderColor: '#1e456e',
+                                    backgroundColor: 'rgba(93, 120, 144, 0.12)',
+                                    borderWidth: 2,
+                                    fill: true,
+                                    tension: 0.1,
+                                    pointRadius: 0
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: { legend: { display: false } },
+                                scales: {
+                                    x: {
+                                        display: true,
+                                        grid: { display: true, color: '#e0e0e0' },
+                                        ticks: { maxRotation: 45, minRotation: 45, maxTicksLimit: 12 }
+                                    },
+                                    y: {
+                                        grid: { color: '#e0e0e0' },
+                                        beginAtZero: false,
+                                        ticks: {
+                                            callback: function(value) {
+                                                const formats = {'prefix': '$', 'suffix': '', 'divisor': 1};
+                                                const displayValue = value / formats.divisor;
+                                                return formats.prefix + displayValue.toLocaleString() + formats.suffix;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                        if (col) col.classList.remove('is-loading');
+                    })
+                    .catch(err => {
+                        console.error('Could not load ita:', err);
+                        if (col) { col.classList.remove('is-loading'); col.classList.add('is-error'); }
+                    });
+            })();
+            (function() {
+                const col = document.getElementById('chart_indpro')?.parentElement;
+                fetch('../data/indpro.json')
+                    .then(response => {
+                        if (!response.ok) throw new Error('HTTP ' + response.status);
+                        return response.json();
+                    })
+                    .then(data => {
+                        const ctx = document.getElementById('chart_indpro');
+                        if (!ctx || !data || !data.data) throw new Error('Missing data');
+                        const limitedDataChart = false;
+                        let displayData = data.data;
+                        if (!limitedDataChart) {
+                            displayData = data.data.filter(d => new Date(d.date) >= new Date('2019-01-01'));
+                        }
+                        const yearLabels = displayData.map(d => {
+                            const date = new Date(d.date);
+                            return `${date.getFullYear()}`;
+                        });
+                        new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels: yearLabels,
+                                datasets: [{
+                                    label: data.name,
+                                    data: displayData.map(d => d.value || d.close),
+                                    borderColor: '#1e456e',
+                                    backgroundColor: 'rgba(93, 120, 144, 0.12)',
+                                    borderWidth: 2,
+                                    fill: true,
+                                    tension: 0.1,
+                                    pointRadius: 0
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: { legend: { display: false } },
+                                scales: {
+                                    x: {
+                                        display: true,
+                                        grid: { display: true, color: '#e0e0e0' },
+                                        ticks: { maxRotation: 45, minRotation: 45, maxTicksLimit: 12 }
+                                    },
+                                    y: {
+                                        grid: { color: '#e0e0e0' },
+                                        beginAtZero: false,
+                                        ticks: {
+                                            callback: function(value) {
+                                                const formats = {'prefix': '', 'suffix': '', 'divisor': 1};
+                                                const displayValue = value / formats.divisor;
+                                                return formats.prefix + displayValue.toLocaleString() + formats.suffix;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                        if (col) col.classList.remove('is-loading');
+                    })
+                    .catch(err => {
+                        console.error('Could not load indpro:', err);
+                        if (col) { col.classList.remove('is-loading'); col.classList.add('is-error'); }
+                    });
+            })();
+            (function() {
+                const col = document.getElementById('chart_pnfi')?.parentElement;
+                fetch('../data/pnfi.json')
+                    .then(response => {
+                        if (!response.ok) throw new Error('HTTP ' + response.status);
+                        return response.json();
+                    })
+                    .then(data => {
+                        const ctx = document.getElementById('chart_pnfi');
+                        if (!ctx || !data || !data.data) throw new Error('Missing data');
+                        const limitedDataChart = false;
+                        let displayData = data.data;
+                        if (!limitedDataChart) {
+                            displayData = data.data.filter(d => new Date(d.date) >= new Date('2019-01-01'));
+                        }
+                        const yearLabels = displayData.map(d => {
+                            const date = new Date(d.date);
+                            return `${date.getFullYear()}`;
+                        });
+                        new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels: yearLabels,
+                                datasets: [{
+                                    label: data.name,
+                                    data: displayData.map(d => d.value || d.close),
+                                    borderColor: '#1e456e',
+                                    backgroundColor: 'rgba(93, 120, 144, 0.12)',
+                                    borderWidth: 2,
+                                    fill: true,
+                                    tension: 0.1,
+                                    pointRadius: 0
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: { legend: { display: false } },
+                                scales: {
+                                    x: {
+                                        display: true,
+                                        grid: { display: true, color: '#e0e0e0' },
+                                        ticks: { maxRotation: 45, minRotation: 45, maxTicksLimit: 12 }
+                                    },
+                                    y: {
+                                        grid: { color: '#e0e0e0' },
+                                        beginAtZero: true,
+                                        ticks: {
+                                            callback: function(value) {
+                                                const formats = {'prefix': '$', 'suffix': 'T', 'divisor': 1000};
+                                                const displayValue = value / formats.divisor;
+                                                return formats.prefix + displayValue.toLocaleString() + formats.suffix;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                        if (col) col.classList.remove('is-loading');
+                    })
+                    .catch(err => {
+                        console.error('Could not load pnfi:', err);
+                        if (col) { col.classList.remove('is-loading'); col.classList.add('is-error'); }
+                    });
+            })();
+            (function() {
+                const col = document.getElementById('chart_gpdi')?.parentElement;
+                fetch('../data/gpdi.json')
+                    .then(response => {
+                        if (!response.ok) throw new Error('HTTP ' + response.status);
+                        return response.json();
+                    })
+                    .then(data => {
+                        const ctx = document.getElementById('chart_gpdi');
+                        if (!ctx || !data || !data.data) throw new Error('Missing data');
+                        const limitedDataChart = false;
+                        let displayData = data.data;
+                        if (!limitedDataChart) {
+                            displayData = data.data.filter(d => new Date(d.date) >= new Date('2019-01-01'));
+                        }
+                        const yearLabels = displayData.map(d => {
+                            const date = new Date(d.date);
+                            return `${date.getFullYear()}`;
+                        });
+                        new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels: yearLabels,
+                                datasets: [{
+                                    label: data.name,
+                                    data: displayData.map(d => d.value || d.close),
+                                    borderColor: '#1e456e',
+                                    backgroundColor: 'rgba(93, 120, 144, 0.12)',
+                                    borderWidth: 2,
+                                    fill: true,
+                                    tension: 0.1,
+                                    pointRadius: 0
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: { legend: { display: false } },
+                                scales: {
+                                    x: {
+                                        display: true,
+                                        grid: { display: true, color: '#e0e0e0' },
+                                        ticks: { maxRotation: 45, minRotation: 45, maxTicksLimit: 12 }
+                                    },
+                                    y: {
+                                        grid: { color: '#e0e0e0' },
+                                        beginAtZero: true,
+                                        ticks: {
+                                            callback: function(value) {
+                                                const formats = {'prefix': '$', 'suffix': 'T', 'divisor': 1000};
+                                                const displayValue = value / formats.divisor;
+                                                return formats.prefix + displayValue.toLocaleString() + formats.suffix;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                        if (col) col.classList.remove('is-loading');
+                    })
+                    .catch(err => {
+                        console.error('Could not load gpdi:', err);
+                        if (col) { col.classList.remove('is-loading'); col.classList.add('is-error'); }
+                    });
+            })();
+            (function() {
+                const col = document.getElementById('chart_drtscilm')?.parentElement;
+                fetch('../data/drtscilm.json')
+                    .then(response => {
+                        if (!response.ok) throw new Error('HTTP ' + response.status);
+                        return response.json();
+                    })
+                    .then(data => {
+                        const ctx = document.getElementById('chart_drtscilm');
+                        if (!ctx || !data || !data.data) throw new Error('Missing data');
+                        const limitedDataChart = false;
+                        let displayData = data.data;
+                        if (!limitedDataChart) {
+                            displayData = data.data.filter(d => new Date(d.date) >= new Date('2019-01-01'));
+                        }
+                        const yearLabels = displayData.map(d => {
+                            const date = new Date(d.date);
+                            return `${date.getFullYear()}`;
+                        });
+                        new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels: yearLabels,
+                                datasets: [{
+                                    label: data.name,
+                                    data: displayData.map(d => d.value || d.close),
+                                    borderColor: '#1e456e',
+                                    backgroundColor: 'rgba(93, 120, 144, 0.12)',
+                                    borderWidth: 2,
+                                    fill: true,
+                                    tension: 0.1,
+                                    pointRadius: 0
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: { legend: { display: false } },
+                                scales: {
+                                    x: {
+                                        display: true,
+                                        grid: { display: true, color: '#e0e0e0' },
+                                        ticks: { maxRotation: 45, minRotation: 45, maxTicksLimit: 12 }
+                                    },
+                                    y: {
+                                        grid: { color: '#e0e0e0' },
+                                        beginAtZero: false,
+                                        ticks: {
+                                            callback: function(value) {
+                                                const formats = {'prefix': '', 'suffix': '%', 'divisor': 1};
+                                                const displayValue = value / formats.divisor;
+                                                return formats.prefix + displayValue.toLocaleString() + formats.suffix;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                        if (col) col.classList.remove('is-loading');
+                    })
+                    .catch(err => {
+                        console.error('Could not load drtscilm:', err);
+                        if (col) { col.classList.remove('is-loading'); col.classList.add('is-error'); }
+                    });
+            })();
+            (function() {
+                const col = document.getElementById('chart_xli')?.parentElement;
+                fetch('../data/xli.json')
+                    .then(response => {
+                        if (!response.ok) throw new Error('HTTP ' + response.status);
+                        return response.json();
+                    })
+                    .then(data => {
+                        const ctx = document.getElementById('chart_xli');
+                        if (!ctx || !data || !data.data) throw new Error('Missing data');
+                        const limitedDataChart = false;
+                        let displayData = data.data;
+                        if (!limitedDataChart) {
+                            displayData = data.data.filter(d => new Date(d.date) >= new Date('2019-01-01'));
+                        }
+                        const yearLabels = displayData.map(d => {
+                            const date = new Date(d.date);
+                            return `${date.getFullYear()}`;
+                        });
+                        new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels: yearLabels,
+                                datasets: [{
+                                    label: data.name,
+                                    data: displayData.map(d => d.value || d.close),
+                                    borderColor: '#1e456e',
+                                    backgroundColor: 'rgba(93, 120, 144, 0.12)',
+                                    borderWidth: 2,
+                                    fill: true,
+                                    tension: 0.1,
+                                    pointRadius: 0
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: { legend: { display: false } },
+                                scales: {
+                                    x: {
+                                        display: true,
+                                        grid: { display: true, color: '#e0e0e0' },
+                                        ticks: { maxRotation: 45, minRotation: 45, maxTicksLimit: 12 }
+                                    },
+                                    y: {
+                                        grid: { color: '#e0e0e0' },
+                                        beginAtZero: false,
+                                        ticks: {
+                                            callback: function(value) {
+                                                const formats = {'prefix': '$', 'suffix': '', 'divisor': 1};
+                                                const displayValue = value / formats.divisor;
+                                                return formats.prefix + displayValue.toLocaleString() + formats.suffix;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                        if (col) col.classList.remove('is-loading');
+                    })
+                    .catch(err => {
+                        console.error('Could not load xli:', err);
+                        if (col) { col.classList.remove('is-loading'); col.classList.add('is-error'); }
+                    });
+            })();
+            (function() {
+                const col = document.getElementById('chart_pld')?.parentElement;
+                fetch('../data/pld.json')
+                    .then(response => {
+                        if (!response.ok) throw new Error('HTTP ' + response.status);
+                        return response.json();
+                    })
+                    .then(data => {
+                        const ctx = document.getElementById('chart_pld');
+                        if (!ctx || !data || !data.data) throw new Error('Missing data');
+                        const limitedDataChart = false;
+                        let displayData = data.data;
+                        if (!limitedDataChart) {
+                            displayData = data.data.filter(d => new Date(d.date) >= new Date('2019-01-01'));
+                        }
+                        const yearLabels = displayData.map(d => {
+                            const date = new Date(d.date);
+                            return `${date.getFullYear()}`;
+                        });
+                        new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels: yearLabels,
+                                datasets: [{
+                                    label: data.name,
+                                    data: displayData.map(d => d.value || d.close),
+                                    borderColor: '#1e456e',
+                                    backgroundColor: 'rgba(93, 120, 144, 0.12)',
+                                    borderWidth: 2,
+                                    fill: true,
+                                    tension: 0.1,
+                                    pointRadius: 0
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: { legend: { display: false } },
+                                scales: {
+                                    x: {
+                                        display: true,
+                                        grid: { display: true, color: '#e0e0e0' },
+                                        ticks: { maxRotation: 45, minRotation: 45, maxTicksLimit: 12 }
+                                    },
+                                    y: {
+                                        grid: { color: '#e0e0e0' },
+                                        beginAtZero: false,
+                                        ticks: {
+                                            callback: function(value) {
+                                                const formats = {'prefix': '$', 'suffix': '', 'divisor': 1};
+                                                const displayValue = value / formats.divisor;
+                                                return formats.prefix + displayValue.toLocaleString() + formats.suffix;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                        if (col) col.classList.remove('is-loading');
+                    })
+                    .catch(err => {
+                        console.error('Could not load pld:', err);
+                        if (col) { col.classList.remove('is-loading'); col.classList.add('is-error'); }
+                    });
+            })();
+            (function() {
+                const col = document.getElementById('chart_dgs10')?.parentElement;
+                fetch('../data/dgs10.json')
+                    .then(response => {
+                        if (!response.ok) throw new Error('HTTP ' + response.status);
+                        return response.json();
+                    })
+                    .then(data => {
+                        const ctx = document.getElementById('chart_dgs10');
+                        if (!ctx || !data || !data.data) throw new Error('Missing data');
+                        const limitedDataChart = false;
+                        let displayData = data.data;
+                        if (!limitedDataChart) {
+                            displayData = data.data.filter(d => new Date(d.date) >= new Date('2019-01-01'));
+                        }
+                        const yearLabels = displayData.map(d => {
+                            const date = new Date(d.date);
+                            return `${date.getFullYear()}`;
+                        });
+                        new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels: yearLabels,
+                                datasets: [{
+                                    label: data.name,
+                                    data: displayData.map(d => d.value || d.close),
+                                    borderColor: '#1e456e',
+                                    backgroundColor: 'rgba(93, 120, 144, 0.12)',
+                                    borderWidth: 2,
+                                    fill: true,
+                                    tension: 0.1,
+                                    pointRadius: 0
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: { legend: { display: false } },
+                                scales: {
+                                    x: {
+                                        display: true,
+                                        grid: { display: true, color: '#e0e0e0' },
+                                        ticks: { maxRotation: 45, minRotation: 45, maxTicksLimit: 12 }
+                                    },
+                                    y: {
+                                        grid: { color: '#e0e0e0' },
+                                        beginAtZero: false,
+                                        ticks: {
+                                            callback: function(value) {
+                                                const formats = {'prefix': '', 'suffix': '%', 'divisor': 1};
+                                                const displayValue = value / formats.divisor;
+                                                return formats.prefix + displayValue.toLocaleString() + formats.suffix;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                        if (col) col.classList.remove('is-loading');
+                    })
+                    .catch(err => {
+                        console.error('Could not load dgs10:', err);
+                        if (col) { col.classList.remove('is-loading'); col.classList.add('is-error'); }
+                    });
+            })();
+        });
+    </script>
+</body>
+</html>
