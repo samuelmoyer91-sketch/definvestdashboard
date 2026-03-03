@@ -574,11 +574,11 @@ def generate_indicators_page():
     <script src="../js/main.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async function() {{
-            fetch('../data/dgorder.json')
+            fetch('../data/dgs10.json')
                 .then(r => r.json())
                 .then(d => {{
                     if (d.last_updated) {{
-                        document.getElementById('indicatorsUpdated').textContent = 'Data as of ' + d.last_updated;
+                        document.getElementById('indicatorsUpdated').textContent = 'Last updated ' + d.last_updated;
                     }}
                 }})
                 .catch(() => {{}});

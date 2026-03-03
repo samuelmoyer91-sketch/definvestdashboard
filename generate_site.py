@@ -147,7 +147,7 @@ def main():
         'css/style.css',
         'js/main.js',
         'deals/index.html',
-        'charts/defense-spending.html'
+        'charts/indicators.html'
     ]
 
     all_present = True
