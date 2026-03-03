@@ -112,15 +112,16 @@ nav .logo:hover {
 nav ul {
   list-style: none;
   display: flex;
-  gap: var(--spacing-lg);
+  gap: var(--spacing-sm);
 }
 
 nav ul li a {
   color: rgba(255, 255, 255, 0.85);
   font-weight: 500;
   padding: var(--spacing-xs) var(--spacing-sm);
-  border-radius: var(--border-radius);
-  transition: color 0.2s ease;
+  border-radius: 6px;
+  transition: color 0.2s ease, background 0.2s ease;
+  white-space: nowrap;
 }
 
 nav ul li a:hover {
@@ -130,9 +131,8 @@ nav ul li a:hover {
 
 nav ul li a.active {
   color: white;
-  border-bottom: 2px solid var(--accent-green);
-  border-radius: 0;
-  padding-bottom: calc(var(--spacing-xs) - 2px);
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
 }
 
 /* Mobile navigation */
@@ -145,7 +145,7 @@ nav ul li a.active {
   cursor: pointer;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1100px) {
   .mobile-menu-toggle {
     display: block;
   }
