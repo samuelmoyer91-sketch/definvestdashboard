@@ -290,13 +290,18 @@ def sync_turso():
 
     Call this after committing data so subsequent reads see fresh data.
     No-op if not using Turso (local SQLite mode).
+    On stream expiration errors (e.g. 'stream not found'), resets all
+    cached connection state so the next get_session() call reconnects.
     """
-    global _libsql_conn
+    global _libsql_conn, _turso_engine, _session_factory
     if _libsql_conn is not None:
         try:
             _libsql_conn.sync()
         except Exception as e:
-            logger.warning(f"Turso sync failed (non-fatal): {e}")
+            logger.warning(f"Turso sync failed, resetting connection for reconnect: {e}")
+            _libsql_conn = None
+            _turso_engine = None
+            _session_factory = None
 
 
 def get_session(db_path='databases/tracker.db'):
