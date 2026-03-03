@@ -268,6 +268,7 @@ def generate_html_page(deals, deals_per_page=10):
                 'autonomous-systems-drones': 'Autonomous Systems/Drones',
                 'communications': 'Communications',
                 'cybersecurity': 'Cybersecurity',
+                'electronic-warfare': 'Electronic Warfare',
                 'intelligence': 'Intelligence',
                 'manufacturing-production': 'Manufacturing/Production',
                 'munitions-weapons': 'Munitions/Weapons',
