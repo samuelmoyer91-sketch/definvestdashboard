@@ -37,6 +37,26 @@ async def sync_replica_on_startup():
 
 
 @app.on_event("startup")
+async def register_telegram_webhook_on_startup():
+    """Re-register Telegram webhook on every deploy so URL changes self-heal."""
+    domain = os.environ.get('RAILWAY_PUBLIC_DOMAIN')
+    token = os.environ.get('TELEGRAM_BOT_TOKEN')
+    if not domain or not token:
+        logger.info("Skipping Telegram webhook registration (env vars not set)")
+        return
+    try:
+        from src.notifications.telegram_bot import register_webhook
+        webhook_url = f"https://{domain}/api/telegram-webhook"
+        success = register_webhook(webhook_url)
+        if success:
+            logger.info(f"Telegram webhook registered: {webhook_url}")
+        else:
+            logger.warning("Telegram webhook registration failed")
+    except Exception as e:
+        logger.warning(f"Telegram webhook registration error: {e}")
+
+
+@app.on_event("startup")
 async def run_startup_migrations():
     """Check for and apply any missing schema changes.
 
