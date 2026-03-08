@@ -20,6 +20,41 @@
       "enabled": true,
       "google_alert_query": "(\"factory\" OR \"facility\" OR \"manufacturing plant\" OR \"production site\" OR \"breaks ground\" OR \"expansion\") AND (\"defense\" OR \"aerospace\" OR \"munitions\" OR \"military\")",
       "notes": "Manufacturing/facility feed. 17% accept rate. 'facility' and 'expansion' generate noise (base closings, geopolitical articles)."
+    },
+    {
+      "name": "Defense VC Specialists",
+      "url": "https://news.google.com/rss/search?q=%22Shield%20Capital%22%20OR%20%22Paladin%20Capital%22%20OR%20%22Razor%27s%20Edge%20Ventures%22%20OR%20%22Alsop%20Louie%22%20OR%20%22Harpoon%20Ventures%22&hl=en-US&gl=US&ceid=US:en",
+      "enabled": true,
+      "google_alert_query": "\"Shield Capital\" OR \"Paladin Capital\" OR \"Razor's Edge Ventures\" OR \"Alsop Louie\" OR \"Harpoon Ventures\"",
+      "notes": "Named defense-specialist VCs. High signal — any mention is likely relevant. Uses Google News RSS (not Google Alerts)."
+    },
+    {
+      "name": "In-Q-Tel",
+      "url": "https://news.google.com/rss/search?q=%22In-Q-Tel%22&hl=en-US&gl=US&ceid=US:en",
+      "enabled": true,
+      "google_alert_query": "\"In-Q-Tel\"",
+      "notes": "CIA's venture arm. Prolific enough to warrant its own feed. Any mention is relevant."
+    },
+    {
+      "name": "Defense Corporate Ventures",
+      "url": "https://news.google.com/rss/search?q=%22RTX%20Ventures%22%20OR%20%22Northrop%20Grumman%20Ventures%22%20OR%20%22L3Harris%20Ventures%22&hl=en-US&gl=US&ceid=US:en",
+      "enabled": true,
+      "google_alert_query": "\"RTX Ventures\" OR \"Northrop Grumman Ventures\" OR \"L3Harris Ventures\"",
+      "notes": "Prime contractor venture arms. Exact name matching keeps noise low."
+    },
+    {
+      "name": "Carlyle Defense",
+      "url": "https://news.google.com/rss/search?q=%22Carlyle%20Group%22%20%28defense%20OR%20aerospace%20OR%20military%29&hl=en-US&gl=US&ceid=US:en",
+      "enabled": true,
+      "google_alert_query": "\"Carlyle Group\" (defense OR aerospace OR military)",
+      "notes": "Carlyle is a large PE firm — needs sector filter to reduce noise from non-defense deals."
+    },
+    {
+      "name": "a16z Defense",
+      "url": "https://news.google.com/rss/search?q=%22Andreessen%20Horowitz%22%20%28defense%20OR%20%22national%20security%22%29&hl=en-US&gl=US&ceid=US:en",
+      "enabled": true,
+      "google_alert_query": "\"Andreessen Horowitz\" (defense OR \"national security\")",
+      "notes": "Large crossover fund — defense filter required, they invest across many sectors."
     }
   ],
   "keywords": {
