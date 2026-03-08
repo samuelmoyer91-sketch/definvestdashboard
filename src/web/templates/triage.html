@@ -364,13 +364,36 @@
                 </div>
 
                 <!-- Row 6: Internal Notes -->
-                <div>
+                <div style="margin-bottom: 10px;">
                     <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #555;">
                         Internal Notes
                     </label>
                     <textarea name="notes" rows="1"
                               style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; font-family: inherit;"
                               placeholder="Any notes for yourself (not public)..."></textarea>
+                </div>
+
+                <!-- Row 7: Source URLs -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div>
+                        <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #555;">
+                            Source URL (override original)
+                        </label>
+                        <input type="url" name="source_url"
+                               value="{{ item.url }}"
+                               style="width: 100%; padding: 7px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px;"
+                               placeholder="https://...">
+                        <div style="font-size: 10px; color: #888; margin-top: 2px;">Pre-filled from original article. Replace if you found a better source.</div>
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #555;">
+                            Additional Source (optional)
+                        </label>
+                        <input type="url" name="additional_source_url"
+                               value=""
+                               style="width: 100%; padding: 7px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px;"
+                               placeholder="https://...">
+                    </div>
                 </div>
             </div>
 

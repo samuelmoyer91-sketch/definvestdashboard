@@ -611,14 +611,24 @@ def generate_deal_card(master, raw, ai):
             </div>"""
 
     # Footer with source link (includes domain attribution)
-    source_domain = extract_domain(raw.url)
+    primary_url = master.source_url if master and master.source_url else raw.url
+    primary_domain = extract_domain(primary_url)
     card_html += f"""
         </div>
 
         <div class="deal-card-footer">
-            <a href="{raw.url}" target="_blank" rel="noopener" class="deal-source-link">
-                Read Full Article on {source_domain} →
-            </a>
+            <a href="{primary_url}" target="_blank" rel="noopener" class="deal-source-link">
+                Read Full Article on {primary_domain} →
+            </a>"""
+
+    if master and master.additional_source_url:
+        add_domain = extract_domain(master.additional_source_url)
+        card_html += f"""
+            <a href="{master.additional_source_url}" target="_blank" rel="noopener" class="deal-source-link" style="margin-left: 1rem;">
+                Also: {add_domain} →
+            </a>"""
+
+    card_html += """
         </div>
     </div>"""
 

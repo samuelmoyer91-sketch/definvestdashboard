@@ -142,6 +142,10 @@ class MasterItem(Base):
     location = Column(String)
     summary = Column(Text)
 
+    # Source URL overrides
+    source_url = Column(Text)             # Replaces raw_item.url as primary source link (optional)
+    additional_source_url = Column(Text)  # Optional second source link shown alongside primary
+
     # Curation metadata
     human_notes = Column(Text)
     curated_by = Column(String)  # Future: user authentication

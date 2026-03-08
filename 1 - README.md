@@ -111,9 +111,9 @@ PC Dashboard/
 2. **AI Title Screen** — Claude filters noise (earnings calls, opinion pieces) from genuine deals
 3. **Article Scraping** — Full article text retrieved for AI processing
 4. **AI Extraction** — Claude extracts structured data (company, amount, investors, sectors) and drafts an analytical summary
-5. **Human Triage** — Reviewer accepts/rejects deals, edits any field before publication
+5. **Human Triage** — Reviewer accepts/rejects deals, edits any field before publication. Optionally overrides the source URL (e.g., swap a Google News redirect for a direct article link) or attaches a second source link that appears alongside the primary in the published card footer.
 6. **Investor Normalization** — On accept/edit, investor text is parsed into structured `Investor` records linked to deals. The parser strips AI prose artifacts ("led by", "backed by", "with participation from", semicolons, trailing annotations like "as acquirer") to extract clean entity names. Investor records are deduplicated by slug.
-7. **Export** — Only human-approved content appears on the public site (raw AI and RSS data never shown)
+7. **Export** — Only human-approved content appears on the public site (raw AI and RSS data never shown). Source URL overrides flow through to deal card footers on the public dashboard.
 
 Capital type taxonomy: Seed, Venture Capital, Private Equity, Corporate M&A, Government/Contract, Public Markets, Internal/Self-funded, Fund Raise.
 

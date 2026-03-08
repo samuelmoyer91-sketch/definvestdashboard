@@ -86,6 +86,24 @@ async def run_startup_migrations():
             conn.commit()
             logger.info("ai_extractions.title column added successfully")
 
+        # Check if source_url column exists on master_list
+        try:
+            conn.execute(sa_text("SELECT source_url FROM master_list LIMIT 1"))
+        except Exception:
+            logger.info("Adding source_url column to master_list...")
+            conn.execute(sa_text("ALTER TABLE master_list ADD COLUMN source_url TEXT"))
+            conn.commit()
+            logger.info("source_url column added successfully")
+
+        # Check if additional_source_url column exists on master_list
+        try:
+            conn.execute(sa_text("SELECT additional_source_url FROM master_list LIMIT 1"))
+        except Exception:
+            logger.info("Adding additional_source_url column to master_list...")
+            conn.execute(sa_text("ALTER TABLE master_list ADD COLUMN additional_source_url TEXT"))
+            conn.commit()
+            logger.info("additional_source_url column added successfully")
+
 
 # =============================================================================
 # Global Exception Handler
@@ -460,6 +478,8 @@ async def accept_item(
     location: str = Form(""),
     summary: str = Form(""),
     notes: str = Form(""),
+    source_url: str = Form(""),
+    additional_source_url: str = Form(""),
     # Legacy fields (hidden inputs for backward compat)
     transaction_type: str = Form(""),
     capital_sources: list[str] = Form([]),
@@ -501,6 +521,8 @@ async def accept_item(
                 location=location if location else None,
                 summary=summary if summary else None,
                 human_notes=notes if notes else None,
+                source_url=source_url if source_url else None,
+                additional_source_url=additional_source_url if additional_source_url else None,
                 published=False
             )
             session.add(master)
@@ -714,6 +736,8 @@ async def save_edit(
     location: str = Form(""),
     summary: str = Form(""),
     notes: str = Form(""),
+    source_url: str = Form(""),
+    additional_source_url: str = Form(""),
 ):
     """Save edits to an accepted deal."""
     session = get_session()
@@ -739,6 +763,8 @@ async def save_edit(
         master.location = location if location else None
         master.summary = summary if summary else None
         master.human_notes = notes if notes else None
+        master.source_url = source_url if source_url else None
+        master.additional_source_url = additional_source_url if additional_source_url else None
 
         # Re-sync investor links
         _sync_investor_links(session, master)
