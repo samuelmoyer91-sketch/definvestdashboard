@@ -23,7 +23,7 @@
     <!-- COLLAPSED (READ-ONLY) VIEW -->
     <div class="master-card-collapsed" id="master-collapsed-{{ item.id }}">
         <div class="item-header">
-            <div class="item-title">{{ item.title if item.title else item.raw_item.title | safe }}</div>
+            <div class="item-title">{{ item.title if item.title else item.raw_item.title }}</div>
         </div>
 
         <div class="item-meta" style="margin-bottom: 15px;">
@@ -163,7 +163,7 @@
     <!-- EXPANDED (INLINE EDIT) VIEW -->
     <div class="master-card-expanded" id="master-expanded-{{ item.id }}">
         <div class="item-header" style="margin-bottom: 8px;">
-            <div class="item-title">{{ item.title if item.title else item.raw_item.title | safe }}</div>
+            <div class="item-title">{{ item.title if item.title else item.raw_item.title }}</div>
         </div>
         <div class="item-meta" style="margin-bottom: 15px;">
             <span class="badge badge-info">{{ item.raw_item.feed_source }}</span>

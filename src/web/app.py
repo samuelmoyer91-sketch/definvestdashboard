@@ -1,11 +1,15 @@
 """FastAPI web application for triage and dashboard."""
 
+import base64
 import logging
 import os
+import secrets
 from fastapi import FastAPI, Request, Form, Query, Depends
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.responses import Response
 import sys
 from pathlib import Path
 from datetime import datetime
@@ -22,8 +26,60 @@ app = FastAPI(title="Defense Capital Tracker")
 
 
 # =============================================================================
+# HTTP Basic Auth Middleware
+# =============================================================================
+
+_UNPROTECTED_PATHS = {'/health', '/api/telegram-webhook'}
+
+class BasicAuthMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        if request.url.path in _UNPROTECTED_PATHS:
+            return await call_next(request)
+
+        username = os.environ.get('TRIAGE_USERNAME', '')
+        password = os.environ.get('TRIAGE_PASSWORD', '')
+
+        # Skip auth if credentials not configured (local dev)
+        if not username or not password:
+            return await call_next(request)
+
+        auth = request.headers.get('Authorization', '')
+        unauthorized = Response(
+            'Unauthorized',
+            status_code=401,
+            headers={'WWW-Authenticate': 'Basic realm="Defense Capital Triage"'},
+        )
+
+        if not auth.startswith('Basic '):
+            return unauthorized
+
+        try:
+            decoded = base64.b64decode(auth[6:]).decode('utf-8')
+            req_user, req_pass = decoded.split(':', 1)
+        except Exception:
+            return unauthorized
+
+        user_ok = secrets.compare_digest(req_user, username)
+        pass_ok = secrets.compare_digest(req_pass, password)
+        if not (user_ok and pass_ok):
+            return unauthorized
+
+        return await call_next(request)
+
+app.add_middleware(BasicAuthMiddleware)
+
+
+# =============================================================================
 # Database Dependency
 # =============================================================================
+
+def _safe_url(url: str):
+    """Accept only http/https URLs; return None for anything else (e.g. javascript:)."""
+    url = url.strip()
+    if url.startswith(('http://', 'https://')):
+        return url
+    return None
+
 
 def get_db():
     """FastAPI dependency: yield a DB session and close it when done."""
@@ -430,8 +486,8 @@ async def accept_item(
             location=location if location else None,
             summary=summary if summary else None,
             human_notes=notes if notes else None,
-            source_url=source_url if source_url else None,
-            additional_source_url=additional_source_url if additional_source_url else None,
+            source_url=_safe_url(source_url),
+            additional_source_url=_safe_url(additional_source_url),
             published=False
         )
         session.add(master)
@@ -693,8 +749,8 @@ async def save_edit(
     master.location = location if location else None
     master.summary = summary if summary else None
     master.human_notes = notes if notes else None
-    master.source_url = source_url if source_url else None
-    master.additional_source_url = additional_source_url if additional_source_url else None
+    master.source_url = _safe_url(source_url)
+    master.additional_source_url = _safe_url(additional_source_url)
 
     # Re-sync investor links
     _sync_investor_links(session, master)

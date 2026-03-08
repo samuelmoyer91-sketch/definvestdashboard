@@ -44,6 +44,7 @@ Data Priority:
 - Only human-reviewed content appears on published dashboard
 """
 
+import html as html_module
 import re
 import sys
 import os
@@ -62,6 +63,10 @@ _UNKNOWN_VALUES = {'unknown', 'n/a', 'none', 'null', '-', ''}
 def is_known(val):
     """Return True if val is a non-empty, non-placeholder string."""
     return bool(val) and str(val).strip().lower() not in _UNKNOWN_VALUES
+
+def e(val):
+    """HTML-escape a value for safe embedding in markup."""
+    return html_module.escape(str(val)) if val else ''
 
 
 def extract_domain(url):
@@ -484,11 +489,11 @@ def generate_deal_card(master, raw, ai):
         title_display = re.sub(r'</?[^>]+>', '', title_display)
     if title_display:
         card_html += f"""
-            <h3 class="deal-company-name">{title_display}</h3>"""
+            <h3 class="deal-company-name">{e(title_display)}</h3>"""
     elif company_name:
         # Fallback to company name if no title at all
         card_html += f"""
-            <h3 class="deal-company-name">{company_name}</h3>"""
+            <h3 class="deal-company-name">{e(company_name)}</h3>"""
 
     # Start metadata section
     card_html += """
@@ -500,7 +505,7 @@ def generate_deal_card(master, raw, ai):
         card_html += f"""
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
-                    <span>{amount}</span>
+                    <span>{e(amount)}</span>
                 </div>"""
 
     # Investors: prioritize master.investors
@@ -513,7 +518,7 @@ def generate_deal_card(master, raw, ai):
         card_html += f"""
                 <div class="deal-meta-line">
                     <span class="meta-label">Investors</span>
-                    <span>{investors_display}</span>
+                    <span>{e(investors_display)}</span>
                 </div>"""
 
     # Capital Sources (already extracted above for data attributes)
@@ -522,7 +527,7 @@ def generate_deal_card(master, raw, ai):
         card_html += f"""
                 <div class="deal-meta-line">
                     <span class="meta-label">Capital</span>
-                    <span>{capital_display}</span>
+                    <span>{e(capital_display)}</span>
                 </div>"""
 
     # Sectors (already extracted above for data attributes)
@@ -531,7 +536,7 @@ def generate_deal_card(master, raw, ai):
         card_html += f"""
                 <div class="deal-meta-line">
                     <span class="meta-label">Sectors</span>
-                    <span>{sectors_display}</span>
+                    <span>{e(sectors_display)}</span>
                 </div>"""
 
     # Location: from master_list (curated in triage), fallback to AI extraction
@@ -540,7 +545,7 @@ def generate_deal_card(master, raw, ai):
         card_html += f"""
                 <div class="deal-meta-line">
                     <span class="meta-label">Location</span>
-                    <span>{location}</span>
+                    <span>{e(location)}</span>
                 </div>"""
 
     # Close metadata section
@@ -552,7 +557,7 @@ def generate_deal_card(master, raw, ai):
     if master and is_known(master.summary):
         card_html += f"""
             <div class="deal-insight">
-                <p>{master.summary}</p>
+                <p>{e(master.summary)}</p>
             </div>"""
 
     # Footer with source link (includes domain attribution)
