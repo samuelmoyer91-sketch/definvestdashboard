@@ -57,6 +57,13 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from database.models import get_session, MasterItem, RawItem, AIExtraction
 
 
+_UNKNOWN_VALUES = {'unknown', 'n/a', 'none', 'null', '-', ''}
+
+def is_known(val):
+    """Return True if val is a non-empty, non-placeholder string."""
+    return bool(val) and str(val).strip().lower() not in _UNKNOWN_VALUES
+
+
 def extract_domain(url):
     """Extract clean domain from URL for source attribution.
 
@@ -544,7 +551,7 @@ def generate_deal_card(master, raw, ai):
 
     # Amount: prioritize master.investment_amount
     amount = master.investment_amount if master and master.investment_amount else (ai.deal_amount if ai else None)
-    if amount:
+    if is_known(amount):
         card_html += f"""
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
@@ -554,7 +561,7 @@ def generate_deal_card(master, raw, ai):
     # Investors: prioritize master.investors
     # For Internal Investment, show "Self-funded" instead of repeating company name
     investors = master.investors if master and master.investors else (ai.investors if ai else None)
-    if investors:
+    if is_known(investors):
         investors_display = investors
         if master and master.transaction_type == 'Internal Investment':
             investors_display = 'Self-funded'
@@ -565,7 +572,7 @@ def generate_deal_card(master, raw, ai):
                 </div>"""
 
     # Capital Sources (already extracted above for data attributes)
-    if capital_sources:
+    if is_known(capital_sources):
         capital_display = capital_sources.replace(',', ', ')
         card_html += f"""
                 <div class="deal-meta-line">
@@ -574,7 +581,7 @@ def generate_deal_card(master, raw, ai):
                 </div>"""
 
     # Sectors (already extracted above for data attributes)
-    if sectors:
+    if is_known(sectors):
         sectors_display = sectors.replace(',', ', ')
         card_html += f"""
                 <div class="deal-meta-line">
@@ -584,7 +591,7 @@ def generate_deal_card(master, raw, ai):
 
     # Location: from master_list (curated in triage), fallback to AI extraction
     location = master.location if master and master.location else (ai.location if ai else None)
-    if location:
+    if is_known(location):
         card_html += f"""
                 <div class="deal-meta-line">
                     <span class="meta-label">Location</span>
@@ -597,17 +604,10 @@ def generate_deal_card(master, raw, ai):
 
     # Use ONLY human-curated summary from master list
     # AI data and RSS summaries are NOT shown - only what you approved in triage
-    if master and master.summary:
-        # Simply display the curated summary as-is (no section parsing)
+    if master and is_known(master.summary):
         card_html += f"""
             <div class="deal-insight">
                 <p>{master.summary}</p>
-            </div>"""
-    else:
-        # If no curated summary, show a placeholder
-        card_html += f"""
-            <div class="deal-insight">
-                <p style="color: #999; font-style: italic;">No summary provided.</p>
             </div>"""
 
     # Footer with source link (includes domain attribution)
