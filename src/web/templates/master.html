@@ -3,6 +3,11 @@
 {% block title %}Accepted Items - Defense Capital Tracker{% endblock %}
 
 {% block content %}
+<style>
+.master-card-collapsed { display: block; }
+.master-card-expanded { display: none; }
+</style>
+
 <h2 style="margin-bottom: 20px;">Accepted Items ({{ items | length }})</h2>
 
 {% if items | length == 0 %}
@@ -13,148 +18,383 @@
 </div>
 {% else %}
 {% for item in items %}
-<div class="card item-card" style="border-left: 4px solid #4c9173;">
-    <div class="item-header">
-        <div class="item-title">{{ item.title if item.title else item.raw_item.title | safe }}</div>
-        <div style="display: flex; gap: 8px; align-items: center;">
-            {% if item.published %}
-            <span class="badge badge-success">Published</span>
+<div class="card item-card" style="border-left: 4px solid #4c9173;" id="master-card-{{ item.id }}">
+
+    <!-- COLLAPSED (READ-ONLY) VIEW -->
+    <div class="master-card-collapsed" id="master-collapsed-{{ item.id }}">
+        <div class="item-header">
+            <div class="item-title">{{ item.title if item.title else item.raw_item.title | safe }}</div>
+        </div>
+
+        <div class="item-meta" style="margin-bottom: 15px;">
+            <span class="badge badge-info">{{ item.raw_item.feed_source }}</span>
+            <span style="margin-left: 10px;">Published: {{ item.raw_item.published_date.strftime('%Y-%m-%d') if item.raw_item.published_date else 'Unknown' }}</span>
+            <span style="margin-left: 10px;">Accepted: {{ item.curated_at.strftime('%Y-%m-%d %H:%M') }}</span>
+        </div>
+
+        <!-- Pipeline Status -->
+        <div style="background: #f8f9fa; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
+            <strong style="font-size: 13px; color: #666;">Pipeline Status:</strong>
+            <div style="display: flex; gap: 15px; margin-top: 8px; flex-wrap: wrap;">
+                <div style="display: flex; align-items: center; gap: 5px;">
+                    {% if item.article_content and item.article_content.scrape_success %}
+                    <span style="color: #4c9173;">✓</span>
+                    <span style="font-size: 13px;">Article Scraped</span>
+                    {% else %}
+                    <span style="color: #999;">✗</span>
+                    <span style="font-size: 13px; color: #999;">Not Scraped</span>
+                    {% endif %}
+                </div>
+                <div style="display: flex; align-items: center; gap: 5px;">
+                    {% if item.ai_extraction %}
+                    <span style="color: #4c9173;">✓</span>
+                    <span style="font-size: 13px;">AI Processed</span>
+                    {% else %}
+                    <span style="color: #999;">✗</span>
+                    <span style="font-size: 13px; color: #999;">No AI Data</span>
+                    {% endif %}
+                </div>
+                <div style="display: flex; align-items: center; gap: 5px;">
+                    {% if item.company or item.capital_sources or item.summary %}
+                    <span style="color: #4c9173;">✓</span>
+                    <span style="font-size: 13px;">Manually Curated</span>
+                    {% else %}
+                    <span style="color: #ebcb8b;">○</span>
+                    <span style="font-size: 13px; color: #999;">No Manual Data</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Deal Information -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 12px;">
+            {% if item.company %}
+            <div>
+                <strong style="font-size: 12px; color: #666;">Company:</strong>
+                <div style="font-size: 14px; margin-top: 4px;">{{ item.company }}</div>
+            </div>
+            {% endif %}
+
+            {% if item.transaction_type %}
+            <div>
+                <strong style="font-size: 12px; color: #666;">Transaction Type:</strong>
+                <div style="font-size: 14px; margin-top: 4px;">{{ item.transaction_type }}</div>
+            </div>
+            {% endif %}
+
+            {% if item.investment_amount %}
+            <div>
+                <strong style="font-size: 12px; color: #666;">Investment:</strong>
+                <div style="font-size: 14px; margin-top: 4px;">{{ item.investment_amount }}</div>
+            </div>
+            {% endif %}
+
+            {% if item.capital_sources %}
+            <div>
+                <strong style="font-size: 12px; color: #666;">Capital Type:</strong>
+                <div style="margin-top: 4px;">
+                    {% for cap in item.capital_sources.split(',') %}
+                    <span class="badge badge-info">{{ cap.strip() }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if item.sectors %}
+            <div>
+                <strong style="font-size: 12px; color: #666;">Sector:</strong>
+                <div style="font-size: 14px; margin-top: 4px;">{{ item.sectors.replace(',', ', ') }}</div>
+            </div>
+            {% endif %}
+
+            {% if item.location %}
+            <div>
+                <strong style="font-size: 12px; color: #666;">Location:</strong>
+                <div style="font-size: 14px; margin-top: 4px;">{{ item.location }}</div>
+            </div>
             {% endif %}
         </div>
-    </div>
 
-    <div class="item-meta" style="margin-bottom: 15px;">
-        <span class="badge badge-info">{{ item.raw_item.feed_source }}</span>
-        <span style="margin-left: 10px;">Published: {{ item.raw_item.published_date.strftime('%Y-%m-%d') if item.raw_item.published_date else 'Unknown' }}</span>
-        <span style="margin-left: 10px;">Accepted: {{ item.curated_at.strftime('%Y-%m-%d %H:%M') }}</span>
-    </div>
+        {% if item.summary %}
+        <div style="margin-top: 12px;">
+            <strong style="font-size: 12px; color: #666;">Summary:</strong>
+            <div style="font-size: 14px; color: #555; margin-top: 4px; line-height: 1.5;">{{ item.summary }}</div>
+        </div>
+        {% endif %}
 
-    <!-- Pipeline Status -->
-    <div style="background: #f8f9fa; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
-        <strong style="font-size: 13px; color: #666;">Pipeline Status:</strong>
-        <div style="display: flex; gap: 15px; margin-top: 8px; flex-wrap: wrap;">
-            <div style="display: flex; align-items: center; gap: 5px;">
-                {% if item.article_content and item.article_content.scrape_success %}
-                <span style="color: #4c9173;">✓</span>
-                <span style="font-size: 13px;">Article Scraped</span>
-                {% else %}
-                <span style="color: #999;">✗</span>
-                <span style="font-size: 13px; color: #999;">Not Scraped</span>
+        {% if item.human_notes %}
+        <div style="margin-top: 12px; padding: 10px; background: #fff3cd; border-radius: 4px;">
+            <strong style="font-size: 12px; color: #856404;">Notes:</strong>
+            <div style="font-size: 13px; color: #856404; margin-top: 4px;">{{ item.human_notes }}</div>
+        </div>
+        {% endif %}
+
+        <!-- AI Extraction Data -->
+        {% if item.ai_extraction %}
+        <details style="margin-top: 12px;">
+            <summary style="cursor: pointer; font-size: 13px; color: #5e81ac; font-weight: 600;">View AI Extraction Data</summary>
+            <div style="margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 4px; font-size: 13px;">
+                {% if item.ai_extraction.strategic_significance %}
+                <div style="margin-bottom: 8px;">
+                    <strong>Strategic Significance:</strong> {{ item.ai_extraction.strategic_significance }}
+                </div>
+                {% endif %}
+                {% if item.ai_extraction.market_implications %}
+                <div style="margin-bottom: 8px;">
+                    <strong>Market Implications:</strong> {{ item.ai_extraction.market_implications }}
+                </div>
+                {% endif %}
+                {% if item.ai_extraction.investors %}
+                <div style="margin-bottom: 8px;">
+                    <strong>Investors:</strong> {{ item.ai_extraction.investors }}
+                </div>
                 {% endif %}
             </div>
-            <div style="display: flex; align-items: center; gap: 5px;">
-                {% if item.ai_extraction %}
-                <span style="color: #4c9173;">✓</span>
-                <span style="font-size: 13px;">AI Processed</span>
-                {% else %}
-                <span style="color: #999;">✗</span>
-                <span style="font-size: 13px; color: #999;">No AI Data</span>
-                {% endif %}
-            </div>
-            <div style="display: flex; align-items: center; gap: 5px;">
-                {% if item.company or item.capital_type or item.capital_sources or item.summary %}
-                <span style="color: #4c9173;">✓</span>
-                <span style="font-size: 13px;">Manually Curated</span>
-                {% else %}
-                <span style="color: #ebcb8b;">○</span>
-                <span style="font-size: 13px; color: #999;">No Manual Data</span>
-                {% endif %}
-            </div>
+        </details>
+        {% endif %}
+
+        <div class="item-actions" style="margin-top: 15px;">
+            <button onclick="toggleMasterEdit({{ item.id }})" class="btn btn-primary">Edit</button>
+            <a href="{{ item.raw_item.url }}" target="_blank" class="btn btn-link">View Original Article</a>
+            <a href="/item/{{ item.item_id }}" class="btn btn-link">View Details</a>
         </div>
     </div>
 
-    <!-- Deal Information -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 12px;">
-        {% if item.company %}
-        <div>
-            <strong style="font-size: 12px; color: #666;">Company:</strong>
-            <div style="font-size: 14px; margin-top: 4px;">{{ item.company }}</div>
+    <!-- EXPANDED (INLINE EDIT) VIEW -->
+    <div class="master-card-expanded" id="master-expanded-{{ item.id }}">
+        <div class="item-header" style="margin-bottom: 8px;">
+            <div class="item-title">{{ item.title if item.title else item.raw_item.title | safe }}</div>
         </div>
-        {% endif %}
-
-        {% if item.investment_amount %}
-        <div>
-            <strong style="font-size: 12px; color: #666;">Investment:</strong>
-            <div style="font-size: 14px; margin-top: 4px;">{{ item.investment_amount }}</div>
-        </div>
-        {% endif %}
-
-        {% if item.capital_sources or item.capital_type %}
-        <div>
-            <strong style="font-size: 12px; color: #666;">Type:</strong>
-            <div style="margin-top: 4px;">
-                {% set cap_display = item.capital_sources or item.capital_type %}
-                {% for cap in cap_display.split(',') %}
-                <span class="badge badge-info">{{ cap.strip() }}</span>
-                {% endfor %}
-            </div>
-        </div>
-        {% endif %}
-
-        {% if item.sectors or item.sector %}
-        <div>
-            <strong style="font-size: 12px; color: #666;">Sector:</strong>
-            <div style="font-size: 14px; margin-top: 4px;">{{ (item.sectors or item.sector).replace(',', ', ') }}</div>
-        </div>
-        {% endif %}
-
-        {% if item.location %}
-        <div>
-            <strong style="font-size: 12px; color: #666;">Location:</strong>
-            <div style="font-size: 14px; margin-top: 4px;">{{ item.location }}</div>
-        </div>
-        {% endif %}
-    </div>
-
-    {% if item.summary %}
-    <div style="margin-top: 12px;">
-        <strong style="font-size: 12px; color: #666;">Summary:</strong>
-        <div style="font-size: 14px; color: #555; margin-top: 4px; line-height: 1.5;">{{ item.summary }}</div>
-    </div>
-    {% endif %}
-
-    {% if item.human_notes %}
-    <div style="margin-top: 12px; padding: 10px; background: #fff3cd; border-radius: 4px;">
-        <strong style="font-size: 12px; color: #856404;">Notes:</strong>
-        <div style="font-size: 13px; color: #856404; margin-top: 4px;">{{ item.human_notes }}</div>
-    </div>
-    {% endif %}
-
-    <!-- AI Extraction Data -->
-    {% if item.ai_extraction %}
-    <details style="margin-top: 12px;">
-        <summary style="cursor: pointer; font-size: 13px; color: #5e81ac; font-weight: 600;">View AI Extraction Data</summary>
-        <div style="margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 4px; font-size: 13px;">
-            {% if item.ai_extraction.strategic_significance %}
-            <div style="margin-bottom: 8px;">
-                <strong>Strategic Significance:</strong> {{ item.ai_extraction.strategic_significance }}
-            </div>
+        <div class="item-meta" style="margin-bottom: 15px;">
+            <span class="badge badge-info">{{ item.raw_item.feed_source }}</span>
+            {% if item.raw_item.published_date %}
+            <span style="margin-left: 10px; color: #666;">{{ item.raw_item.published_date.strftime('%Y-%m-%d') }}</span>
             {% endif %}
-            {% if item.ai_extraction.market_implications %}
-            <div style="margin-bottom: 8px;">
-                <strong>Market Implications:</strong> {{ item.ai_extraction.market_implications }}
-            </div>
-            {% endif %}
-            {% if item.ai_extraction.deal_type %}
-            <div style="margin-bottom: 8px;">
-                <strong>AI Deal Type:</strong> {{ item.ai_extraction.deal_type }}
-            </div>
-            {% endif %}
-            {% if item.ai_extraction.investors %}
-            <div style="margin-bottom: 8px;">
-                <strong>Investors:</strong> {{ item.ai_extraction.investors }}
-            </div>
-            {% endif %}
+            <span style="margin-left: 10px;">
+                <a href="{{ item.raw_item.url }}" target="_blank" class="btn btn-link" style="padding: 0; font-size: 13px;">View Original Article</a>
+            </span>
         </div>
-    </details>
-    {% endif %}
 
-    <div class="item-actions" style="margin-top: 15px;">
-        <a href="/edit/{{ item.id }}" class="btn btn-primary">Edit</a>
-        <a href="{{ item.raw_item.url }}" target="_blank" class="btn btn-link">View Original Article</a>
-        <a href="/item/{{ item.item_id }}" class="btn btn-link">View Details</a>
+        <form method="post" action="/edit/{{ item.id }}">
+            <div style="background: #f8f9fa; padding: 14px; border-radius: 6px; margin-bottom: 10px;">
+
+                <!-- Title -->
+                <div style="margin-bottom: 10px;">
+                    <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #555;">Title</label>
+                    <input type="text" name="title"
+                           value="{{ item.title if item.title else item.raw_item.title }}"
+                           style="width: 100%; padding: 7px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;"
+                           placeholder="Deal title">
+                </div>
+
+                <!-- Row 1: Company & Investors -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 10px;">
+                    <div>
+                        <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #555;">Company</label>
+                        <input type="text" name="company"
+                               value="{{ item.company or '' }}"
+                               style="width: 100%; padding: 7px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;"
+                               placeholder="e.g., Anduril, Shield AI">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #555;">Investors / Acquirer</label>
+                        <input type="text" name="investors"
+                               value="{{ item.investors or '' }}"
+                               style="width: 100%; padding: 7px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;"
+                               placeholder="e.g., McNally Capital, Andreessen Horowitz">
+                    </div>
+                </div>
+
+                <!-- Row 2: Deal Amount & Location -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 10px;">
+                    <div>
+                        <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #555;">Deal Amount</label>
+                        <div style="display: flex; align-items: center;">
+                            <span style="padding: 7px 10px; background: #e9ecef; border: 1px solid #ddd; border-right: none; border-radius: 4px 0 0 4px; font-size: 13px; font-weight: 600; color: #333;">$</span>
+                            <input type="text" name="investment_amount" inputmode="decimal"
+                                   value="{{ item.investment_amount.replace('$', '') if item.investment_amount else '' }}"
+                                   style="width: 100%; padding: 7px; border: 1px solid #ddd; border-radius: 0 4px 4px 0; font-size: 13px;"
+                                   placeholder="e.g., 100,000,000">
+                        </div>
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #555;">Location</label>
+                        <input type="text" name="location"
+                               value="{{ item.location or '' }}"
+                               style="width: 100%; padding: 7px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;"
+                               placeholder="e.g., Austin, TX, USA">
+                    </div>
+                </div>
+
+                <!-- Row 3: Transaction Type -->
+                <div style="margin-bottom: 10px;">
+                    <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #555;">Transaction Type</label>
+                    {% set tt = item.transaction_type or '' %}
+                    <select name="transaction_type"
+                            style="width: 100%; padding: 7px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; background: white;">
+                        <option value="">— Select —</option>
+                        <option value="Equity Funding Round" {% if tt == 'Equity Funding Round' %}selected{% endif %}>Equity Funding Round</option>
+                        <option value="Acquisition" {% if tt == 'Acquisition' %}selected{% endif %}>Acquisition</option>
+                        <option value="Merger" {% if tt == 'Merger' %}selected{% endif %}>Merger</option>
+                        <option value="IPO" {% if tt == 'IPO' %}selected{% endif %}>IPO</option>
+                        <option value="Strategic Partnership" {% if tt == 'Strategic Partnership' %}selected{% endif %}>Strategic Partnership</option>
+                        <option value="Internal Investment" {% if tt == 'Internal Investment' %}selected{% endif %}>Internal Investment</option>
+                        <option value="Contract/Award" {% if tt == 'Contract/Award' %}selected{% endif %}>Contract/Award</option>
+                        <option value="Fund Raise" {% if tt == 'Fund Raise' %}selected{% endif %}>Fund Raise</option>
+                    </select>
+                </div>
+
+                <!-- Row 4: Capital Type (Multi-select) -->
+                <div style="margin-bottom: 10px;">
+                    <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #555;">Capital Type (select all that apply)</label>
+                    {% set current_cap_list = item.capital_sources.split(',') | map('trim') | list if item.capital_sources else [] %}
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px 8px; padding: 6px 10px; background: #f9f9f9; border-radius: 4px;">
+                        <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                            <input type="checkbox" name="capital_source" value="Seed"
+                                   {% if 'Seed' in current_cap_list %}checked{% endif %}
+                                   style="margin-right: 5px; width: 14px; height: 14px;">
+                            Seed
+                        </label>
+                        <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                            <input type="checkbox" name="capital_source" value="Venture Capital"
+                                   {% if 'Venture Capital' in current_cap_list %}checked{% endif %}
+                                   style="margin-right: 5px; width: 14px; height: 14px;">
+                            Venture Capital
+                        </label>
+                        <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                            <input type="checkbox" name="capital_source" value="Private Equity"
+                                   {% if 'Private Equity' in current_cap_list %}checked{% endif %}
+                                   style="margin-right: 5px; width: 14px; height: 14px;">
+                            Private Equity
+                        </label>
+                        <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                            <input type="checkbox" name="capital_source" value="Corporate Venture"
+                                   {% if 'Corporate Venture' in current_cap_list %}checked{% endif %}
+                                   style="margin-right: 5px; width: 14px; height: 14px;">
+                            Corporate Venture
+                        </label>
+                        <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                            <input type="checkbox" name="capital_source" value="Corporate M&A"
+                                   {% if 'Corporate M&A' in current_cap_list %}checked{% endif %}
+                                   style="margin-right: 5px; width: 14px; height: 14px;">
+                            Corporate M&amp;A
+                        </label>
+                        <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                            <input type="checkbox" name="capital_source" value="Government/Contract"
+                                   {% if 'Government/Contract' in current_cap_list %}checked{% endif %}
+                                   style="margin-right: 5px; width: 14px; height: 14px;">
+                            Government/Contract
+                        </label>
+                        <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                            <input type="checkbox" name="capital_source" value="Public Markets"
+                                   {% if 'Public Markets' in current_cap_list %}checked{% endif %}
+                                   style="margin-right: 5px; width: 14px; height: 14px;">
+                            Public Markets
+                        </label>
+                        <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                            <input type="checkbox" name="capital_source" value="Internal/Self-funded"
+                                   {% if 'Internal/Self-funded' in current_cap_list %}checked{% endif %}
+                                   style="margin-right: 5px; width: 14px; height: 14px;">
+                            Internal/Self-funded
+                        </label>
+                        <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                            <input type="checkbox" name="capital_source" value="Fund Raise"
+                                   {% if 'Fund Raise' in current_cap_list %}checked{% endif %}
+                                   style="margin-right: 5px; width: 14px; height: 14px;">
+                            Fund Raise
+                        </label>
+                        <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                            <input type="checkbox" name="capital_source" value="Family Office"
+                                   {% if 'Family Office' in current_cap_list %}checked{% endif %}
+                                   style="margin-right: 5px; width: 14px; height: 14px;">
+                            Family Office
+                        </label>
+                        <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                            <input type="checkbox" name="capital_source" value="Strategic Partner"
+                                   {% if 'Strategic Partner' in current_cap_list %}checked{% endif %}
+                                   style="margin-right: 5px; width: 14px; height: 14px;">
+                            Strategic Partner
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Row 5: Sectors (Multi-select) -->
+                <div style="margin-bottom: 10px;">
+                    <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #555;">Sectors/Technology (select all that apply)</label>
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px 8px; padding: 6px 10px; background: #f9f9f9; border-radius: 4px;">
+                        {% set current_sectors = item.sectors.split(',') | map('trim') | list if item.sectors else [] %}
+                        {% set sector_options = ['Autonomous Systems/Drones', 'AI/ML', 'Space/Satellites', 'Aerospace', 'Cybersecurity', 'Advanced Materials', 'Semiconductors/Electronics', 'Manufacturing/Production', 'Software/IT', 'Munitions/Weapons', 'Communications', 'Electronic Warfare', 'Other'] %}
+                        {% set sector_labels = ['Autonomous/Drones', 'AI/ML', 'Space/Satellites', 'Aerospace', 'Cybersecurity', 'Advanced Materials', 'Semiconductors', 'Manufacturing', 'Software/IT', 'Munitions/Weapons', 'Communications', 'Electronic Warfare', 'Other'] %}
+                        {% for i in range(sector_options|length) %}
+                        <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                            <input type="checkbox" name="sectors" value="{{ sector_options[i] }}"
+                                   {% if sector_options[i] in current_sectors %}checked{% endif %}
+                                   style="margin-right: 5px; width: 14px; height: 14px;">
+                            {{ sector_labels[i] }}
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Row 6: Summary -->
+                <div style="margin-bottom: 10px;">
+                    <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #555;">Summary</label>
+                    <textarea name="summary" rows="2"
+                              style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; font-family: inherit;"
+                              placeholder="Brief summary of the deal...">{{ item.summary or '' }}</textarea>
+                </div>
+
+                <!-- Row 7: Internal Notes -->
+                <div style="margin-bottom: 10px;">
+                    <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #555;">Internal Notes</label>
+                    <textarea name="notes" rows="1"
+                              style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; font-family: inherit;"
+                              placeholder="Any notes for yourself (not public)...">{{ item.human_notes or '' }}</textarea>
+                </div>
+
+                <!-- Row 8: Source URLs -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div>
+                        <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #555;">Source URL (override original)</label>
+                        <input type="url" name="source_url"
+                               value="{{ item.source_url or item.raw_item.url }}"
+                               style="width: 100%; padding: 7px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px;"
+                               placeholder="https://...">
+                        <div style="font-size: 10px; color: #888; margin-top: 2px;">Replace if you found a better source.</div>
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #555;">Additional Source (optional)</label>
+                        <input type="url" name="additional_source_url"
+                               value="{{ item.additional_source_url or '' }}"
+                               style="width: 100%; padding: 7px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px;"
+                               placeholder="https://...">
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+                <button type="button" onclick="toggleMasterEdit({{ item.id }})" class="btn btn-secondary">Cancel</button>
+            </div>
+        </form>
     </div>
+
 </div>
 {% endfor %}
 {% endif %}
+
+<script>
+function toggleMasterEdit(itemId) {
+    const collapsed = document.getElementById('master-collapsed-' + itemId);
+    const expanded = document.getElementById('master-expanded-' + itemId);
+    if (collapsed.style.display === 'none') {
+        collapsed.style.display = 'block';
+        expanded.style.display = 'none';
+    } else {
+        collapsed.style.display = 'none';
+        expanded.style.display = 'block';
+    }
+}
+</script>
+
 {% endblock %}

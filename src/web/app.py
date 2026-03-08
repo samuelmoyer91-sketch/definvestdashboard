@@ -2,7 +2,7 @@
 
 import logging
 import os
-from fastapi import FastAPI, Request, Form, Query
+from fastapi import FastAPI, Request, Form, Query, Depends
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -19,6 +19,19 @@ from src.database import RawItem, ArticleContent, AIExtraction, MasterItem, Reje
 from src.utils.investor_parser import parse_investors, slugify
 
 app = FastAPI(title="Defense Capital Tracker")
+
+
+# =============================================================================
+# Database Dependency
+# =============================================================================
+
+def get_db():
+    """FastAPI dependency: yield a DB session and close it when done."""
+    session = get_session()
+    try:
+        yield session
+    finally:
+        session.close()
 
 
 # =============================================================================
@@ -149,18 +162,18 @@ async def diagnostics():
     db_error = None
     counts = {}
     try:
-        session = get_session()
+        diag_session = get_session()
         try:
             counts = {
-                "raw_items": session.query(RawItem).count(),
-                "articles": session.query(ArticleContent).count(),
-                "ai_extractions": session.query(AIExtraction).count(),
-                "master_list": session.query(MasterItem).count(),
-                "rejected": session.query(RejectedItem).count(),
+                "raw_items": diag_session.query(RawItem).count(),
+                "articles": diag_session.query(ArticleContent).count(),
+                "ai_extractions": diag_session.query(AIExtraction).count(),
+                "master_list": diag_session.query(MasterItem).count(),
+                "rejected": diag_session.query(RejectedItem).count(),
             }
             db_ok = True
         finally:
-            session.close()
+            diag_session.close()
     except Exception as e:
         db_error = f"{type(e).__name__}: {e}"
         logger.error(f"Diagnostics DB check failed: {db_error}")
@@ -176,7 +189,7 @@ async def diagnostics():
 
 
 @app.get("/api/action")
-async def email_action(request: Request, token: str = Query(...)):
+async def email_action(request: Request, token: str = Query(...), session=Depends(get_db)):
     """Handle approve/reject actions from email links.
 
     Token format: {item_id}:{action}:{timestamp}:{signature}
@@ -200,107 +213,85 @@ async def email_action(request: Request, token: str = Query(...)):
             status_code=400
         )
 
-    try:
-        session = get_session()
-    except Exception as e:
-        logger.error(f"Database connection failed in /api/action: {e}")
+    # Check item exists
+    item = session.query(RawItem).filter_by(id=item_id).first()
+    if not item:
         return HTMLResponse(
-            content=f"""
+            content="""
             <html>
-            <head><title>Database Error</title></head>
+            <head><title>Item Not Found</title></head>
             <body style="font-family:sans-serif;text-align:center;padding:50px;">
-                <h1 style="color:#f44336;">Database Connection Error</h1>
-                <p>Could not connect to the database. Please try again later.</p>
-                <p style="color:#666;font-size:0.9em;">{type(e).__name__}: {e}</p>
+                <h1 style="color:#ff9800;">Item Not Found</h1>
+                <p>This item may have already been processed.</p>
+                <p><a href="/">Return to triage interface</a></p>
             </body>
             </html>
             """,
-            status_code=503
+            status_code=404
         )
 
-    try:
-        # Check item exists
-        item = session.query(RawItem).filter_by(id=item_id).first()
-        if not item:
-            return HTMLResponse(
-                content="""
-                <html>
-                <head><title>Item Not Found</title></head>
-                <body style="font-family:sans-serif;text-align:center;padding:50px;">
-                    <h1 style="color:#ff9800;">Item Not Found</h1>
-                    <p>This item may have already been processed.</p>
-                    <p><a href="/">Return to triage interface</a></p>
-                </body>
-                </html>
-                """,
-                status_code=404
+    if action == 'approve':
+        # Check if already approved
+        existing = session.query(MasterItem).filter_by(item_id=item_id).first()
+        if not existing:
+            # Get AI extraction for default values
+            extraction = session.query(AIExtraction).filter_by(item_id=item_id).first()
+
+            master = MasterItem(
+                item_id=item_id,
+                company=extraction.company if extraction else None,
+                investors=extraction.investors if extraction else None,
+                investment_amount=extraction.deal_amount if extraction else None,
+                transaction_type=extraction.transaction_type if extraction else None,
+                capital_sources=extraction.capital_sources if extraction else None,
+                sectors=extraction.sectors if extraction else None,
+                summary=extraction.strategic_significance if extraction else None,
+                human_notes="Approved via email",
+                published=False
             )
+            session.add(master)
+            session.commit()
+            sync_turso()
 
-        if action == 'approve':
-            # Check if already approved
-            existing = session.query(MasterItem).filter_by(item_id=item_id).first()
-            if not existing:
-                # Get AI extraction for default values
-                extraction = session.query(AIExtraction).filter_by(item_id=item_id).first()
+        return HTMLResponse(
+            content=f"""
+            <html>
+            <head><title>Approved</title></head>
+            <body style="font-family:sans-serif;text-align:center;padding:50px;">
+                <h1 style="color:#4caf50;">Approved</h1>
+                <p><strong>{item.title[:80]}...</strong></p>
+                <p>Added to master list for publication.</p>
+                <p><a href="/item/{item_id}">View details</a> | <a href="/">Return to triage</a></p>
+            </body>
+            </html>
+            """
+        )
 
-                master = MasterItem(
-                    item_id=item_id,
-                    company=extraction.company if extraction else None,
-                    investors=extraction.investors if extraction else None,
-                    investment_amount=extraction.deal_amount if extraction else None,
-                    transaction_type=extraction.transaction_type if extraction else None,
-                    capital_sources=extraction.capital_sources if extraction else None,
-                    sectors=extraction.sectors if extraction else None,
-                    summary=extraction.strategic_significance if extraction else None,
-                    human_notes="Approved via email",
-                    published=False
-                )
-                session.add(master)
-                session.commit()
-                sync_turso()
-
-            return HTMLResponse(
-                content=f"""
-                <html>
-                <head><title>Approved</title></head>
-                <body style="font-family:sans-serif;text-align:center;padding:50px;">
-                    <h1 style="color:#4caf50;">Approved</h1>
-                    <p><strong>{item.title[:80]}...</strong></p>
-                    <p>Added to master list for publication.</p>
-                    <p><a href="/item/{item_id}">View details</a> | <a href="/">Return to triage</a></p>
-                </body>
-                </html>
-                """
+    elif action == 'reject':
+        # Check if already rejected
+        existing = session.query(RejectedItem).filter_by(item_id=item_id).first()
+        if not existing:
+            rejected = RejectedItem(
+                item_id=item_id,
+                rejection_reason="Rejected via email"
             )
+            session.add(rejected)
+            session.commit()
+            sync_turso()
 
-        elif action == 'reject':
-            # Check if already rejected
-            existing = session.query(RejectedItem).filter_by(item_id=item_id).first()
-            if not existing:
-                rejected = RejectedItem(
-                    item_id=item_id,
-                    rejection_reason="Rejected via email"
-                )
-                session.add(rejected)
-                session.commit()
-                sync_turso()
-
-            return HTMLResponse(
-                content=f"""
-                <html>
-                <head><title>Rejected</title></head>
-                <body style="font-family:sans-serif;text-align:center;padding:50px;">
-                    <h1 style="color:#f44336;">Rejected</h1>
-                    <p><strong>{item.title[:80]}...</strong></p>
-                    <p>Removed from triage queue.</p>
-                    <p><a href="/">Return to triage</a></p>
-                </body>
-                </html>
-                """
-            )
-
-    finally:
-        session.close()
+        return HTMLResponse(
+            content=f"""
+            <html>
+            <head><title>Rejected</title></head>
+            <body style="font-family:sans-serif;text-align:center;padding:50px;">
+                <h1 style="color:#f44336;">Rejected</h1>
+                <p><strong>{item.title[:80]}...</strong></p>
+                <p>Removed from triage queue.</p>
+                <p><a href="/">Return to triage</a></p>
+            </body>
+            </html>
+            """
+        )
 
 
 @app.post("/api/telegram-webhook")
@@ -329,141 +320,72 @@ templates = Jinja2Templates(directory=str(templates_dir))
 
 
 @app.get("/", response_class=HTMLResponse)
-async def home(request: Request):
+async def home(request: Request, session=Depends(get_db)):
     """Home page showing triage queue."""
     from sqlalchemy.orm import joinedload
 
     sync_turso()  # Pull latest data from Turso cloud before reading
-    session = get_session()
 
-    try:
-        # Get items that:
-        # 1. Have been successfully scraped
-        # 2. Are not yet in master list
-        # 3. Have not been rejected
-        # 4. Were not screened out by AI title filter
-        # 5. Are not Contract/Award transaction type (auto-filtered)
-        items = session.query(RawItem).join(
-            ArticleContent, RawItem.id == ArticleContent.item_id
-        ).outerjoin(
-            AIExtraction, RawItem.id == AIExtraction.item_id
-        ).options(
-            joinedload(RawItem.article),
-            joinedload(RawItem.extraction)
-        ).filter(
-            ArticleContent.scrape_success == True,
-            RawItem.status != 'ai_screened_out',
-            ~RawItem.id.in_(
-                session.query(MasterItem.item_id)
-            ),
-            ~RawItem.id.in_(
-                session.query(RejectedItem.item_id)
-            ),
-            # Exclude items where AI classified as Contract/Award
-            ~((AIExtraction.transaction_type != None) & (AIExtraction.transaction_type == 'Contract/Award'))
-        ).order_by(
-            RawItem.published_date.desc()
-        ).limit(200).all()
-
-        # Map relationships to the attribute names templates expect
-        for item in items:
-            item.article_content = item.article
-            item.ai_extraction = item.extraction
-
-        total_items = len(items)
-        master_count = session.query(MasterItem).count()
-
-        return templates.TemplateResponse("triage.html", {
-            "request": request,
-            "items": items,
-            "total_items": total_items,
-            "master_count": master_count
-        })
-    finally:
-        session.close()
-
-
-@app.get("/item/{item_id}", response_class=HTMLResponse)
-async def view_item(request: Request, item_id: int):
-    """View full item details."""
-    session = get_session()
-
-    try:
-        item = session.query(RawItem).filter_by(id=item_id).first()
-        article = session.query(ArticleContent).filter_by(item_id=item_id).first()
-        ai_extraction = session.query(AIExtraction).filter_by(item_id=item_id).first()
-        master = session.query(MasterItem).filter_by(item_id=item_id).first()
-
-        return templates.TemplateResponse("item_detail.html", {
-            "request": request,
-            "item": item,
-            "article": article,
-            "ai_extraction": ai_extraction,
-            "master": master
-        })
-    finally:
-        session.close()
-
-
-def _find_next_triage_item(session, current_item_id):
-    """Find the next item in the triage queue after the current one.
-
-    Returns the ID of the next item, or None if there isn't one.
-    Queue is ordered by published_date desc, so "next" means the item
-    that appears after the current one in that ordering.
-    """
-    current = session.query(RawItem).filter_by(id=current_item_id).first()
-    if not current:
-        return None
-
-    # Get triage queue in same order as the home page, excluding current item
-    queue = session.query(RawItem.id).join(
+    # Get items that:
+    # 1. Have been successfully scraped
+    # 2. Are not yet in master list
+    # 3. Have not been rejected
+    # 4. Were not screened out by AI title filter
+    # 5. Are not Contract/Award transaction type (auto-filtered)
+    items = session.query(RawItem).join(
         ArticleContent, RawItem.id == ArticleContent.item_id
     ).outerjoin(
         AIExtraction, RawItem.id == AIExtraction.item_id
+    ).options(
+        joinedload(RawItem.article),
+        joinedload(RawItem.extraction)
     ).filter(
         ArticleContent.scrape_success == True,
         RawItem.status != 'ai_screened_out',
-        RawItem.id != current_item_id,
-        ~RawItem.id.in_(session.query(MasterItem.item_id)),
-        ~RawItem.id.in_(session.query(RejectedItem.item_id)),
-        # Exclude Contract/Award items
+        ~RawItem.id.in_(
+            session.query(MasterItem.item_id)
+        ),
+        ~RawItem.id.in_(
+            session.query(RejectedItem.item_id)
+        ),
+        # Exclude items where AI classified as Contract/Award
         ~((AIExtraction.transaction_type != None) & (AIExtraction.transaction_type == 'Contract/Award'))
     ).order_by(
         RawItem.published_date.desc()
     ).limit(200).all()
 
-    if not queue:
-        return None
+    # Map relationships to the attribute names templates expect
+    for item in items:
+        item.article_content = item.article
+        item.ai_extraction = item.extraction
 
-    # The queue is ordered by published_date desc (same as the page).
-    # The "next" item is the first one that would appear below the current item,
-    # i.e., with a date <= the current item's date.
-    # If current was already at the bottom, just return the top of the queue.
-    current_date = current.published_date
-    if current_date:
-        # Query directly for the next item after current in the ordering
-        next_item = session.query(RawItem.id).join(
-            ArticleContent, RawItem.id == ArticleContent.item_id
-        ).outerjoin(
-            AIExtraction, RawItem.id == AIExtraction.item_id
-        ).filter(
-            ArticleContent.scrape_success == True,
-            RawItem.status != 'ai_screened_out',
-            RawItem.id != current_item_id,
-            RawItem.published_date <= current_date,
-            ~RawItem.id.in_(session.query(MasterItem.item_id)),
-            ~RawItem.id.in_(session.query(RejectedItem.item_id)),
-            ~((AIExtraction.transaction_type != None) & (AIExtraction.transaction_type == 'Contract/Award'))
-        ).order_by(
-            RawItem.published_date.desc()
-        ).first()
+    total_items = len(items)
+    master_count = session.query(MasterItem).count()
 
-        if next_item:
-            return next_item[0]
+    return templates.TemplateResponse("triage.html", {
+        "request": request,
+        "items": items,
+        "total_items": total_items,
+        "master_count": master_count
+    })
 
-    # Fallback: return first item in queue
-    return queue[0][0]
+
+@app.get("/item/{item_id}", response_class=HTMLResponse)
+async def view_item(request: Request, item_id: int, session=Depends(get_db)):
+    """View full item details."""
+    item = session.query(RawItem).filter_by(id=item_id).first()
+    article = session.query(ArticleContent).filter_by(item_id=item_id).first()
+    ai_extraction = session.query(AIExtraction).filter_by(item_id=item_id).first()
+    master = session.query(MasterItem).filter_by(item_id=item_id).first()
+
+    return templates.TemplateResponse("item_detail.html", {
+        "request": request,
+        "item": item,
+        "article": article,
+        "ai_extraction": ai_extraction,
+        "master": master
+    })
+
 
 
 @app.post("/accept/{item_id}")
@@ -480,167 +402,192 @@ async def accept_item(
     notes: str = Form(""),
     source_url: str = Form(""),
     additional_source_url: str = Form(""),
-    # Legacy fields (hidden inputs for backward compat)
     transaction_type: str = Form(""),
-    capital_sources: list[str] = Form([]),
-    deal_type: str = Form(""),
-    capital_type: str = Form(""),
-    sector: str = Form(""),
-    project_type: str = Form("")
+    session=Depends(get_db),
 ):
     """Accept item and add to master list."""
-    session = get_session()
+    # Check if already in master
+    existing = session.query(MasterItem).filter_by(item_id=item_id).first()
 
-    try:
-        # Check if already in master
-        existing = session.query(MasterItem).filter_by(item_id=item_id).first()
+    if not existing:
+        # Format investment amount with $ prefix
+        formatted_amount = None
+        if investment_amount:
+            clean = investment_amount.replace(',', '').strip()
+            if clean:
+                formatted_amount = f"${investment_amount.strip()}"
 
-        if not existing:
-            # Format investment amount with $ prefix
-            formatted_amount = None
-            if investment_amount:
-                clean = investment_amount.replace(',', '').strip()
-                if clean:
-                    formatted_amount = f"${investment_amount.strip()}"
+        master = MasterItem(
+            item_id=item_id,
+            title=title if title else None,
+            company=company if company else None,
+            investors=investors if investors else None,
+            investment_amount=formatted_amount,
+            # Capital source (multi-select, stored as comma-separated in capital_sources column)
+            capital_sources=",".join(capital_source) if capital_source else None,
+            sectors=",".join(sectors) if sectors else None,
+            transaction_type=transaction_type if transaction_type else None,
+            location=location if location else None,
+            summary=summary if summary else None,
+            human_notes=notes if notes else None,
+            source_url=source_url if source_url else None,
+            additional_source_url=additional_source_url if additional_source_url else None,
+            published=False
+        )
+        session.add(master)
+        session.flush()  # Get master.id for investor links
 
-            master = MasterItem(
-                item_id=item_id,
-                title=title if title else None,
-                company=company if company else None,
-                investors=investors if investors else None,
-                investment_amount=formatted_amount,
-                # Capital source (multi-select, stored as comma-separated in capital_sources column)
-                capital_sources=",".join(capital_source) if capital_source else None,
-                sectors=",".join(sectors) if sectors else None,
-                # Legacy fields
-                transaction_type=transaction_type if transaction_type else None,
-                deal_type=deal_type if deal_type else None,
-                capital_type=capital_type if capital_type else None,
-                sector=sector if sector else None,
-                project_type=project_type if project_type else None,
-                location=location if location else None,
-                summary=summary if summary else None,
-                human_notes=notes if notes else None,
-                source_url=source_url if source_url else None,
-                additional_source_url=additional_source_url if additional_source_url else None,
-                published=False
-            )
-            session.add(master)
-            session.flush()  # Get master.id for investor links
+        # Parse investors and create links
+        _sync_investor_links(session, master)
 
-            # Parse investors and create links
-            _sync_investor_links(session, master)
+        session.commit()
+        sync_turso()  # Push write to Turso cloud
 
-            session.commit()
-            sync_turso()  # Push write to Turso cloud
-
-        return RedirectResponse(url="/", status_code=303)
-    finally:
-        session.close()
+    return RedirectResponse(url="/", status_code=303)
 
 
 @app.post("/reject/{item_id}")
-async def reject_item(item_id: int):
+async def reject_item(item_id: int, session=Depends(get_db)):
     """Reject item and remove from triage queue."""
-    session = get_session()
+    # Check if already rejected
+    existing = session.query(RejectedItem).filter_by(item_id=item_id).first()
 
-    try:
-        # Check if already rejected
-        existing = session.query(RejectedItem).filter_by(item_id=item_id).first()
+    if not existing:
+        rejected = RejectedItem(item_id=item_id)
+        session.add(rejected)
+        session.commit()
+        sync_turso()  # Push write to Turso cloud
 
-        if not existing:
-            rejected = RejectedItem(item_id=item_id)
-            session.add(rejected)
-            session.commit()
-            sync_turso()  # Push write to Turso cloud
-
-        return RedirectResponse(url="/", status_code=303)
-    finally:
-        session.close()
+    return RedirectResponse(url="/", status_code=303)
 
 
 @app.get("/master", response_class=HTMLResponse)
-async def master_list(request: Request):
+async def master_list(request: Request, session=Depends(get_db)):
     """View master list of accepted items."""
     sync_turso()
-    session = get_session()
 
-    try:
-        master_items = session.query(MasterItem).join(
-            RawItem, MasterItem.item_id == RawItem.id
-        ).order_by(
-            MasterItem.curated_at.desc()
-        ).all()
+    master_items = session.query(MasterItem).join(
+        RawItem, MasterItem.item_id == RawItem.id
+    ).order_by(
+        MasterItem.curated_at.desc()
+    ).all()
 
-        # Add raw item data and pipeline status
-        for master in master_items:
-            master.raw_item = session.query(RawItem).filter_by(id=master.item_id).first()
-            master.article_content = session.query(ArticleContent).filter_by(item_id=master.item_id).first()
-            master.ai_extraction = session.query(AIExtraction).filter_by(item_id=master.item_id).first()
+    # Add raw item data and pipeline status
+    for master in master_items:
+        master.raw_item = session.query(RawItem).filter_by(id=master.item_id).first()
+        master.article_content = session.query(ArticleContent).filter_by(item_id=master.item_id).first()
+        master.ai_extraction = session.query(AIExtraction).filter_by(item_id=master.item_id).first()
 
-        return templates.TemplateResponse("master.html", {
-            "request": request,
-            "items": master_items
-        })
-    finally:
-        session.close()
+    return templates.TemplateResponse("master.html", {
+        "request": request,
+        "items": master_items
+    })
 
 
 @app.get("/rejected", response_class=HTMLResponse)
-async def rejected_list(request: Request):
+async def rejected_list(request: Request, session=Depends(get_db)):
     """View rejected items."""
     sync_turso()
-    session = get_session()
 
-    try:
-        rejected_items = session.query(RejectedItem).join(
-            RawItem, RejectedItem.item_id == RawItem.id
-        ).order_by(
-            RejectedItem.rejected_at.desc()
-        ).all()
+    rejected_items = session.query(RejectedItem).join(
+        RawItem, RejectedItem.item_id == RawItem.id
+    ).order_by(
+        RejectedItem.rejected_at.desc()
+    ).all()
 
-        # Add raw item data and pipeline status
-        for rejected in rejected_items:
-            rejected.raw_item = session.query(RawItem).filter_by(id=rejected.item_id).first()
-            rejected.article_content = session.query(ArticleContent).filter_by(item_id=rejected.item_id).first()
+    # Add raw item data and pipeline status
+    for rejected in rejected_items:
+        rejected.raw_item = session.query(RawItem).filter_by(id=rejected.item_id).first()
+        rejected.article_content = session.query(ArticleContent).filter_by(item_id=rejected.item_id).first()
 
-        return templates.TemplateResponse("rejected.html", {
-            "request": request,
-            "items": rejected_items
-        })
-    finally:
-        session.close()
+    return templates.TemplateResponse("rejected.html", {
+        "request": request,
+        "items": rejected_items
+    })
 
 
 @app.get("/stats", response_class=HTMLResponse)
-async def stats(request: Request):
+async def stats(request: Request, session=Depends(get_db)):
     """Show statistics."""
     from sqlalchemy import func
 
     sync_turso()
-    session = get_session()
 
-    try:
-        total_raw = session.query(RawItem).count()
-        total_scraped = session.query(ArticleContent).filter_by(scrape_success=True).count()
-        total_master = session.query(MasterItem).count()
+    total_raw = session.query(RawItem).count()
+    total_scraped = session.query(ArticleContent).filter_by(scrape_success=True).count()
+    total_master = session.query(MasterItem).count()
 
-        feed_counts = session.query(
-            RawItem.feed_source,
-            func.count(RawItem.id)
-        ).group_by(RawItem.feed_source).all()
+    feed_counts = session.query(
+        RawItem.feed_source,
+        func.count(RawItem.id)
+    ).group_by(RawItem.feed_source).all()
 
-        return templates.TemplateResponse("stats.html", {
-            "request": request,
-            "total_raw": total_raw,
-            "total_scraped": total_scraped,
-            "total_master": total_master,
-            "feed_counts": feed_counts
-        })
-    finally:
-        session.close()
+    return templates.TemplateResponse("stats.html", {
+        "request": request,
+        "total_raw": total_raw,
+        "total_scraped": total_scraped,
+        "total_master": total_master,
+        "feed_counts": feed_counts
+    })
 
 
+
+
+@app.get("/excluded", response_class=HTMLResponse)
+async def excluded_list(request: Request, session=Depends(get_db)):
+    """View items silently excluded from triage (screened out or Contract/Award)."""
+    sync_turso()
+
+    # Category 1: Items where raw.status == 'ai_screened_out'
+    # Not already in master or rejected
+    screened_out_items = session.query(RawItem).filter(
+        RawItem.status == 'ai_screened_out',
+        ~RawItem.id.in_(session.query(MasterItem.item_id)),
+        ~RawItem.id.in_(session.query(RejectedItem.item_id)),
+    ).order_by(RawItem.published_date.desc()).all()
+
+    # Category 2: Items where ai.transaction_type == 'Contract/Award'
+    # Not already in master or rejected, and status != 'ai_screened_out'
+    contract_items = session.query(RawItem).join(
+        AIExtraction, RawItem.id == AIExtraction.item_id
+    ).filter(
+        AIExtraction.transaction_type == 'Contract/Award',
+        RawItem.status != 'ai_screened_out',
+        ~RawItem.id.in_(session.query(MasterItem.item_id)),
+        ~RawItem.id.in_(session.query(RejectedItem.item_id)),
+    ).order_by(RawItem.published_date.desc()).all()
+
+    for item in contract_items:
+        item.ai_extraction = session.query(AIExtraction).filter_by(item_id=item.id).first()
+
+    return templates.TemplateResponse("excluded.html", {
+        "request": request,
+        "screened_out_items": screened_out_items,
+        "contract_items": contract_items,
+    })
+
+
+@app.post("/restore/{item_id}")
+async def restore_item(item_id: int, session=Depends(get_db)):
+    """Restore an excluded item back to the triage queue."""
+    raw = session.query(RawItem).filter_by(id=item_id).first()
+    if not raw:
+        return HTMLResponse(content="<h1>Not Found</h1>", status_code=404)
+
+    if raw.status == 'ai_screened_out':
+        # Restore title-screened item by setting status back to 'scraped'
+        raw.status = 'scraped'
+        session.commit()
+        sync_turso()
+    else:
+        # Restore Contract/Award item by clearing its transaction_type
+        ai = session.query(AIExtraction).filter_by(item_id=item_id).first()
+        if ai:
+            ai.transaction_type = None
+            session.commit()
+            sync_turso()
+
+    return RedirectResponse(url="/excluded", status_code=303)
 
 
 def _sync_investor_links(session, master):
@@ -702,26 +649,9 @@ def _sync_investor_links(session, master):
 
 
 @app.get("/edit/{master_id}", response_class=HTMLResponse)
-async def edit_item(request: Request, master_id: int):
-    """Edit form for an accepted deal."""
-    session = get_session()
-
-    try:
-        master = session.query(MasterItem).filter_by(id=master_id).first()
-        if not master:
-            return HTMLResponse(content="<h1>Not Found</h1>", status_code=404)
-
-        raw_item = session.query(RawItem).filter_by(id=master.item_id).first()
-        ai_extraction = session.query(AIExtraction).filter_by(item_id=master.item_id).first()
-
-        return templates.TemplateResponse("edit.html", {
-            "request": request,
-            "master": master,
-            "raw_item": raw_item,
-            "ai_extraction": ai_extraction,
-        })
-    finally:
-        session.close()
+async def edit_item(master_id: int):
+    """Redirect to master list — inline edit is now on /master."""
+    return RedirectResponse(url="/master", status_code=303)
 
 
 @app.post("/edit/{master_id}")
@@ -738,126 +668,111 @@ async def save_edit(
     notes: str = Form(""),
     source_url: str = Form(""),
     additional_source_url: str = Form(""),
+    transaction_type: str = Form(""),
+    session=Depends(get_db),
 ):
     """Save edits to an accepted deal."""
-    session = get_session()
+    master = session.query(MasterItem).filter_by(id=master_id).first()
+    if not master:
+        return HTMLResponse(content="<h1>Not Found</h1>", status_code=404)
 
-    try:
-        master = session.query(MasterItem).filter_by(id=master_id).first()
-        if not master:
-            return HTMLResponse(content="<h1>Not Found</h1>", status_code=404)
+    # Format investment amount with $ prefix
+    formatted_amount = None
+    if investment_amount:
+        clean = investment_amount.replace(',', '').strip()
+        if clean:
+            formatted_amount = f"${investment_amount.strip()}"
 
-        # Format investment amount with $ prefix
-        formatted_amount = None
-        if investment_amount:
-            clean = investment_amount.replace(',', '').strip()
-            if clean:
-                formatted_amount = f"${investment_amount.strip()}"
+    master.title = title if title else None
+    master.company = company if company else None
+    master.investors = investors if investors else None
+    master.investment_amount = formatted_amount
+    master.capital_sources = ",".join(capital_source) if capital_source else None
+    master.sectors = ",".join(sectors) if sectors else None
+    master.transaction_type = transaction_type if transaction_type else None
+    master.location = location if location else None
+    master.summary = summary if summary else None
+    master.human_notes = notes if notes else None
+    master.source_url = source_url if source_url else None
+    master.additional_source_url = additional_source_url if additional_source_url else None
 
-        master.title = title if title else None
-        master.company = company if company else None
-        master.investors = investors if investors else None
-        master.investment_amount = formatted_amount
-        master.capital_sources = ",".join(capital_source) if capital_source else None
-        master.sectors = ",".join(sectors) if sectors else None
-        master.location = location if location else None
-        master.summary = summary if summary else None
-        master.human_notes = notes if notes else None
-        master.source_url = source_url if source_url else None
-        master.additional_source_url = additional_source_url if additional_source_url else None
+    # Re-sync investor links
+    _sync_investor_links(session, master)
 
-        # Re-sync investor links
-        _sync_investor_links(session, master)
+    session.commit()
+    sync_turso()
 
-        session.commit()
-        sync_turso()
-
-        return RedirectResponse(url="/master", status_code=303)
-    finally:
-        session.close()
+    return RedirectResponse(url="/master", status_code=303)
 
 
 @app.get("/investors", response_class=HTMLResponse)
-async def investors_list(request: Request):
+async def investors_list(request: Request, session=Depends(get_db)):
     """View all investors sorted by deal count."""
     sync_turso()
-    session = get_session()
 
-    try:
-        investors = session.query(Investor).order_by(
-            Investor.deal_count.desc(),
-            Investor.name.asc()
-        ).all()
+    investors = session.query(Investor).order_by(
+        Investor.deal_count.desc(),
+        Investor.name.asc()
+    ).all()
 
-        total_investors = len(investors)
-        total_with_investors = session.query(MasterItem).filter(
-            MasterItem.investors != None,
-            MasterItem.investors != ''
-        ).count()
+    total_investors = len(investors)
+    total_with_investors = session.query(MasterItem).filter(
+        MasterItem.investors != None,
+        MasterItem.investors != ''
+    ).count()
 
-        return templates.TemplateResponse("investors.html", {
-            "request": request,
-            "investors": investors,
-            "total_investors": total_investors,
-            "total_with_investors": total_with_investors,
-        })
-    finally:
-        session.close()
+    return templates.TemplateResponse("investors.html", {
+        "request": request,
+        "investors": investors,
+        "total_investors": total_investors,
+        "total_with_investors": total_with_investors,
+    })
 
 
 @app.post("/investors/{investor_id}/delete")
-async def delete_investor(investor_id: int):
+async def delete_investor(investor_id: int, session=Depends(get_db)):
     """Delete an investor and all their deal links."""
-    session = get_session()
-
-    try:
-        investor = session.query(Investor).filter_by(id=investor_id).first()
-        if investor:
-            session.query(DealInvestor).filter_by(investor_id=investor_id).delete()
-            session.delete(investor)
-            session.commit()
-            sync_turso()
-        return RedirectResponse(url="/investors", status_code=303)
-    finally:
-        session.close()
+    investor = session.query(Investor).filter_by(id=investor_id).first()
+    if investor:
+        session.query(DealInvestor).filter_by(investor_id=investor_id).delete()
+        session.delete(investor)
+        session.commit()
+        sync_turso()
+    return RedirectResponse(url="/investors", status_code=303)
 
 
 @app.get("/investors/{slug}", response_class=HTMLResponse)
-async def investor_detail(request: Request, slug: str):
+async def investor_detail(request: Request, slug: str, session=Depends(get_db)):
     """Drill-down page for a single investor."""
     sync_turso()
-    session = get_session()
 
-    try:
-        investor = session.query(Investor).filter_by(slug=slug).first()
-        if not investor:
-            return HTMLResponse(content="<h1>Investor not found</h1>", status_code=404)
+    investor = session.query(Investor).filter_by(slug=slug).first()
+    if not investor:
+        return HTMLResponse(content="<h1>Investor not found</h1>", status_code=404)
 
-        # Get all deals for this investor with deal info
-        links = session.query(DealInvestor).filter_by(investor_id=investor.id).all()
+    # Get all deals for this investor with deal info
+    links = session.query(DealInvestor).filter_by(investor_id=investor.id).all()
 
-        deals = []
-        for link in links:
-            master = session.query(MasterItem).filter_by(id=link.master_item_id).first()
-            if not master:
-                continue
-            raw = session.query(RawItem).filter_by(id=master.item_id).first()
-            deals.append({
-                "master": master,
-                "raw": raw,
-                "is_lead": link.is_lead,
-            })
-
-        # Sort by curated_at desc
-        deals.sort(key=lambda d: d["master"].curated_at or datetime.min, reverse=True)
-
-        return templates.TemplateResponse("investor_detail.html", {
-            "request": request,
-            "investor": investor,
-            "deals": deals,
+    deals = []
+    for link in links:
+        master = session.query(MasterItem).filter_by(id=link.master_item_id).first()
+        if not master:
+            continue
+        raw = session.query(RawItem).filter_by(id=master.item_id).first()
+        deals.append({
+            "master": master,
+            "raw": raw,
+            "is_lead": link.is_lead,
         })
-    finally:
-        session.close()
+
+    # Sort by curated_at desc
+    deals.sort(key=lambda d: d["master"].curated_at or datetime.min, reverse=True)
+
+    return templates.TemplateResponse("investor_detail.html", {
+        "request": request,
+        "investor": investor,
+        "deals": deals,
+    })
 
 
 def _parse_amount(amount_str):
@@ -898,85 +813,75 @@ def _format_amount(value):
 
 
 @app.get("/sectors", response_class=HTMLResponse)
-async def sectors_list(request: Request):
+async def sectors_list(request: Request, session=Depends(get_db)):
     """View deal activity by sector/technology."""
-    session = get_session()
+    items = session.query(MasterItem).filter(
+        MasterItem.sectors != None,
+        MasterItem.sectors != ''
+    ).order_by(MasterItem.curated_at.desc()).all()
 
-    try:
-        items = session.query(MasterItem).filter(
-            MasterItem.sectors != None,
-            MasterItem.sectors != ''
-        ).order_by(MasterItem.curated_at.desc()).all()
+    # Aggregate by sector
+    from collections import defaultdict
+    sector_data = defaultdict(lambda: {
+        'count': 0, 'total_value': 0, 'companies': [], 'last_seen': None
+    })
 
-        # Aggregate by sector
-        from collections import defaultdict
-        sector_data = defaultdict(lambda: {
-            'count': 0, 'total_value': 0, 'companies': [], 'last_seen': None
+    for item in items:
+        for sector in item.sectors.split(','):
+            sector = sector.strip()
+            if not sector:
+                continue
+            data = sector_data[sector]
+            data['count'] += 1
+            amount = _parse_amount(item.investment_amount)
+            if amount:
+                data['total_value'] += amount
+            if item.company and item.company not in data['companies']:
+                data['companies'].append(item.company)
+            if data['last_seen'] is None or (item.curated_at and item.curated_at > data['last_seen']):
+                data['last_seen'] = item.curated_at
+
+    # Build sorted list
+    sectors = []
+    for name, data in sorted(sector_data.items(), key=lambda x: x[1]['count'], reverse=True):
+        sectors.append({
+            'name': name,
+            'count': data['count'],
+            'total_value': _format_amount(data['total_value']),
+            'companies': data['companies'][:3],
+            'last_seen': data['last_seen'],
         })
 
-        for item in items:
-            for sector in item.sectors.split(','):
-                sector = sector.strip()
-                if not sector:
-                    continue
-                data = sector_data[sector]
-                data['count'] += 1
-                amount = _parse_amount(item.investment_amount)
-                if amount:
-                    data['total_value'] += amount
-                if item.company and item.company not in data['companies']:
-                    data['companies'].append(item.company)
-                if data['last_seen'] is None or (item.curated_at and item.curated_at > data['last_seen']):
-                    data['last_seen'] = item.curated_at
-
-        # Build sorted list
-        sectors = []
-        for name, data in sorted(sector_data.items(), key=lambda x: x[1]['count'], reverse=True):
-            sectors.append({
-                'name': name,
-                'count': data['count'],
-                'total_value': _format_amount(data['total_value']),
-                'companies': data['companies'][:3],
-                'last_seen': data['last_seen'],
-            })
-
-        return templates.TemplateResponse("sectors.html", {
-            "request": request,
-            "sectors": sectors,
-        })
-    finally:
-        session.close()
+    return templates.TemplateResponse("sectors.html", {
+        "request": request,
+        "sectors": sectors,
+    })
 
 
 @app.get("/sectors/{sector_name}", response_class=HTMLResponse)
-async def sector_deals(request: Request, sector_name: str):
+async def sector_deals(request: Request, sector_name: str, session=Depends(get_db)):
     """View all deals in a specific sector."""
     from urllib.parse import unquote
     sector_name = unquote(sector_name)
 
-    session = get_session()
+    # Find master items containing this sector
+    all_items = session.query(MasterItem).filter(
+        MasterItem.sectors != None
+    ).order_by(MasterItem.curated_at.desc()).all()
 
-    try:
-        # Find master items containing this sector
-        all_items = session.query(MasterItem).filter(
-            MasterItem.sectors != None
-        ).order_by(MasterItem.curated_at.desc()).all()
+    # Filter to items that contain this sector
+    items = []
+    for item in all_items:
+        sector_list = [s.strip() for s in item.sectors.split(',')]
+        if sector_name in sector_list:
+            item.raw_item = session.query(RawItem).filter_by(id=item.item_id).first()
+            items.append(item)
 
-        # Filter to items that contain this sector
-        items = []
-        for item in all_items:
-            sector_list = [s.strip() for s in item.sectors.split(',')]
-            if sector_name in sector_list:
-                item.raw_item = session.query(RawItem).filter_by(id=item.item_id).first()
-                items.append(item)
-
-        return templates.TemplateResponse("sector_deals.html", {
-            "request": request,
-            "sector_name": sector_name,
-            "items": items,
-        })
-    finally:
-        session.close()
+    return templates.TemplateResponse("sector_deals.html", {
+        "request": request,
+        "sector_name": sector_name,
+        "items": items,
+    })
 
 
 if __name__ == "__main__":

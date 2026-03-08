@@ -36,7 +36,7 @@
 
 <div class="stats">
     <div class="stat-card">
-        <div class="stat-number">{{ total_items }}</div>
+        <div class="stat-number" id="triage-count">{{ total_items }}</div>
         <div class="stat-label">Items to Review</div>
     </div>
     <div class="stat-card">
@@ -76,17 +76,15 @@
         <!-- AI One-liner Summary -->
         {% if item.ai_extraction %}
         <div style="margin-top: 10px; font-size: 14px; color: #333; font-weight: 500;">
-            {% if item.ai_extraction.deal_type %}<strong>{{ item.ai_extraction.deal_type }}</strong>{% endif %}
+            {% if item.ai_extraction.transaction_type %}<strong>{{ item.ai_extraction.transaction_type }}</strong>{% endif %}
             {% if item.ai_extraction.deal_amount %} • {{ item.ai_extraction.deal_amount }}{% endif %}
-            {% if item.ai_extraction.sector %} • {{ item.ai_extraction.sector }}{% endif %}
+            {% if item.ai_extraction.sectors %} • {{ item.ai_extraction.sectors.split(',')[0].strip() }}{% endif %}
         </div>
         {% endif %}
 
         <div class="item-actions" style="margin-top: 12px;">
             <button onclick="toggleReview({{ item.id }})" class="btn btn-primary">▼ Review & Accept</button>
-            <form method="post" action="/reject/{{ item.id }}" style="display: inline;">
-                <button type="submit" class="btn btn-danger">Reject</button>
-            </form>
+            <button type="button" onclick="rejectItem({{ item.id }})" class="btn btn-danger">Reject</button>
             <a href="{{ item.url }}" target="_blank" class="btn btn-link">View Original</a>
         </div>
     </div>
@@ -111,16 +109,16 @@
                 📄 Article Preview ({{ "{:,}".format(item.article_content.clean_text | length) }} characters)
             </summary>
             <div style="margin-top: 12px; padding: 12px; background: white; border-radius: 4px; max-height: 350px; overflow-y: auto; font-size: 13px; line-height: 1.7; color: #333;">
-                {{ item.article_content.clean_text[:1500] }}
-                {% if item.article_content.clean_text | length > 1500 %}
-                <p style="color: #999; margin-top: 12px; font-style: italic;">... (showing first 1,500 characters)</p>
+                {{ item.article_content.clean_text[:6000] }}
+                {% if item.article_content.clean_text | length > 6000 %}
+                <p style="color: #999; margin-top: 12px; font-style: italic;">... (showing first 6,000 characters)</p>
                 {% endif %}
             </div>
         </details>
         {% endif %}
 
         <!-- Curation Form -->
-        <form method="post" action="/accept/{{ item.id }}">
+        <form onsubmit="event.preventDefault(); acceptItem({{ item.id }}, this)">
             <div style="background: #f8f9fa; padding: 14px; border-radius: 6px; margin-bottom: 10px;">
                 <h4 style="margin-bottom: 8px; color: #333; font-size: 15px;">Edit Deal Information</h4>
 
@@ -196,7 +194,29 @@
                     </div>
                 </div>
 
-                <!-- Row 3: Capital Type (Multi-select) -->
+                <!-- Row 3: Transaction Type -->
+                <div style="margin-bottom: 10px;">
+                    <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #555;">
+                        Transaction Type
+                        {% if item.ai_extraction and item.ai_extraction.transaction_type %}<span class="ai-badge">AI</span>{% endif %}
+                    </label>
+                    <select name="transaction_type"
+                            {% if item.ai_extraction and item.ai_extraction.transaction_type %}class="ai-populated"{% endif %}
+                            style="width: 100%; padding: 7px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; background: white;">
+                        <option value="">— Select —</option>
+                        {% set tt = item.ai_extraction.transaction_type if item.ai_extraction and item.ai_extraction.transaction_type else '' %}
+                        <option value="Equity Funding Round" {% if tt == 'Equity Funding Round' %}selected{% endif %}>Equity Funding Round</option>
+                        <option value="Acquisition" {% if tt == 'Acquisition' %}selected{% endif %}>Acquisition</option>
+                        <option value="Merger" {% if tt == 'Merger' %}selected{% endif %}>Merger</option>
+                        <option value="IPO" {% if tt == 'IPO' %}selected{% endif %}>IPO</option>
+                        <option value="Strategic Partnership" {% if tt == 'Strategic Partnership' %}selected{% endif %}>Strategic Partnership</option>
+                        <option value="Internal Investment" {% if tt == 'Internal Investment' %}selected{% endif %}>Internal Investment</option>
+                        <option value="Contract/Award" {% if tt == 'Contract/Award' %}selected{% endif %}>Contract/Award</option>
+                        <option value="Fund Raise" {% if tt == 'Fund Raise' %}selected{% endif %}>Fund Raise</option>
+                    </select>
+                </div>
+
+                <!-- Row 4: Capital Type (Multi-select) -->
                 <div style="margin-bottom: 10px;">
                     <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #555;">
                         Capital Type (select all that apply)
@@ -221,6 +241,12 @@
                                    {% if 'Private Equity' in ai_cap_list %}checked{% endif %}
                                    style="margin-right: 5px; width: 14px; height: 14px;">
                             Private Equity
+                        </label>
+                        <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                            <input type="checkbox" name="capital_source" value="Corporate Venture"
+                                   {% if 'Corporate Venture' in ai_cap_list %}checked{% endif %}
+                                   style="margin-right: 5px; width: 14px; height: 14px;">
+                            Corporate Venture
                         </label>
                         <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
                             <input type="checkbox" name="capital_source" value="Corporate M&A"
@@ -252,12 +278,19 @@
                                    style="margin-right: 5px; width: 14px; height: 14px;">
                             Fund Raise
                         </label>
+                        <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                            <input type="checkbox" name="capital_source" value="Family Office"
+                                   {% if 'Family Office' in ai_cap_list %}checked{% endif %}
+                                   style="margin-right: 5px; width: 14px; height: 14px;">
+                            Family Office
+                        </label>
+                        <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                            <input type="checkbox" name="capital_source" value="Strategic Partner"
+                                   {% if 'Strategic Partner' in ai_cap_list %}checked{% endif %}
+                                   style="margin-right: 5px; width: 14px; height: 14px;">
+                            Strategic Partner
+                        </label>
                     </div>
-                    <!-- Hidden fields for backward compatibility -->
-                    <input type="hidden" name="deal_type" value="">
-                    <input type="hidden" name="capital_type" value="">
-                    <input type="hidden" name="project_type" value="">
-                    <input type="hidden" name="transaction_type" value="">
                 </div>
 
                 <!-- Row 5: Sectors (Multi-select) -->
@@ -347,8 +380,6 @@
                             Other
                         </label>
                     </div>
-                    <!-- Hidden field for backward compatibility -->
-                    <input type="hidden" name="sector" value="">
                 </div>
 
                 <!-- Row 6: Summary -->
@@ -363,7 +394,7 @@
                               placeholder="Brief summary of the deal...">{{ item.ai_extraction.strategic_significance if item.ai_extraction and item.ai_extraction.strategic_significance else '' }}</textarea>
                 </div>
 
-                <!-- Row 6: Internal Notes -->
+                <!-- Row 7: Internal Notes -->
                 <div style="margin-bottom: 10px;">
                     <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #555;">
                         Internal Notes
@@ -373,7 +404,7 @@
                               placeholder="Any notes for yourself (not public)..."></textarea>
                 </div>
 
-                <!-- Row 7: Source URLs -->
+                <!-- Row 8: Source URLs -->
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                     <div>
                         <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #555;">
@@ -403,9 +434,7 @@
             </div>
         </form>
         <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 6px;">
-            <form method="post" action="/reject/{{ item.id }}" style="display: inline;">
-                <button type="submit" class="btn btn-danger">✗ Reject</button>
-            </form>
+            <button type="button" onclick="rejectItem({{ item.id }})" class="btn btn-danger">✗ Reject</button>
             <a href="{{ item.url }}" target="_blank" class="btn btn-link">View Original</a>
         </div>
     </div>
@@ -432,6 +461,60 @@ function toggleReview(itemId) {
             formatCurrencyInput(amountInput);
         }
     }
+}
+
+function updateTriageCount(delta) {
+    const el = document.getElementById('triage-count');
+    if (el) {
+        const current = parseInt(el.textContent, 10);
+        if (!isNaN(current)) {
+            el.textContent = Math.max(0, current + delta);
+        }
+    }
+}
+
+function acceptItem(id, formEl) {
+    fetch('/accept/' + id, {
+        method: 'POST',
+        body: new FormData(formEl),
+        redirect: 'follow'
+    }).then(response => {
+        if (response.ok) {
+            const card = document.getElementById('item-' + id);
+            if (card) {
+                card.style.transition = 'opacity 0.3s';
+                card.style.opacity = '0';
+                setTimeout(() => card.remove(), 300);
+            }
+            updateTriageCount(-1);
+        } else {
+            alert('Accept failed (status ' + response.status + '). Please reload and try again.');
+        }
+    }).catch(err => {
+        alert('Network error: ' + err);
+    });
+}
+
+function rejectItem(id) {
+    if (!confirm('Reject this item? This cannot be undone.')) return;
+    fetch('/reject/' + id, {
+        method: 'POST',
+        redirect: 'follow'
+    }).then(response => {
+        if (response.ok) {
+            const card = document.getElementById('item-' + id);
+            if (card) {
+                card.style.transition = 'opacity 0.3s';
+                card.style.opacity = '0';
+                setTimeout(() => card.remove(), 300);
+            }
+            updateTriageCount(-1);
+        } else {
+            alert('Reject failed (status ' + response.status + '). Please reload and try again.');
+        }
+    }).catch(err => {
+        alert('Network error: ' + err);
+    });
 }
 
 function parseDealAmount(value) {
@@ -461,23 +544,6 @@ function formatNumberWithCommas(num) {
     parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     return parts.join('.');
 }
-
-
-// Auto-open item from ?open= URL param (after accept/reject redirect)
-(function() {
-    const params = new URLSearchParams(window.location.search);
-    const openId = params.get('open');
-    if (openId) {
-        const card = document.getElementById('item-' + openId);
-        if (card) {
-            toggleReview(parseInt(openId));
-            // Scroll into view after a brief delay for DOM update
-            setTimeout(() => card.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
-        }
-        // Clean URL without reload
-        window.history.replaceState({}, '', '/');
-    }
-})();
 
 function formatCurrencyInput(input) {
     let value = input.value;

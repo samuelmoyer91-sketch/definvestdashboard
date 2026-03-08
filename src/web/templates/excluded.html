@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Excluded Items - Defense Capital Tracker{% endblock %}
+
+{% block content %}
+<h2 style="margin-bottom: 20px;">Excluded Items</h2>
+
+<p style="color: #666; margin-bottom: 24px; font-size: 14px;">
+    Items listed here were automatically excluded from the triage queue. Use "Restore to Queue" to make them reviewable again.
+</p>
+
+<!-- Section 1: Title-screened items -->
+<h3 style="margin-bottom: 12px; font-size: 16px; color: #444;">
+    Title-Screened Out
+    <span style="font-weight: normal; font-size: 13px; color: #888;">({{ screened_out_items | length }} items)</span>
+</h3>
+
+{% if screened_out_items | length == 0 %}
+<div class="card" style="margin-bottom: 24px;">
+    <p style="text-align: center; color: #666;">No title-screened items.</p>
+</div>
+{% else %}
+{% for item in screened_out_items %}
+<div class="card item-card" style="border-left: 4px solid #ebcb8b; margin-bottom: 12px;">
+    <div class="item-header">
+        <div class="item-title" style="font-size: 15px;">{{ item.title | safe }}</div>
+    </div>
+    <div class="item-meta" style="margin-top: 6px; margin-bottom: 10px;">
+        <span class="badge badge-info">{{ item.feed_source }}</span>
+        {% if item.published_date %}
+        <span style="margin-left: 10px; color: #666;">{{ item.published_date.strftime('%Y-%m-%d') }}</span>
+        {% endif %}
+        <span style="margin-left: 10px; padding: 3px 8px; background: #ebcb8b; border-radius: 4px; font-size: 12px; font-weight: 600; color: #333;">
+            Reason: AI title screener filtered
+        </span>
+    </div>
+    <div class="item-actions">
+        <form method="post" action="/restore/{{ item.id }}" style="display: inline;">
+            <button type="submit" class="btn btn-primary">Restore to Queue</button>
+        </form>
+        <a href="{{ item.url }}" target="_blank" class="btn btn-link">View Original</a>
+    </div>
+</div>
+{% endfor %}
+{% endif %}
+
+<!-- Section 2: Contract/Award items -->
+<h3 style="margin-bottom: 12px; margin-top: 28px; font-size: 16px; color: #444;">
+    Auto-Excluded: Contract/Award
+    <span style="font-weight: normal; font-size: 13px; color: #888;">({{ contract_items | length }} items)</span>
+</h3>
+
+{% if contract_items | length == 0 %}
+<div class="card">
+    <p style="text-align: center; color: #666;">No Contract/Award excluded items.</p>
+</div>
+{% else %}
+{% for item in contract_items %}
+<div class="card item-card" style="border-left: 4px solid #d94654; margin-bottom: 12px;">
+    <div class="item-header">
+        <div class="item-title" style="font-size: 15px;">{{ item.title | safe }}</div>
+    </div>
+    <div class="item-meta" style="margin-top: 6px; margin-bottom: 10px;">
+        <span class="badge badge-info">{{ item.feed_source }}</span>
+        {% if item.published_date %}
+        <span style="margin-left: 10px; color: #666;">{{ item.published_date.strftime('%Y-%m-%d') }}</span>
+        {% endif %}
+        <span style="margin-left: 10px; padding: 3px 8px; background: #f8d7da; border-radius: 4px; font-size: 12px; font-weight: 600; color: #721c24;">
+            Reason: AI classified as Contract/Award
+        </span>
+    </div>
+    {% if item.ai_extraction and item.ai_extraction.company %}
+    <div style="font-size: 13px; color: #555; margin-bottom: 8px;">
+        <strong>Company:</strong> {{ item.ai_extraction.company }}
+        {% if item.ai_extraction.deal_amount %} &mdash; {{ item.ai_extraction.deal_amount }}{% endif %}
+    </div>
+    {% endif %}
+    <div class="item-actions">
+        <form method="post" action="/restore/{{ item.id }}" style="display: inline;">
+            <button type="submit" class="btn btn-primary">Restore to Queue</button>
+        </form>
+        <a href="{{ item.url }}" target="_blank" class="btn btn-link">View Original</a>
+    </div>
+</div>
+{% endfor %}
+{% endif %}
+
+{% endblock %}

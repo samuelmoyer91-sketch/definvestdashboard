@@ -283,14 +283,17 @@ def generate_html_page(deals, deals_per_page=10):
                 'space-satellites': 'Space/Satellites'
             }};
             const capitalLabels = {{
-                'corporate-venture': 'Corporate Venture',
-                'family-office': 'Family Office',
-                'government-contract': 'Government Contract',
-                'internal-self-funded': 'Internal/Self-Funded',
+                'seed': 'Seed',
+                'venture-capital': 'Venture Capital',
                 'private-equity': 'Private Equity',
+                'corporate-venture': 'Corporate Venture',
+                'corporate-m-a': 'Corporate M&A',
+                'government-contract': 'Government/Contract',
                 'public-markets': 'Public Markets',
-                'strategic-partner': 'Strategic Partner',
-                'venture-capital': 'Venture Capital'
+                'internal-self-funded': 'Internal/Self-Funded',
+                'fund-raise': 'Fund Raise',
+                'family-office': 'Family Office',
+                'strategic-partner': 'Strategic Partner'
             }};
 
             const sectorCounts = {{}};
@@ -424,64 +427,6 @@ def generate_deal_card(master, raw, ai):
     # Extract date
     date_str = raw.published_date.strftime('%b %d, %Y') if raw.published_date else 'Date unknown'
 
-    # Transaction Type badge (with fallback to old deal_type)
-    deal_type = 'UNKNOWN'
-    deal_type_class = 'badge-secondary'
-
-    # Prioritize new transaction_type field
-    if master and master.transaction_type:
-        dt = master.transaction_type.upper()
-        if 'FUNDING' in dt or 'EQUITY' in dt:
-            deal_type = 'FUNDING'
-            deal_type_class = 'badge-primary'
-        elif 'ACQUISITION' in dt:
-            deal_type = 'ACQUISITION'
-            deal_type_class = 'badge-success'
-        elif 'MERGER' in dt:
-            deal_type = 'MERGER'
-            deal_type_class = 'badge-success'
-        elif 'IPO' in dt:
-            deal_type = 'IPO'
-            deal_type_class = 'badge-warning'
-        elif 'CONTRACT' in dt or 'AWARD' in dt:
-            deal_type = 'CONTRACT'
-            deal_type_class = 'badge-secondary'
-        elif 'STRATEGIC' in dt or 'PARTNERSHIP' in dt or 'JOINT' in dt:
-            deal_type = 'STRATEGIC'
-            deal_type_class = 'badge-secondary'
-        elif 'INTERNAL' in dt:
-            deal_type = 'INTERNAL'
-            deal_type_class = 'badge-secondary'
-        else:
-            deal_type = dt  # Don't truncate, show full transaction type
-    # Fallback to old deal_type or AI extraction
-    elif master and master.deal_type:
-        dt = master.deal_type.upper()
-        if 'VC' in dt or 'VENTURE' in dt or 'FUNDING' in dt:
-            deal_type = 'FUNDING'
-            deal_type_class = 'badge-primary'
-        elif 'M&A' in dt or 'ACQUISITION' in dt or 'ACQUIRED' in dt:
-            deal_type = 'ACQUISITION'
-            deal_type_class = 'badge-success'
-        elif 'IPO' in dt:
-            deal_type = 'IPO'
-            deal_type_class = 'badge-warning'
-        else:
-            deal_type = dt  # Don't truncate, show full transaction type
-    elif ai and ai.deal_type:
-        dt = ai.deal_type.upper()
-        if 'VC' in dt or 'VENTURE' in dt or 'FUNDING' in dt:
-            deal_type = 'FUNDING'
-            deal_type_class = 'badge-primary'
-        elif 'M&A' in dt or 'ACQUISITION' in dt or 'ACQUIRED' in dt:
-            deal_type = 'ACQUISITION'
-            deal_type_class = 'badge-success'
-        elif 'IPO' in dt:
-            deal_type = 'IPO'
-            deal_type_class = 'badge-warning'
-        else:
-            deal_type = dt  # Don't truncate, show full transaction type
-
     # Extract company name from AI or master
     company_name = (ai.company if ai and ai.company else
                    master.company if master and master.company else None)
@@ -515,7 +460,7 @@ def generate_deal_card(master, raw, ai):
 
     # Build card with clean text-based layout
     card_html = f"""
-    <div class="deal-card" data-deal-type="{deal_type.lower()}"{sectors_attr}{capital_attr}>
+    <div class="deal-card"{sectors_attr}{capital_attr}>
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-date">{date_str}</span>
