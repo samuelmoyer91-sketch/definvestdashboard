@@ -14,7 +14,7 @@
 - Two-column layout: chart left (2fr), description right (1fr)
 - 17 charts across three labeled sections: **Capital Flows**, **Industrial Capacity**, **Macro Environment**
 - Source labels link directly to external data sources (FRED series pages, Yahoo Finance tickers)
-- Live data freshness timestamp in page header (fetched from dgorder.json at runtime)
+- Live data freshness timestamp in page header (fetched from dgs10.json at runtime — daily FRED series, more current than monthly dgorder.json)
 - Loading state ("Loading…") and error state ("Data unavailable") on each chart column
 
 ### Page Header Redesign
@@ -58,6 +58,12 @@
 
 ---
 
-## Commit
+## Commits
 `380bf8d` — Merge chart categories into single Indicators page; polish nav and content
 26 files changed, 3578 insertions, 6519 deletions
+
+`42c9f45` — Update README and add session log for 2026-03-02 consolidation session
+
+`50af8fc` — Fix generate_site.py verification check; improve data freshness label
+- generate_site.py: check for charts/indicators.html (not deleted defense-spending.html)
+- Switched data freshness source to dgs10.json; label updated to "Last updated"

@@ -1,9 +1,12 @@
 """FastAPI web application for triage and dashboard."""
 
 import base64
+import hashlib
+import hmac
 import logging
 import os
 import secrets
+import time
 from fastapi import FastAPI, Request, Form, Query, Depends
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -21,6 +24,30 @@ sys.path.append(str(Path(__file__).parent.parent.parent))
 
 from src.database import RawItem, ArticleContent, AIExtraction, MasterItem, RejectedItem, Investor, DealInvestor, get_session, sync_turso
 from src.utils.investor_parser import parse_investors, slugify
+
+_TOKEN_EXPIRY = 24 * 60 * 60  # 24 hours
+
+def verify_action_token(token: str):
+    """Verify HMAC-signed approve/reject token from email action links."""
+    secret = os.environ.get('EMAIL_ACTION_SECRET', 'dev-secret-change-me')
+    try:
+        parts = token.split(':')
+        if len(parts) != 4:
+            return False, None, None, "Invalid token format"
+        item_id_str, action, timestamp_str, provided_sig = parts
+        item_id = int(item_id_str)
+        timestamp = int(timestamp_str)
+        if time.time() - timestamp > _TOKEN_EXPIRY:
+            return False, item_id, action, "Token expired"
+        message = f"{item_id}:{action}:{timestamp}"
+        expected_sig = hmac.new(secret.encode(), message.encode(), hashlib.sha256).hexdigest()[:16]
+        if not hmac.compare_digest(provided_sig, expected_sig):
+            return False, None, None, "Invalid signature"
+        if action not in ('approve', 'reject'):
+            return False, None, None, "Invalid action"
+        return True, item_id, action, None
+    except (ValueError, TypeError) as e:
+        return False, None, None, f"Token parse error: {e}"
 
 app = FastAPI(title="Defense Capital Tracker")
 
@@ -211,7 +238,7 @@ async def health_check():
 @app.get("/api/diagnostics")
 async def diagnostics():
     """Diagnostics endpoint to check env vars, DB connection, and record counts."""
-    required_vars = ["TURSO_DATABASE_URL", "TURSO_AUTH_TOKEN", "EMAIL_ACTION_SECRET"]
+    required_vars = ["TURSO_DATABASE_URL", "TURSO_AUTH_TOKEN", "ANTHROPIC_API_KEY"]
     env_status = {var: bool(os.environ.get(var)) for var in required_vars}
 
     db_ok = False
@@ -250,8 +277,6 @@ async def email_action(request: Request, token: str = Query(...), session=Depend
 
     Token format: {item_id}:{action}:{timestamp}:{signature}
     """
-    from src.notifications.email_sender import verify_action_token
-
     valid, item_id, action, error = verify_action_token(token)
 
     if not valid:
@@ -387,7 +412,7 @@ async def home(request: Request, session=Depends(get_db)):
     # 2. Are not yet in master list
     # 3. Have not been rejected
     # 4. Were not screened out by AI title filter
-    # 5. Are not Contract/Award transaction type (auto-filtered)
+    # 5. Are not Contract/Award transaction type (routine contracts/SBIR auto-filtered)
     items = session.query(RawItem).join(
         ArticleContent, RawItem.id == ArticleContent.item_id
     ).outerjoin(
@@ -404,7 +429,7 @@ async def home(request: Request, session=Depends(get_db)):
         ~RawItem.id.in_(
             session.query(RejectedItem.item_id)
         ),
-        # Exclude items where AI classified as Contract/Award
+        # Exclude routine Contract/Award items (SBIR, grants, procurement)
         ~((AIExtraction.transaction_type != None) & (AIExtraction.transaction_type == 'Contract/Award'))
     ).order_by(
         RawItem.published_date.desc()
@@ -591,19 +616,15 @@ async def stats(request: Request, session=Depends(get_db)):
 
 @app.get("/excluded", response_class=HTMLResponse)
 async def excluded_list(request: Request, session=Depends(get_db)):
-    """View items silently excluded from triage (screened out or Contract/Award)."""
+    """View items silently excluded from triage (title-screened out or Contract/Award)."""
     sync_turso()
 
-    # Category 1: Items where raw.status == 'ai_screened_out'
-    # Not already in master or rejected
     screened_out_items = session.query(RawItem).filter(
         RawItem.status == 'ai_screened_out',
         ~RawItem.id.in_(session.query(MasterItem.item_id)),
         ~RawItem.id.in_(session.query(RejectedItem.item_id)),
     ).order_by(RawItem.published_date.desc()).all()
 
-    # Category 2: Items where ai.transaction_type == 'Contract/Award'
-    # Not already in master or rejected, and status != 'ai_screened_out'
     contract_items = session.query(RawItem).join(
         AIExtraction, RawItem.id == AIExtraction.item_id
     ).filter(
@@ -631,7 +652,6 @@ async def restore_item(item_id: int, session=Depends(get_db)):
         return HTMLResponse(content="<h1>Not Found</h1>", status_code=404)
 
     if raw.status == 'ai_screened_out':
-        # Restore title-screened item by setting status back to 'scraped'
         raw.status = 'scraped'
         session.commit()
         sync_turso()

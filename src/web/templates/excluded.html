@@ -47,7 +47,7 @@
 <!-- Section 2: Contract/Award items -->
 <h3 style="margin-bottom: 12px; margin-top: 28px; font-size: 16px; color: #444;">
     Auto-Excluded: Contract/Award
-    <span style="font-weight: normal; font-size: 13px; color: #888;">({{ contract_items | length }} items)</span>
+    <span style="font-weight: normal; font-size: 13px; color: #888;">({{ contract_items | length }} items) &mdash; routine contracts, SBIR/STTR, grants</span>
 </h3>
 
 {% if contract_items | length == 0 %}
@@ -58,7 +58,7 @@
 {% for item in contract_items %}
 <div class="card item-card" style="border-left: 4px solid #d94654; margin-bottom: 12px;">
     <div class="item-header">
-        <div class="item-title" style="font-size: 15px;">{{ item.title | safe }}</div>
+        <div class="item-title" style="font-size: 15px;">{{ item.title }}</div>
     </div>
     <div class="item-meta" style="margin-top: 6px; margin-bottom: 10px;">
         <span class="badge badge-info">{{ item.feed_source }}</span>

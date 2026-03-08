@@ -58,8 +58,14 @@ NOT RELEVANT articles are about:
 - Geopolitical news, military operations, or troop movements
 - Social issues, protests, immigration enforcement
 - Sports, entertainment, personal finance, non-defense industries
-- General stock market commentary without a specific deal
-- Think tank reports or opinion pieces without a specific transaction
+- Market commentary, forecasts, or outlooks (e.g., "defense stocks set for banner year", "analysts bullish on aerospace sector", "why defense is a good investment in 2025") — no specific transaction
+- Think tank reports, opinion pieces, or analyst notes without a specific transaction
+- Earnings/quarterly results articles unless they announce a specific deal, acquisition, or major capex program
+- Articles about a company's stock price movement without an underlying transaction
+- Lists, rankings, or "best of" articles (e.g., "top 10 defense stocks to watch")
+- Speculative or intent-based articles where no deal has been formally announced (e.g., "Company X plans to expand", "XYZ considering acquisition", "Defense firm eyes investment", "could build new facility") — plans and intentions are not transactions
+
+The key test: does the article describe a SPECIFIC transaction that has already occurred or been formally announced — a named company raising or deploying a specific amount of capital for a specific purpose? If no specific transaction exists, or if the language is speculative/forward-looking ("plans to", "considering", "exploring", "eyes", "mulls", "could", "may expand", "expected to"), filter it out. Intentions and rumors are not deals.
 
 Review each article:
 
@@ -68,10 +74,10 @@ Review each article:
 Return a JSON array with one object per article, in order:
 [
   {{"id": 1, "relevant": true, "reason": "Series B funding for defense AI company"}},
-  {{"id": 2, "relevant": false, "reason": "Government budget debate, not a business deal"}}
+  {{"id": 2, "relevant": false, "reason": "Market outlook piece, no specific deal"}}
 ]
 
-Be selective. When in doubt about borderline cases, mark as relevant — a human will do final review. But obvious non-deals (politics, protests, legal cases, general news) should be filtered out."""
+Be selective. If the title sounds like news commentary, a forecast, or general industry analysis rather than a specific business event, filter it out. Only pass through articles that are likely reporting on a concrete transaction."""
 
     try:
         message = client.messages.create(

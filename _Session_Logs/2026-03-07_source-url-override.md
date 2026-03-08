@@ -104,3 +104,88 @@ Complete. Committed and pushed to main. Railway will auto-deploy.
 
 ### Status
 All 12 items complete. Committed and pushed to main.
+
+---
+
+## Session 3 — 2026-03-07: Security Hardening
+
+### Items Addressed
+
+**1. HTTP Basic Auth on Railway triage app**
+- Added `BasicAuthMiddleware` to `app.py` using `TRIAGE_USERNAME` / `TRIAGE_PASSWORD` env vars.
+- Auth skipped entirely if env vars are not set (safe for local dev).
+- `/health` and `/api/telegram-webhook` exempted from auth.
+- Sam added credentials to Railway environment variables.
+
+**2. XSS prevention in export**
+- Added `import html as html_module` and `e()` helper (`html.escape()`) to `export_to_html_v2.py`.
+- Applied `e()` to all user-controlled fields in card f-strings: title, company, investors, capital, sectors, location, summary.
+
+**3. URL validation**
+- Added `_safe_url()` helper in `app.py` — validates only `http`/`https` schemes; returns `#` for anything else.
+- Applied to source URLs in the export footer.
+
+**4. XSS in triage template**
+- Removed `| safe` filter from `{{ item.title }}` in `triage.html` (both title display locations).
+- Removed `| safe` from `master.html` title rendering.
+
+---
+
+## Session 4 — 2026-03-07: RSS Feed Expansion
+
+### New Feeds Added to `config/feeds.json`
+
+Five new Google News RSS feeds targeting named defense-sector investors:
+
+| Feed | Query |
+|---|---|
+| Defense VC Specialists | Shield Capital, Paladin Capital, Razor's Edge Ventures, Alsop Louie, Harpoon Ventures |
+| In-Q-Tel | "In-Q-Tel" |
+| Defense Corporate Ventures | RTX Ventures, Northrop Grumman Ventures, L3Harris Ventures |
+| Carlyle Defense | "Carlyle Group" + defense/aerospace/military |
+| a16z Defense | "Andreessen Horowitz" + defense/national security |
+
+These use Google News RSS (`news.google.com/rss/search`) rather than Google Alerts, so they don't require a Google account and work immediately. Named-entity queries have high signal; large generalist funds (Carlyle, a16z) have sector filters to reduce noise.
+
+---
+
+## Session 5 — 2026-03-07: AI Extraction + Screener Refinements
+
+### AI Summarizer (`src/utils/ai_summarizer.py`)
+
+**Transaction type taxonomy revised:**
+- Removed "Contract/Award" and "Government Investment" as separate types.
+- Added "Government Support" for Title III, industrial base fund, OTA, AFWERX/DIU programs — passes through to triage.
+- Kept "Contract/Award" as a separate internal type for routine procurement, SBIR, grants — auto-excluded from triage queue.
+- Final two-type system: Contract/Award (noise, auto-excluded) / Government Support (signal, passes through).
+
+**Extraction prompt field 9 (Strategic Significance) rewritten:**
+- Replaced editorial "why this matters" style with factual use-of-proceeds description.
+- Prompt now instructs: name specific products, programs, facilities. No editorializing about what it signals or how it positions the company.
+- Added example style drawn from Sam's actual summaries (AeroVironment, Sierra Space, EIF/Join Capital).
+
+### Title Screener (`src/utils/title_screener.py`)
+
+Tightened to reduce false positives (~40% manual rejection rate):
+- Added "market commentary / forecasts / outlooks" to NOT RELEVANT list (e.g., "defense stocks set for banner year").
+- Added "speculative / intent-based" articles to NOT RELEVANT list (e.g., "Company X plans to expand", "eyes investment", "mulls acquisition").
+- Added "earnings results without a specific deal", "stock price movement", "lists/rankings" to NOT RELEVANT list.
+- Rewrote the key test: article must describe a SPECIFIC transaction that has already occurred or been formally announced — speculative language ("plans to", "considering", "may", "could") is explicitly disqualifying.
+- Changed tie-breaker from "when in doubt, pass" → "if it sounds like commentary or a forecast, filter it out."
+
+---
+
+## Session 6 — 2026-03-07: Email Code Removal
+
+### Dead Code Deleted
+
+The email digest feature (`src/notifications/email_sender.py`, `src/notifications/send_digest.py`) was never wired into any GitHub Actions workflow or active Railway route. Deleted both files.
+
+- `verify_action_token()` function inlined directly into `app.py` (still needed by `/api/action` endpoint for HMAC-signed approve/reject links).
+- Added `import hmac`, `import hashlib`, `import time` to `app.py` top-level imports.
+- Updated `/api/diagnostics` required vars list: replaced `EMAIL_ACTION_SECRET` with `ANTHROPIC_API_KEY`.
+- Sam deleted `GMAIL_ADDRESS`, `GMAIL_APP_PASSWORD`, `DIGEST_RECIPIENT`, `EMAIL_ACTION_SECRET` from Railway environment variables.
+- `src/notifications/telegram_bot.py` retained (active).
+
+### Status
+All sessions complete. Changes accumulated across this conversation; push to main pending.
