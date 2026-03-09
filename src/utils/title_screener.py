@@ -64,8 +64,11 @@ NOT RELEVANT articles are about:
 - Articles about a company's stock price movement without an underlying transaction
 - Lists, rankings, or "best of" articles (e.g., "top 10 defense stocks to watch")
 - Speculative or intent-based articles where no deal has been formally announced (e.g., "Company X plans to expand", "XYZ considering acquisition", "Defense firm eyes investment", "could build new facility") — plans and intentions are not transactions
+- Cybersecurity deals with no clear defense or national security connection — general commercial cybersecurity funding (enterprise security, SaaS security tools, identity/access management, consumer privacy) should be filtered out UNLESS the company explicitly serves defense/government/IC customers, the investor is a known defense-sector fund, or the article specifically mentions DoD, military, intelligence community, or national security applications
 
 The key test: does the article describe a SPECIFIC transaction that has already occurred or been formally announced — a named company raising or deploying a specific amount of capital for a specific purpose? If no specific transaction exists, or if the language is speculative/forward-looking ("plans to", "considering", "exploring", "eyes", "mulls", "could", "may expand", "expected to"), filter it out. Intentions and rumors are not deals.
+
+For cybersecurity specifically: when in doubt, filter it out. Only pass through cybersecurity deals where the defense/national security angle is explicit, not merely plausible.
 
 Review each article:
 
