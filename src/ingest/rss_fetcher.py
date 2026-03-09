@@ -2,7 +2,7 @@
 
 import feedparser
 import json
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 import sys
 
@@ -56,13 +56,27 @@ def parse_feed(feed_url, feed_name):
     return entries
 
 
+MAX_AGE_DAYS = 7
+
+
 def save_to_database(entries, session, config=None):
     """Save RSS entries to database with relevance scoring (skip duplicates)."""
     new_count = 0
     duplicate_count = 0
     auto_rejected_count = 0
+    stale_count = 0
+
+    cutoff = datetime.now(timezone.utc) - timedelta(days=MAX_AGE_DAYS)
 
     for entry in entries:
+        # Skip items older than MAX_AGE_DAYS (but pass through items with no date)
+        pub = entry.get('published')
+        if pub is not None:
+            pub_aware = pub.replace(tzinfo=timezone.utc) if pub.tzinfo is None else pub
+            if pub_aware < cutoff:
+                stale_count += 1
+                continue
+
         # Check if URL already exists
         existing = session.query(RawItem).filter_by(url=entry['url']).first()
 
@@ -104,9 +118,9 @@ def save_to_database(entries, session, config=None):
         new_count += 1
 
     session.commit()
-    print(f"Saved {new_count} new items ({auto_rejected_count} auto-rejected), skipped {duplicate_count} duplicates")
+    print(f"Saved {new_count} new items ({auto_rejected_count} auto-rejected), skipped {duplicate_count} duplicates, {stale_count} stale (>{MAX_AGE_DAYS}d)")
 
-    return new_count, duplicate_count, auto_rejected_count
+    return new_count, duplicate_count, auto_rejected_count, stale_count
 
 
 def fetch_all_feeds(config_path='config/feeds.json', db_path='databases/tracker.db'):
@@ -125,6 +139,7 @@ def fetch_all_feeds(config_path='config/feeds.json', db_path='databases/tracker.
     total_new = 0
     total_duplicates = 0
     total_auto_rejected = 0
+    total_stale = 0
 
     # Fetch each feed
     for feed_config in config['rss_feeds']:
@@ -134,15 +149,16 @@ def fetch_all_feeds(config_path='config/feeds.json', db_path='databases/tracker.
 
         print()
         entries = parse_feed(feed_config['url'], feed_config['name'])
-        new, dupes, rejected = save_to_database(entries, session, config)
+        new, dupes, rejected, stale = save_to_database(entries, session, config)
 
         total_new += new
         total_duplicates += dupes
         total_auto_rejected += rejected
+        total_stale += stale
 
     print()
     print("=" * 60)
-    print(f"SUMMARY: {total_new} new items ({total_auto_rejected} auto-rejected), {total_duplicates} duplicates")
+    print(f"SUMMARY: {total_new} new items ({total_auto_rejected} auto-rejected), {total_duplicates} duplicates, {total_stale} stale (>{MAX_AGE_DAYS}d)")
     print("=" * 60)
 
     session.close()
