@@ -97,7 +97,6 @@ def generate_summaries(limit=5, force_regenerate=False):
                 # Update existing
                 extraction.title = summary.get('title')
                 extraction.company = summary.get('company_name')
-                extraction.company_description = summary.get('company_description')
                 extraction.deal_type = summary.get('deal_type')  # Legacy
                 extraction.transaction_type = summary.get('transaction_type')
                 extraction.deal_amount = summary.get('deal_amount')
@@ -106,7 +105,6 @@ def generate_summaries(limit=5, force_regenerate=False):
                 extraction.sectors = ','.join(summary.get('sectors', [])) if summary.get('sectors') else None
                 extraction.location = summary.get('location')
                 extraction.strategic_significance = summary.get('strategic_significance')
-                extraction.market_implications = summary.get('market_implications')
                 extraction.summary_complete = summary.get('summary_complete', False)
                 extraction.model_used = summary.get('model_used')
             else:
@@ -115,7 +113,6 @@ def generate_summaries(limit=5, force_regenerate=False):
                     item_id=item.id,
                     title=summary.get('title'),
                     company=summary.get('company_name'),
-                    company_description=summary.get('company_description'),
                     deal_type=summary.get('deal_type'),  # Legacy
                     transaction_type=summary.get('transaction_type'),
                     deal_amount=summary.get('deal_amount'),
@@ -124,7 +121,6 @@ def generate_summaries(limit=5, force_regenerate=False):
                     sectors=','.join(summary.get('sectors', [])) if summary.get('sectors') else None,
                     location=summary.get('location'),
                     strategic_significance=summary.get('strategic_significance'),
-                    market_implications=summary.get('market_implications'),
                     summary_complete=summary.get('summary_complete', False),
                     model_used=summary.get('model_used')
                 )

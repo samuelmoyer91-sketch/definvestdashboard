@@ -63,7 +63,6 @@ Extract the following information (use "Unknown" if not found):
 7. INVESTORS/ACQUIRERS: Key firms or companies involved. Return as a clean comma-separated list of names only — no descriptions, no parentheticals, no "led by", "backed by", "with participation from", or other connective language. Example: "8VC, Lux Capital, Founders Fund". For self-funded/internal deals, return "Self-funded".
 8. LOCATION: Where the company is headquartered or where the deal/project is located. Format as "City, State, Country" for US locations (e.g., "San Diego, CA, USA") or "City, Country" for international (e.g., "London, UK"). Use null if not mentioned.
 9. STRATEGIC SIGNIFICANCE: In 2-3 sentences, describe specifically what the company will do with this capital — which products, programs, facilities, or capabilities it will fund or develop. Name them explicitly; do not generalize. If the investor or fund is not well-known or has an unusual structure (e.g., a government-backed development bank, a sector-specific fund), briefly explain what it is and what it invests in. Be factual and specific. Do not editorialize about why this matters, what it signals, or how it positions the company. Write in third person present tense. Example style: "AeroVironment is significantly expanding domestic manufacturing capacity for directed energy laser systems, anti-drone systems, and laser communications. State and local resourcing include $5 million from the state of New Mexico and $1 million from the City of Albuquerque."
-10. MARKET IMPLICATIONS: What does this signal about defense tech trends? (1-2 sentences)
 
 Format your response as JSON:
 {{
@@ -75,8 +74,7 @@ Format your response as JSON:
   "deal_amount": "...",
   "investors": "...",
   "location": "City, State, Country",
-  "strategic_significance": "...",
-  "market_implications": "..."
+  "strategic_significance": "..."
 }}
 
 Notes:
@@ -90,7 +88,6 @@ Special handling for EARNINGS CALLS, ANNUAL REPORTS, and INVESTOR PRESENTATIONS:
 - For deal_amount: use the single most significant capex or R&D figure mentioned. If multiple figures, pick the headline number (total R&D budget or largest single investment). It's OK to leave this null if no clear figure stands out.
 - For investors: leave null.
 - For strategic_significance: describe specifically where the company is directing spending — which programs, capabilities, or facilities. Name them explicitly. Do not editorialize.
-- For market_implications: what does this spending posture signal about defense sector trends?
 - Treat the article as ONE card for the company, not separate cards per spending line item."""
 
     try:
