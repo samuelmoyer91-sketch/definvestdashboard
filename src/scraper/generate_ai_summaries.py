@@ -15,10 +15,9 @@ sys.path.append(str(Path(__file__).parent.parent.parent))
 
 from src.database import RawItem, ArticleContent, AIExtraction, ApiUsageLog, get_session
 from src.utils.ai_summarizer import summarize_deal_article, format_summary_for_display
+from src.utils.pricing import calculate_cost
 
 SONNET_MODEL = "claude-sonnet-4-20250514"
-SONNET_INPUT_PRICE = 3.00   # $ per 1M tokens
-SONNET_OUTPUT_PRICE = 15.00 # $ per 1M tokens
 
 
 def generate_summaries(limit=5, force_regenerate=False):
@@ -100,6 +99,7 @@ def generate_summaries(limit=5, force_regenerate=False):
                 extraction.company = summary.get('company_name')
                 extraction.company_description = summary.get('company_description')
                 extraction.deal_type = summary.get('deal_type')  # Legacy
+                extraction.transaction_type = summary.get('transaction_type')
                 extraction.deal_amount = summary.get('deal_amount')
                 extraction.investors = summary.get('investors')
                 extraction.capital_sources = cap_src
@@ -117,6 +117,7 @@ def generate_summaries(limit=5, force_regenerate=False):
                     company=summary.get('company_name'),
                     company_description=summary.get('company_description'),
                     deal_type=summary.get('deal_type'),  # Legacy
+                    transaction_type=summary.get('transaction_type'),
                     deal_amount=summary.get('deal_amount'),
                     investors=summary.get('investors'),
                     capital_sources=cap_src,
@@ -152,12 +153,12 @@ def generate_summaries(limit=5, force_regenerate=False):
     # Log API usage
     if total_input_tokens > 0:
         try:
-            cost = (total_input_tokens * SONNET_INPUT_PRICE + total_output_tokens * SONNET_OUTPUT_PRICE) / 1_000_000
+            cost = calculate_cost(SONNET_MODEL, total_input_tokens, total_output_tokens)
             log = ApiUsageLog(
                 logged_at=datetime.utcnow(),
                 run_type='summarizer',
                 model=SONNET_MODEL,
-                items_processed=success_count,
+                items_processed=len(items),  # items attempted (success + error)
                 input_tokens=total_input_tokens,
                 output_tokens=total_output_tokens,
                 cost_usd=cost,

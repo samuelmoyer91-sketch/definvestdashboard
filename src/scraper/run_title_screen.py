@@ -19,10 +19,9 @@ sys.path.append(str(Path(__file__).parent.parent.parent))
 
 from src.database import RawItem, ArticleContent, ApiUsageLog, get_session
 from src.utils.title_screener import screen_titles
+from src.utils.pricing import calculate_cost
 
 HAIKU_MODEL = "claude-haiku-4-5-20251001"
-HAIKU_INPUT_PRICE = 0.80   # $ per 1M tokens
-HAIKU_OUTPUT_PRICE = 4.00  # $ per 1M tokens
 
 
 def run_title_screen(dry_run=False):
@@ -88,12 +87,12 @@ def run_title_screen(dry_run=False):
 
         # Log API usage
         try:
-            cost = (total_input * HAIKU_INPUT_PRICE + total_output * HAIKU_OUTPUT_PRICE) / 1_000_000
+            cost = calculate_cost(HAIKU_MODEL, total_input, total_output)
             log = ApiUsageLog(
                 logged_at=datetime.utcnow(),
                 run_type='title_screen',
                 model=HAIKU_MODEL,
-                items_processed=len(items),
+                items_processed=len(items),  # items attempted (consistent with summarizer)
                 input_tokens=total_input,
                 output_tokens=total_output,
                 cost_usd=cost,

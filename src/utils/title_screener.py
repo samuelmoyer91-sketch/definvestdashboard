@@ -30,7 +30,10 @@ def screen_title_batch(items):
     api_key = os.environ.get('ANTHROPIC_API_KEY')
     if not api_key:
         print("  Warning: ANTHROPIC_API_KEY not set. Passing all items through.")
-        return {item['id']: {"relevant": True, "reason": "No API key"} for item in items}
+        return (
+            {item['id']: {"relevant": True, "reason": "No API key"} for item in items},
+            {"input_tokens": 0, "output_tokens": 0},
+        )
 
     client = Anthropic(api_key=api_key)
 

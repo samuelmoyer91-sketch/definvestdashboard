@@ -34,7 +34,7 @@ def main():
     cutoff = datetime.now(timezone.utc) - timedelta(days=MAX_AGE_DAYS)
 
     candidates = session.query(RawItem).filter(
-        RawItem.status == 'new',
+        RawItem.status.in_(['new', 'scraped']),
         RawItem.published_date != None,
         RawItem.published_date < cutoff.replace(tzinfo=None)  # DB stores naive datetimes
     ).all()

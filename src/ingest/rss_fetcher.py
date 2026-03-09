@@ -163,7 +163,7 @@ def fetch_all_feeds(config_path='config/feeds.json', db_path='databases/tracker.
 
     session.close()
 
-    return total_new, total_duplicates, total_auto_rejected
+    return total_new, total_duplicates, total_auto_rejected, total_stale
 
 
 if __name__ == '__main__':
