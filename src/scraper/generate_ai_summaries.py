@@ -9,11 +9,16 @@ that don't have them yet.
 import sys
 from pathlib import Path
 import time
+from datetime import datetime
 
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
-from src.database import RawItem, ArticleContent, AIExtraction, get_session
+from src.database import RawItem, ArticleContent, AIExtraction, ApiUsageLog, get_session
 from src.utils.ai_summarizer import summarize_deal_article, format_summary_for_display
+
+SONNET_MODEL = "claude-sonnet-4-20250514"
+SONNET_INPUT_PRICE = 3.00   # $ per 1M tokens
+SONNET_OUTPUT_PRICE = 15.00 # $ per 1M tokens
 
 
 def generate_summaries(limit=5, force_regenerate=False):
@@ -60,6 +65,8 @@ def generate_summaries(limit=5, force_regenerate=False):
 
     success_count = 0
     error_count = 0
+    total_input_tokens = 0
+    total_output_tokens = 0
 
     for i, item in enumerate(items, 1):
         print(f"[{i}/{len(items)}] {item.title[:60]}...")
@@ -124,11 +131,12 @@ def generate_summaries(limit=5, force_regenerate=False):
 
             session.commit()
 
+            total_input_tokens += summary.get('input_tokens', 0)
+            total_output_tokens += summary.get('output_tokens', 0)
+
             if summary.get('summary_complete'):
                 success_count += 1
                 print(f"  ✓ Generated summary")
-                # Optionally print summary for review
-                # print(format_summary_for_display(summary))
             else:
                 error_count += 1
                 print(f"  ⚠️  Summary incomplete (no API key or error)")
@@ -140,6 +148,25 @@ def generate_summaries(limit=5, force_regenerate=False):
         # Rate limiting (Claude API has limits)
         if i < len(items):
             time.sleep(1)  # 1 second between requests
+
+    # Log API usage
+    if total_input_tokens > 0:
+        try:
+            cost = (total_input_tokens * SONNET_INPUT_PRICE + total_output_tokens * SONNET_OUTPUT_PRICE) / 1_000_000
+            log = ApiUsageLog(
+                logged_at=datetime.utcnow(),
+                run_type='summarizer',
+                model=SONNET_MODEL,
+                items_processed=success_count,
+                input_tokens=total_input_tokens,
+                output_tokens=total_output_tokens,
+                cost_usd=cost,
+            )
+            session.add(log)
+            session.commit()
+            print(f"API usage logged: {total_input_tokens:,} in / {total_output_tokens:,} out — ${cost:.4f}")
+        except Exception as e:
+            print(f"Warning: failed to log API usage: {e}")
 
     print()
     print("=" * 80)

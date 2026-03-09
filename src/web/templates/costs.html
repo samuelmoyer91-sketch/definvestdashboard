@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block title %}Costs - Defense Capital Tracker{% endblock %}
+
+{% block content %}
+<h2 style="margin-bottom: 20px;">Cost Tracker</h2>
+
+<!-- Top stat cards -->
+<div class="stats" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
+    <div class="stat-card">
+        <div class="stat-number" style="font-size: 28px;">${{ "%.4f"|format(mtd_total) }}</div>
+        <div class="stat-label">Claude API — Month to Date</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number" style="font-size: 28px;">${{ "%.4f"|format(rolling_total) }}</div>
+        <div class="stat-label">Claude API — Rolling 30 Days</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number" style="font-size: 28px;">${{ "%.2f"|format(infra_total) }}</div>
+        <div class="stat-label">Infrastructure — Monthly Fixed</div>
+    </div>
+    <div class="stat-card" style="border: 2px solid #88c540;">
+        <div class="stat-number" style="font-size: 28px; color: #88c540;">${{ "%.2f"|format(all_in_mtd) }}</div>
+        <div class="stat-label">All-In — Month to Date</div>
+    </div>
+</div>
+
+<!-- MTD breakdown by type -->
+<div class="card">
+    <h3 style="margin-bottom: 15px;">Claude API — Month to Date by Step</h3>
+    <table style="width: 100%;">
+        <thead>
+            <tr style="border-bottom: 2px solid #ddd;">
+                <th style="text-align: left; padding: 10px;">Step</th>
+                <th style="text-align: right; padding: 10px;">Items</th>
+                <th style="text-align: right; padding: 10px;">Input Tokens</th>
+                <th style="text-align: right; padding: 10px;">Output Tokens</th>
+                <th style="text-align: right; padding: 10px;">Cost</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% set screener = mtd_by_type.get('title_screen', {}) %}
+            {% set summarizer = mtd_by_type.get('summarizer', {}) %}
+            <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 10px;">Title Screener <span style="font-size: 12px; color: #888;">(Haiku)</span></td>
+                <td style="padding: 10px; text-align: right;">{{ screener.get('items', 0) }}</td>
+                <td style="padding: 10px; text-align: right;">{{ "{:,}".format(screener.get('input', 0)|int) }}</td>
+                <td style="padding: 10px; text-align: right;">{{ "{:,}".format(screener.get('output', 0)|int) }}</td>
+                <td style="padding: 10px; text-align: right; font-weight: 600;">${{ "%.4f"|format(screener.get('cost', 0)) }}</td>
+            </tr>
+            <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 10px;">AI Summarizer <span style="font-size: 12px; color: #888;">(Sonnet)</span></td>
+                <td style="padding: 10px; text-align: right;">{{ summarizer.get('items', 0) }}</td>
+                <td style="padding: 10px; text-align: right;">{{ "{:,}".format(summarizer.get('input', 0)|int) }}</td>
+                <td style="padding: 10px; text-align: right;">{{ "{:,}".format(summarizer.get('output', 0)|int) }}</td>
+                <td style="padding: 10px; text-align: right; font-weight: 600;">${{ "%.4f"|format(summarizer.get('cost', 0)) }}</td>
+            </tr>
+            <tr style="background: #f9f9f9; font-weight: 700;">
+                <td style="padding: 10px;">Total</td>
+                <td style="padding: 10px; text-align: right;">{{ (screener.get('items', 0) + summarizer.get('items', 0)) }}</td>
+                <td style="padding: 10px; text-align: right;">{{ "{:,}".format((screener.get('input', 0) + summarizer.get('input', 0))|int) }}</td>
+                <td style="padding: 10px; text-align: right;">{{ "{:,}".format((screener.get('output', 0) + summarizer.get('output', 0))|int) }}</td>
+                <td style="padding: 10px; text-align: right;">${{ "%.4f"|format(mtd_total) }}</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- Daily breakdown -->
+<div class="card">
+    <h3 style="margin-bottom: 15px;">Daily Breakdown — Last 30 Days</h3>
+    {% if daily_list %}
+    <table style="width: 100%;">
+        <thead>
+            <tr style="border-bottom: 2px solid #ddd;">
+                <th style="text-align: left; padding: 10px;">Date</th>
+                <th style="text-align: right; padding: 10px;">Screener Items</th>
+                <th style="text-align: right; padding: 10px;">Screener Cost</th>
+                <th style="text-align: right; padding: 10px;">Summarizer Items</th>
+                <th style="text-align: right; padding: 10px;">Summarizer Cost</th>
+                <th style="text-align: right; padding: 10px;">Daily Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for date_str, types in daily_list %}
+            {% set s = types.get('title_screen', {}) %}
+            {% set m = types.get('summarizer', {}) %}
+            {% set day_total = s.get('cost', 0) + m.get('cost', 0) %}
+            <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 10px; font-family: monospace;">{{ date_str }}</td>
+                <td style="padding: 10px; text-align: right;">{{ s.get('items', '—') if s else '—' }}</td>
+                <td style="padding: 10px; text-align: right;">{% if s %}${{ "%.4f"|format(s.get('cost', 0)) }}{% else %}—{% endif %}</td>
+                <td style="padding: 10px; text-align: right;">{{ m.get('items', '—') if m else '—' }}</td>
+                <td style="padding: 10px; text-align: right;">{% if m %}${{ "%.4f"|format(m.get('cost', 0)) }}{% else %}—{% endif %}</td>
+                <td style="padding: 10px; text-align: right; font-weight: 600;">${{ "%.4f"|format(day_total) }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="color: #888; padding: 20px 0;">No API usage logged yet. Data will appear after the next ingest run.</p>
+    {% endif %}
+</div>
+
+<!-- Infrastructure -->
+<div class="card">
+    <h3 style="margin-bottom: 15px;">Infrastructure — Monthly Fixed Costs</h3>
+    <table style="width: 100%;">
+        <thead>
+            <tr style="border-bottom: 2px solid #ddd;">
+                <th style="text-align: left; padding: 10px;">Service</th>
+                <th style="text-align: left; padding: 10px;">Plan</th>
+                <th style="text-align: right; padding: 10px;">Monthly Cost</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in infra %}
+            <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 10px;">{{ item.name }}</td>
+                <td style="padding: 10px; color: #666; font-size: 13px;">{{ item.note }}</td>
+                <td style="padding: 10px; text-align: right; font-weight: 600;">
+                    {% if item.cost == 0 %}<span style="color: #4c9173;">Free</span>{% else %}${{ "%.2f"|format(item.cost) }}{% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+            <tr style="background: #f9f9f9; font-weight: 700;">
+                <td style="padding: 10px;" colspan="2">Total</td>
+                <td style="padding: 10px; text-align: right;">${{ "%.2f"|format(infra_total) }}</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- Pricing reference -->
+<div class="card" style="background: #f9f9f9;">
+    <h3 style="margin-bottom: 12px; font-size: 14px; color: #666;">Pricing Reference</h3>
+    <table style="width: 100%; font-size: 13px; color: #555;">
+        <thead>
+            <tr style="border-bottom: 1px solid #ddd;">
+                <th style="text-align: left; padding: 6px;">Model</th>
+                <th style="text-align: right; padding: 6px;">Input</th>
+                <th style="text-align: right; padding: 6px;">Output</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td style="padding: 6px;">Claude Haiku 4.5 (title screener)</td>
+                <td style="padding: 6px; text-align: right;">$0.80 / MTok</td>
+                <td style="padding: 6px; text-align: right;">$4.00 / MTok</td>
+            </tr>
+            <tr>
+                <td style="padding: 6px;">Claude Sonnet 4 (AI summarizer)</td>
+                <td style="padding: 6px; text-align: right;">$3.00 / MTok</td>
+                <td style="padding: 6px; text-align: right;">$15.00 / MTok</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
-from src.database import RawItem, ArticleContent, AIExtraction, MasterItem, RejectedItem, Investor, DealInvestor, get_session, sync_turso
+from src.database import RawItem, ArticleContent, AIExtraction, MasterItem, RejectedItem, Investor, DealInvestor, ApiUsageLog, get_session, sync_turso
 from src.utils.investor_parser import parse_investors, slugify
 
 _TOKEN_EXPIRY = 24 * 60 * 60  # 24 hours
@@ -612,6 +612,74 @@ async def stats(request: Request, session=Depends(get_db)):
     })
 
 
+
+
+@app.get("/costs", response_class=HTMLResponse)
+async def costs(request: Request, session=Depends(get_db)):
+    """Show API cost tracking and infrastructure costs."""
+    from sqlalchemy import func
+    from datetime import timedelta
+
+    sync_turso()
+
+    now = datetime.utcnow()
+    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    rolling_30 = now - timedelta(days=30)
+
+    # MTD totals
+    mtd_rows = session.query(
+        ApiUsageLog.run_type,
+        func.sum(ApiUsageLog.cost_usd),
+        func.sum(ApiUsageLog.input_tokens),
+        func.sum(ApiUsageLog.output_tokens),
+        func.sum(ApiUsageLog.items_processed),
+    ).filter(ApiUsageLog.logged_at >= month_start).group_by(ApiUsageLog.run_type).all()
+
+    mtd_by_type = {r[0]: {"cost": r[1] or 0, "input": r[2] or 0, "output": r[3] or 0, "items": r[4] or 0} for r in mtd_rows}
+    mtd_total = sum(v["cost"] for v in mtd_by_type.values())
+
+    # 30-day rolling totals
+    rolling_rows = session.query(
+        func.sum(ApiUsageLog.cost_usd),
+    ).filter(ApiUsageLog.logged_at >= rolling_30).first()
+    rolling_total = rolling_rows[0] or 0
+
+    # Daily breakdown — last 30 days
+    daily_rows = session.query(
+        func.date(ApiUsageLog.logged_at),
+        ApiUsageLog.run_type,
+        func.sum(ApiUsageLog.cost_usd),
+        func.sum(ApiUsageLog.items_processed),
+    ).filter(
+        ApiUsageLog.logged_at >= rolling_30
+    ).group_by(func.date(ApiUsageLog.logged_at), ApiUsageLog.run_type).order_by(func.date(ApiUsageLog.logged_at).desc()).all()
+
+    # Pivot daily rows into {date: {screener: cost, summarizer: cost}}
+    daily = {}
+    for date_str, run_type, cost, items in daily_rows:
+        if date_str not in daily:
+            daily[date_str] = {}
+        daily[date_str][run_type] = {"cost": cost or 0, "items": items or 0}
+    daily_list = sorted(daily.items(), reverse=True)
+
+    # Infrastructure (fixed monthly)
+    infra = [
+        {"name": "Railway", "cost": 5.00, "note": "Hobby plan"},
+        {"name": "Turso", "cost": 0.00, "note": "Free tier"},
+        {"name": "Cloudflare Pages", "cost": 0.00, "note": "Free tier"},
+    ]
+    infra_total = sum(i["cost"] for i in infra)
+
+    return templates.TemplateResponse("costs.html", {
+        "request": request,
+        "mtd_total": mtd_total,
+        "mtd_by_type": mtd_by_type,
+        "rolling_total": rolling_total,
+        "infra": infra,
+        "infra_total": infra_total,
+        "all_in_mtd": mtd_total + infra_total,
+        "daily_list": daily_list,
+    })
 
 
 @app.get("/excluded", response_class=HTMLResponse)

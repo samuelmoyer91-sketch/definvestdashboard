@@ -13,11 +13,16 @@ Usage:
 
 import sys
 from pathlib import Path
+from datetime import datetime
 
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
-from src.database import RawItem, ArticleContent, get_session
+from src.database import RawItem, ArticleContent, ApiUsageLog, get_session
 from src.utils.title_screener import screen_titles
+
+HAIKU_MODEL = "claude-haiku-4-5-20251001"
+HAIKU_INPUT_PRICE = 0.80   # $ per 1M tokens
+HAIKU_OUTPUT_PRICE = 4.00  # $ per 1M tokens
 
 
 def run_title_screen(dry_run=False):
@@ -59,7 +64,7 @@ def run_title_screen(dry_run=False):
     ]
 
     # Run AI screening
-    results = screen_titles(screen_input)
+    results, total_input, total_output = screen_titles(screen_input)
 
     # Apply results
     passed = 0
@@ -80,6 +85,24 @@ def run_title_screen(dry_run=False):
 
     if not dry_run:
         session.commit()
+
+        # Log API usage
+        try:
+            cost = (total_input * HAIKU_INPUT_PRICE + total_output * HAIKU_OUTPUT_PRICE) / 1_000_000
+            log = ApiUsageLog(
+                logged_at=datetime.utcnow(),
+                run_type='title_screen',
+                model=HAIKU_MODEL,
+                items_processed=len(items),
+                input_tokens=total_input,
+                output_tokens=total_output,
+                cost_usd=cost,
+            )
+            session.add(log)
+            session.commit()
+            print(f"  API usage logged: {total_input:,} in / {total_output:,} out — ${cost:.4f}")
+        except Exception as e:
+            print(f"  Warning: failed to log API usage: {e}")
 
     print()
     print("=" * 70)

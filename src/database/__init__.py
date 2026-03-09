@@ -8,6 +8,7 @@ from .models import (
     RejectedItem,
     Investor,
     DealInvestor,
+    ApiUsageLog,
     get_engine,
     get_session,
     sync_turso
@@ -21,6 +22,7 @@ __all__ = [
     'RejectedItem',
     'Investor',
     'DealInvestor',
+    'ApiUsageLog',
     'get_engine',
     'get_session',
     'sync_turso'

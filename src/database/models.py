@@ -211,6 +211,23 @@ class RejectedItem(Base):
         return f"<RejectedItem(item_id={self.item_id})>"
 
 
+class ApiUsageLog(Base):
+    """Per-run Claude API token usage for cost tracking."""
+    __tablename__ = 'api_usage_log'
+
+    id = Column(Integer, primary_key=True)
+    logged_at = Column(DateTime, default=datetime.utcnow)
+    run_type = Column(String)       # 'title_screen' or 'summarizer'
+    model = Column(String)          # e.g. 'claude-haiku-4-5-20251001'
+    items_processed = Column(Integer)
+    input_tokens = Column(Integer)
+    output_tokens = Column(Integer)
+    cost_usd = Column(Float)
+
+    def __repr__(self):
+        return f"<ApiUsageLog(run_type='{self.run_type}', cost=${self.cost_usd:.4f})>"
+
+
 # Database setup
 def get_engine(db_path='databases/tracker.db'):
     """Create and return database engine.

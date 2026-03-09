@@ -115,7 +115,7 @@ Be selective. If the title sounds like news commentary, a forecast, or general i
             if item['id'] not in output:
                 output[item['id']] = {"relevant": True, "reason": "Not in AI response (defaulting to relevant)"}
 
-        return output
+        return output, {"input_tokens": message.usage.input_tokens, "output_tokens": message.usage.output_tokens}
 
     except Exception as e:
         print(f"  Error in title screening: {e}")
@@ -130,9 +130,12 @@ def screen_titles(items):
         items: list of dicts with 'id', 'title', 'summary', 'feed_source'
 
     Returns:
-        dict: {id: {"relevant": bool, "reason": str}}
+        tuple: (results_dict, total_input_tokens, total_output_tokens)
+               results_dict: {id: {"relevant": bool, "reason": str}}
     """
     all_results = {}
+    total_input = 0
+    total_output = 0
 
     for i in range(0, len(items), BATCH_SIZE):
         batch = items[i:i + BATCH_SIZE]
@@ -140,7 +143,9 @@ def screen_titles(items):
         total_batches = (len(items) + BATCH_SIZE - 1) // BATCH_SIZE
         print(f"  Screening batch {batch_num}/{total_batches} ({len(batch)} titles)...")
 
-        results = screen_title_batch(batch)
+        results, usage = screen_title_batch(batch)
         all_results.update(results)
+        total_input += usage["input_tokens"]
+        total_output += usage["output_tokens"]
 
-    return all_results
+    return all_results, total_input, total_output

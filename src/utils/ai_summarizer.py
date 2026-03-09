@@ -122,6 +122,8 @@ Special handling for EARNINGS CALLS, ANNUAL REPORTS, and INVESTOR PRESENTATIONS:
         # Add metadata
         summary_data['summary_complete'] = True
         summary_data['model_used'] = 'claude-sonnet-4-20250514'
+        summary_data['input_tokens'] = message.usage.input_tokens
+        summary_data['output_tokens'] = message.usage.output_tokens
 
         return summary_data
 
@@ -134,6 +136,8 @@ Special handling for EARNINGS CALLS, ANNUAL REPORTS, and INVESTOR PRESENTATIONS:
             'strategic_significance': None,
             'market_implications': None,
             'summary_complete': False,
+            'input_tokens': 0,
+            'output_tokens': 0,
             'error': str(e)
         }
 
