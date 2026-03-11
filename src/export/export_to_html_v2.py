@@ -260,7 +260,8 @@ def generate_html_page(deals, deals_per_page=10):
         }};
         const capitalAliases = {{
             'corporate-investment': 'internal-self-funded',
-            'grant-sbir': 'government-contract'
+            'grant-sbir': 'government-contract',
+            'government-support': 'government-contract'
         }};
         function normalizeSector(s) {{
             return sectorAliases[s] || s;
@@ -293,7 +294,7 @@ def generate_html_page(deals, deals_per_page=10):
                 'private-equity': 'Private Equity',
                 'corporate-venture': 'Corporate Venture',
                 'corporate-m-a': 'Corporate M&A',
-                'government-contract': 'Government/Contract',
+                'government-contract': 'Government Support',
                 'public-markets': 'Public Markets',
                 'internal-self-funded': 'Internal/Self-Funded',
                 'fund-raise': 'Fund Raise',

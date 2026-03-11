@@ -75,13 +75,6 @@
             </div>
             {% endif %}
 
-            {% if item.transaction_type %}
-            <div>
-                <strong style="font-size: 12px; color: #666;">Transaction Type:</strong>
-                <div style="font-size: 14px; margin-top: 4px;">{{ item.transaction_type }}</div>
-            </div>
-            {% endif %}
-
             {% if item.investment_amount %}
             <div>
                 <strong style="font-size: 12px; color: #666;">Investment:</strong>
@@ -221,26 +214,7 @@
                     </div>
                 </div>
 
-                <!-- Row 3: Transaction Type -->
-                <div style="margin-bottom: 10px;">
-                    <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #555;">Transaction Type</label>
-                    {% set tt = item.transaction_type or '' %}
-                    <select name="transaction_type"
-                            style="width: 100%; padding: 7px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; background: white;">
-                        <option value="">— Select —</option>
-                        <option value="Equity Funding Round" {% if tt == 'Equity Funding Round' %}selected{% endif %}>Equity Funding Round</option>
-                        <option value="Acquisition" {% if tt == 'Acquisition' %}selected{% endif %}>Acquisition</option>
-                        <option value="Merger" {% if tt == 'Merger' %}selected{% endif %}>Merger</option>
-                        <option value="IPO" {% if tt == 'IPO' %}selected{% endif %}>IPO</option>
-                        <option value="Strategic Partnership" {% if tt == 'Strategic Partnership' %}selected{% endif %}>Strategic Partnership</option>
-                        <option value="Internal Investment" {% if tt == 'Internal Investment' %}selected{% endif %}>Internal Investment</option>
-                        <option value="Government Support" {% if tt == 'Government Support' %}selected{% endif %}>Government Support</option>
-                        <option value="Contract/Award" {% if tt == 'Contract/Award' %}selected{% endif %}>Contract/Award</option>
-                        <option value="Fund Raise" {% if tt == 'Fund Raise' %}selected{% endif %}>Fund Raise</option>
-                    </select>
-                </div>
-
-                <!-- Row 4: Capital Type (Multi-select) -->
+                <!-- Row 3: Capital Type (Multi-select) -->
                 <div style="margin-bottom: 10px;">
                     <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #555;">Capital Type (select all that apply)</label>
                     {% set current_cap_list = item.capital_sources.split(',') | map('trim') | list if item.capital_sources else [] %}
@@ -276,10 +250,10 @@
                             Corporate M&amp;A
                         </label>
                         <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
-                            <input type="checkbox" name="capital_source" value="Government/Contract"
-                                   {% if 'Government/Contract' in current_cap_list %}checked{% endif %}
+                            <input type="checkbox" name="capital_source" value="Government Support"
+                                   {% if 'Government Support' in current_cap_list or 'Government/Contract' in current_cap_list %}checked{% endif %}
                                    style="margin-right: 5px; width: 14px; height: 14px;">
-                            Government/Contract
+                            Government Support
                         </label>
                         <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
                             <input type="checkbox" name="capital_source" value="Public Markets"

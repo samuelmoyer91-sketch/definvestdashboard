@@ -483,7 +483,6 @@ async def accept_item(
     notes: str = Form(""),
     source_url: str = Form(""),
     additional_source_url: str = Form(""),
-    transaction_type: str = Form(""),
     session=Depends(get_db),
 ):
     """Accept item and add to master list."""
@@ -507,7 +506,6 @@ async def accept_item(
             # Capital source (multi-select, stored as comma-separated in capital_sources column)
             capital_sources=",".join(capital_source) if capital_source else None,
             sectors=",".join(sectors) if sectors else None,
-            transaction_type=transaction_type if transaction_type else None,
             location=location if location else None,
             summary=summary if summary else None,
             human_notes=notes if notes else None,
@@ -812,7 +810,6 @@ async def save_edit(
     notes: str = Form(""),
     source_url: str = Form(""),
     additional_source_url: str = Form(""),
-    transaction_type: str = Form(""),
     session=Depends(get_db),
 ):
     """Save edits to an accepted deal."""
@@ -833,7 +830,6 @@ async def save_edit(
     master.investment_amount = formatted_amount
     master.capital_sources = ",".join(capital_source) if capital_source else None
     master.sectors = ",".join(sectors) if sectors else None
-    master.transaction_type = transaction_type if transaction_type else None
     master.location = location if location else None
     master.summary = summary if summary else None
     master.human_notes = notes if notes else None
