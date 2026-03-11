@@ -54,11 +54,11 @@
             <div class="indicators-desc-col">
                 <h3>Defense Capital Goods Orders</h3>
                 <p class="indicators-subtitle">Manufacturers' new orders for defense capital goods</p>
-                <p>Manufacturers' New Orders: Defense Capital Goods is a data set released monthly by the US Census Bureau.
+                <p>Manufacturers' New Orders: Defense Capital Goods (ADEFNO) is a data set released monthly by the US Census Bureau.
             This data set tracks how much money US manufacturers are receiving in new orders for military equipment and technology,
             from aircraft and missiles to small arms and communication systems. It gives us a snapshot of how active the defense
             industry is at any given time.</p>
-                <p class="indicators-source">Source: <a href="https://fred.stlouisfed.org/series/DGORDER" target="_blank" rel="noopener noreferrer">Federal Reserve Economic Data (FRED)</a></p>
+                <p class="indicators-source">Source: <a href="https://fred.stlouisfed.org/series/ADEFNO" target="_blank" rel="noopener noreferrer">Federal Reserve Economic Data (FRED)</a></p>
             </div>
         </div>
         <div class="indicators-row">
@@ -118,12 +118,13 @@
                 <canvas id="chart_adefno"></canvas>
             </div>
             <div class="indicators-desc-col">
-                <h3>Defense Aircraft Orders</h3>
-                <p class="indicators-subtitle">Manufacturers' new orders for defense aircraft</p>
-                <p>Defense Aircraft Orders (ADEFNO) tracks new orders for complete military aircraft from manufacturers.
-            This includes fighter jets, transport aircraft, helicopters, and other defense aviation platforms. These are typically
-            large, multi-year contracts that represent major defense procurement programs.</p>
-                <p class="indicators-source">Source: <a href="https://fred.stlouisfed.org/series/ADEFNO" target="_blank" rel="noopener noreferrer">Federal Reserve Economic Data (FRED)</a></p>
+                <h3>Durable Goods Orders</h3>
+                <p class="indicators-subtitle">Manufacturers' new orders for durable goods across the U.S. economy</p>
+                <p>Manufacturers' New Orders: Durable Goods (DGORDER) is a broad monthly indicator from the US Census Bureau
+            tracking new orders received by manufacturers for goods expected to last three years or more. It covers the full
+            U.S. industrial economy — machinery, electronics, transportation, and defense — and serves as a leading indicator
+            of manufacturing activity and business investment.</p>
+                <p class="indicators-source">Source: <a href="https://fred.stlouisfed.org/series/DGORDER" target="_blank" rel="noopener noreferrer">Federal Reserve Economic Data (FRED)</a></p>
             </div>
         </div>
         <div class="indicators-row">
@@ -334,7 +335,7 @@
                 .catch(() => {});
             (function() {
                 const col = document.getElementById('chart_dgorder')?.parentElement;
-                fetch('../data/dgorder.json')
+                fetch('../data/adefno.json')
                     .then(response => {
                         if (!response.ok) throw new Error('HTTP ' + response.status);
                         return response.json();
@@ -594,7 +595,7 @@
             })();
             (function() {
                 const col = document.getElementById('chart_adefno')?.parentElement;
-                fetch('../data/adefno.json')
+                fetch('../data/dgorder.json')
                     .then(response => {
                         if (!response.ok) throw new Error('HTTP ' + response.status);
                         return response.json();

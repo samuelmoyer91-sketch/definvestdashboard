@@ -43,8 +43,8 @@ FRED_SERIES = {
         'units': 'Billions of Dollars'
     },
     'ADEFNO': {
-        'name': 'Manufacturers\' New Orders: Defense Aircraft',
-        'description': 'Defense aircraft orders',
+        'name': 'Manufacturers\' New Orders: Defense Capital Goods',
+        'description': 'Defense capital goods orders',
         'units': 'Millions of Dollars'
     },
     'ADAPNO': {
@@ -63,8 +63,8 @@ FRED_SERIES = {
         'units': 'Millions of Dollars'
     },
     'IPB52300S': {
-        'name': 'Industrial Production: Manufacturing (SIC)',
-        'description': 'Industrial production metric for manufacturing',
+        'name': 'Industrial Production: Defense and Space Equipment',
+        'description': 'Industrial production index for defense and space equipment',
         'units': 'Index 2017=100'
     }
 }
