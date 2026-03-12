@@ -109,7 +109,13 @@ def _safe_url(url: str):
 
 
 def get_db():
-    """FastAPI dependency: yield a DB session and close it when done."""
+    """FastAPI dependency: yield a DB session and close it when done.
+
+    Calls sync_turso() before creating the session so that expired Turso
+    streams are detected and the connection is reset before any query runs.
+    sync_turso() is a no-op on local SQLite.
+    """
+    sync_turso()  # resets globals if stream has expired; get_session() then reconnects
     session = get_session()
     try:
         yield session
