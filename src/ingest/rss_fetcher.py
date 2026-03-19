@@ -77,6 +77,10 @@ def save_to_database(entries, session, config=None):
                 stale_count += 1
                 continue
 
+        # Skip YouTube links (video duplicates of news articles, not useful for triage)
+        if 'youtube.com' in entry.get('url', '') or 'youtu.be' in entry.get('url', ''):
+            continue
+
         # Check if URL already exists
         existing = session.query(RawItem).filter_by(url=entry['url']).first()
 
