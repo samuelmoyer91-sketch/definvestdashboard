@@ -15,7 +15,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import Response
 import sys
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timedelta
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -524,6 +524,37 @@ async def accept_item(
 
         # Parse investors and create links
         _sync_investor_links(session, master)
+
+        # Auto-reject duplicate articles about the same company within 7 days
+        accepted_raw = session.query(RawItem).filter_by(id=item_id).first()
+        accepted_company = company.strip().lower() if company else None
+        if accepted_company and accepted_raw and accepted_raw.published_date:
+            window_start = accepted_raw.published_date - timedelta(days=7)
+            window_end = accepted_raw.published_date + timedelta(days=7)
+            candidates = (
+                session.query(RawItem)
+                .join(AIExtraction, AIExtraction.item_id == RawItem.id)
+                .filter(
+                    RawItem.id != item_id,
+                    RawItem.status == 'scraped',
+                    RawItem.published_date >= window_start,
+                    RawItem.published_date <= window_end,
+                )
+                .all()
+            )
+            for candidate in candidates:
+                ai = session.query(AIExtraction).filter_by(item_id=candidate.id).first()
+                if ai and ai.company and ai.company.strip().lower() == accepted_company:
+                    already_handled = (
+                        session.query(MasterItem).filter_by(item_id=candidate.id).first() or
+                        session.query(RejectedItem).filter_by(item_id=candidate.id).first()
+                    )
+                    if not already_handled:
+                        candidate.status = 'rejected'
+                        session.add(RejectedItem(
+                            item_id=candidate.id,
+                            rejection_reason=f"Duplicate — {company} already accepted from another source"
+                        ))
 
         session.commit()
         sync_turso()  # Push write to Turso cloud
