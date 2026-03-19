@@ -33,7 +33,7 @@
         <span class="ai-badge" style="margin-left: 10px;">AI</span>
     </div>
     <div style="font-size: 0.95rem; color: #555;">
-        <strong>{{ ai_extraction.deal_type or 'Deal' }}</strong>
+        <strong>{{ ai_extraction.transaction_type or 'Deal' }}</strong>
         {% if ai_extraction.deal_amount %} • {{ ai_extraction.deal_amount }}{% endif %}
         {% if ai_extraction.company %} • {{ ai_extraction.company }}{% endif %}
     </div>
@@ -118,25 +118,6 @@
         </div>
 
         <div style="margin-bottom: 15px;">
-            <label style="display: block; font-weight: 600; margin-bottom: 5px;">
-                Deal Type
-                {% if ai_extraction and ai_extraction.deal_type %}<span class="ai-badge">AI</span>{% endif %}
-            </label>
-            <select name="deal_type"
-                    {% if ai_extraction and ai_extraction.deal_type %}class="ai-populated"{% endif %}
-                    style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-                <option value="">-- Select --</option>
-                {% set ai_deal_type = ai_extraction.deal_type if ai_extraction and ai_extraction.deal_type else '' %}
-                <option value="Venture Capital" {% if 'VC' in ai_deal_type or 'Venture' in ai_deal_type %}selected{% endif %}>Venture Capital</option>
-                <option value="M&A" {% if 'M&A' in ai_deal_type or 'Acquisition' in ai_deal_type %}selected{% endif %}>M&A / Acquisition</option>
-                <option value="IPO" {% if 'IPO' in ai_deal_type %}selected{% endif %}>IPO</option>
-                <option value="Debt Financing">Debt Financing</option>
-                <option value="Strategic">Strategic</option>
-                <option value="Other">Other</option>
-            </select>
-        </div>
-
-        <div style="margin-bottom: 15px;">
             <label style="display: block; font-weight: 600; margin-bottom: 5px;">Capital Type</label>
             <select name="capital_type" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                 <option value="">-- Select --</option>
@@ -177,12 +158,12 @@
         <div style="margin-bottom: 15px;">
             <label style="display: block; font-weight: 600; margin-bottom: 5px;">
                 Summary (2-3 sentences)
-                {% if ai_extraction and (ai_extraction.strategic_significance or ai_extraction.market_implications) %}<span class="ai-badge">AI</span>{% endif %}
+                {% if ai_extraction and ai_extraction.strategic_significance %}<span class="ai-badge">AI</span>{% endif %}
             </label>
             <textarea name="summary" rows="4"
-                      {% if ai_extraction and (ai_extraction.strategic_significance or ai_extraction.market_implications) %}class="ai-populated"{% endif %}
+                      {% if ai_extraction and ai_extraction.strategic_significance %}class="ai-populated"{% endif %}
                       style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;"
-                      placeholder="Write a concise summary of the investment/project...">{% if ai_extraction %}{% if ai_extraction.strategic_significance %}{{ ai_extraction.strategic_significance }}{% endif %}{% if ai_extraction.market_implications %} {{ ai_extraction.market_implications }}{% endif %}{% endif %}</textarea>
+                      placeholder="Write a concise summary of the investment/project...">{% if ai_extraction and ai_extraction.strategic_significance %}{{ ai_extraction.strategic_significance }}{% endif %}</textarea>
         </div>
 
         <div style="margin-bottom: 15px;">
