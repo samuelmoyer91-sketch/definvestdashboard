@@ -443,7 +443,7 @@ def generate_indicators_page():
 
             # Chart loading script for this chart
             is_limited = cid in ['public_defense_companies', 'vc_defense', 'ma_defense']
-            chart_scripts.append(f"""            (function() {{
+            chart_scripts.append(f"""            chartLoaders['chart_{cid}'] = function() {{
                 const col = document.getElementById('chart_{cid}')?.parentElement;
                 fetch('../data/{cid.lower()}.json')
                     .then(response => {{
@@ -507,7 +507,7 @@ def generate_indicators_page():
                         console.error('Could not load {cid}:', err);
                         if (col) {{ col.classList.remove('is-loading'); col.classList.add('is-error'); }}
                     }});
-            }})();""")
+            }};""")
 
         chart_rows_html = '\n'.join(chart_rows)
         sections_parts.append(f"""    <div class="indicators-section">
@@ -576,12 +576,12 @@ def generate_indicators_page():
         <p><strong>Defense Capital Dashboard</strong></p>
         <p>Data sources: Federal Reserve Economic Data (FRED), Yahoo Finance, Custom Research</p>
         <p style="font-size: 0.75rem; opacity: 0.7; margin-top: 0.5rem;">This product uses the FRED&reg; API but is not endorsed or certified by the Federal Reserve Bank of St. Louis.</p>
-        <p>Created by Sam Moyer | <a href="https://github.com/samuelmoyer91-sketch">GitHub</a></p>
+        <p>Created by Sam Moyer | <a href="https://github.com/samuelmoyer91-sketch">GitHub</a> | <a href="mailto:samuel.moyer91@gmail.com">samuel.moyer91@gmail.com</a></p>
     </footer>
 
     <script src="../js/main.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', async function() {{
+        document.addEventListener('DOMContentLoaded', function() {{
             fetch('../data/dgs10.json')
                 .then(r => r.json())
                 .then(d => {{
@@ -590,7 +590,25 @@ def generate_indicators_page():
                     }}
                 }})
                 .catch(() => {{}});
+
+            const chartLoaders = {{}};
 {chart_scripts_html}
+
+            const observer = new IntersectionObserver(function(entries) {{
+                entries.forEach(function(entry) {{
+                    if (entry.isIntersecting) {{
+                        const canvas = entry.target.querySelector('canvas');
+                        if (canvas && chartLoaders[canvas.id]) {{
+                            chartLoaders[canvas.id]();
+                            observer.unobserve(entry.target);
+                        }}
+                    }}
+                }});
+            }}, {{ rootMargin: '200px' }});
+
+            document.querySelectorAll('.indicators-chart-col').forEach(function(col) {{
+                observer.observe(col);
+            }});
         }});
     </script>
 </body>

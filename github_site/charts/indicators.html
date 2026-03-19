@@ -62,11 +62,11 @@
             <div class="indicators-desc-col">
                 <h3>Defense Capital Goods Orders</h3>
                 <p class="indicators-subtitle">Manufacturers' new orders for defense capital goods</p>
-                <p>Manufacturers' New Orders: Defense Capital Goods (ADEFNO) is a data set released monthly by the US Census Bureau.
+                <p>Manufacturers' New Orders: Defense Capital Goods is a data set released monthly by the US Census Bureau.
             This data set tracks how much money US manufacturers are receiving in new orders for military equipment and technology,
             from aircraft and missiles to small arms and communication systems. It gives us a snapshot of how active the defense
             industry is at any given time.</p>
-                <p class="indicators-source">Source: <a href="https://fred.stlouisfed.org/series/ADEFNO" target="_blank" rel="noopener noreferrer">Federal Reserve Economic Data (FRED)</a></p>
+                <p class="indicators-source">Source: <a href="https://fred.stlouisfed.org/series/DGORDER" target="_blank" rel="noopener noreferrer">Federal Reserve Economic Data (FRED)</a></p>
             </div>
         </div>
         <div class="indicators-row">
@@ -126,13 +126,12 @@
                 <canvas id="chart_adefno"></canvas>
             </div>
             <div class="indicators-desc-col">
-                <h3>Durable Goods Orders</h3>
-                <p class="indicators-subtitle">Manufacturers' new orders for durable goods across the U.S. economy</p>
-                <p>Manufacturers' New Orders: Durable Goods (DGORDER) is a broad monthly indicator from the US Census Bureau
-            tracking new orders received by manufacturers for goods expected to last three years or more. It covers the full
-            U.S. industrial economy — machinery, electronics, transportation, and defense — and serves as a leading indicator
-            of manufacturing activity and business investment.</p>
-                <p class="indicators-source">Source: <a href="https://fred.stlouisfed.org/series/DGORDER" target="_blank" rel="noopener noreferrer">Federal Reserve Economic Data (FRED)</a></p>
+                <h3>Defense Aircraft Orders</h3>
+                <p class="indicators-subtitle">Manufacturers' new orders for defense aircraft</p>
+                <p>Defense Aircraft Orders (ADEFNO) tracks new orders for complete military aircraft from manufacturers.
+            This includes fighter jets, transport aircraft, helicopters, and other defense aviation platforms. These are typically
+            large, multi-year contracts that represent major defense procurement programs.</p>
+                <p class="indicators-source">Source: <a href="https://fred.stlouisfed.org/series/ADEFNO" target="_blank" rel="noopener noreferrer">Federal Reserve Economic Data (FRED)</a></p>
             </div>
         </div>
         <div class="indicators-row">
@@ -326,13 +325,12 @@
         <p><strong>Defense Capital Dashboard</strong></p>
         <p>Data sources: Federal Reserve Economic Data (FRED), Yahoo Finance, Custom Research</p>
         <p style="font-size: 0.75rem; opacity: 0.7; margin-top: 0.5rem;">This product uses the FRED&reg; API but is not endorsed or certified by the Federal Reserve Bank of St. Louis.</p>
-        <p style="font-size: 0.75rem; opacity: 0.7;">This dashboard is created and updated with the assistance of AI. All claims should be verified using the linked sources.</p>
-        <p>Created by Sam Moyer | <a href="https://github.com/samuelmoyer91-sketch">GitHub</a></p>
+        <p>Created by Sam Moyer | <a href="https://github.com/samuelmoyer91-sketch">GitHub</a> | <a href="mailto:samuel.moyer91@gmail.com">samuel.moyer91@gmail.com</a></p>
     </footer>
 
     <script src="../js/main.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', async function() {
+        document.addEventListener('DOMContentLoaded', function() {
             fetch('../data/dgs10.json')
                 .then(r => r.json())
                 .then(d => {
@@ -341,9 +339,11 @@
                     }
                 })
                 .catch(() => {});
-            (function() {
+
+            const chartLoaders = {};
+            chartLoaders['chart_dgorder'] = function() {
                 const col = document.getElementById('chart_dgorder')?.parentElement;
-                fetch('../data/adefno.json')
+                fetch('../data/dgorder.json')
                     .then(response => {
                         if (!response.ok) throw new Error('HTTP ' + response.status);
                         return response.json();
@@ -405,8 +405,8 @@
                         console.error('Could not load dgorder:', err);
                         if (col) { col.classList.remove('is-loading'); col.classList.add('is-error'); }
                     });
-            })();
-            (function() {
+            };
+            chartLoaders['chart_public_defense_companies'] = function() {
                 const col = document.getElementById('chart_public_defense_companies')?.parentElement;
                 fetch('../data/public_defense_companies.json')
                     .then(response => {
@@ -470,8 +470,8 @@
                         console.error('Could not load public_defense_companies:', err);
                         if (col) { col.classList.remove('is-loading'); col.classList.add('is-error'); }
                     });
-            })();
-            (function() {
+            };
+            chartLoaders['chart_vc_defense'] = function() {
                 const col = document.getElementById('chart_vc_defense')?.parentElement;
                 fetch('../data/vc_defense.json')
                     .then(response => {
@@ -535,8 +535,8 @@
                         console.error('Could not load vc_defense:', err);
                         if (col) { col.classList.remove('is-loading'); col.classList.add('is-error'); }
                     });
-            })();
-            (function() {
+            };
+            chartLoaders['chart_ma_defense'] = function() {
                 const col = document.getElementById('chart_ma_defense')?.parentElement;
                 fetch('../data/ma_defense.json')
                     .then(response => {
@@ -600,10 +600,10 @@
                         console.error('Could not load ma_defense:', err);
                         if (col) { col.classList.remove('is-loading'); col.classList.add('is-error'); }
                     });
-            })();
-            (function() {
+            };
+            chartLoaders['chart_adefno'] = function() {
                 const col = document.getElementById('chart_adefno')?.parentElement;
-                fetch('../data/dgorder.json')
+                fetch('../data/adefno.json')
                     .then(response => {
                         if (!response.ok) throw new Error('HTTP ' + response.status);
                         return response.json();
@@ -665,8 +665,8 @@
                         console.error('Could not load adefno:', err);
                         if (col) { col.classList.remove('is-loading'); col.classList.add('is-error'); }
                     });
-            })();
-            (function() {
+            };
+            chartLoaders['chart_adapno'] = function() {
                 const col = document.getElementById('chart_adapno')?.parentElement;
                 fetch('../data/adapno.json')
                     .then(response => {
@@ -730,8 +730,8 @@
                         console.error('Could not load adapno:', err);
                         if (col) { col.classList.remove('is-loading'); col.classList.add('is-error'); }
                     });
-            })();
-            (function() {
+            };
+            chartLoaders['chart_ipb52300s'] = function() {
                 const col = document.getElementById('chart_ipb52300s')?.parentElement;
                 fetch('../data/ipb52300s.json')
                     .then(response => {
@@ -795,8 +795,8 @@
                         console.error('Could not load ipb52300s:', err);
                         if (col) { col.classList.remove('is-loading'); col.classList.add('is-error'); }
                     });
-            })();
-            (function() {
+            };
+            chartLoaders['chart_fdefx'] = function() {
                 const col = document.getElementById('chart_fdefx')?.parentElement;
                 fetch('../data/fdefx.json')
                     .then(response => {
@@ -860,8 +860,8 @@
                         console.error('Could not load fdefx:', err);
                         if (col) { col.classList.remove('is-loading'); col.classList.add('is-error'); }
                     });
-            })();
-            (function() {
+            };
+            chartLoaders['chart_prmfgcons'] = function() {
                 const col = document.getElementById('chart_prmfgcons')?.parentElement;
                 fetch('../data/prmfgcons.json')
                     .then(response => {
@@ -925,8 +925,8 @@
                         console.error('Could not load prmfgcons:', err);
                         if (col) { col.classList.remove('is-loading'); col.classList.add('is-error'); }
                     });
-            })();
-            (function() {
+            };
+            chartLoaders['chart_ita'] = function() {
                 const col = document.getElementById('chart_ita')?.parentElement;
                 fetch('../data/ita.json')
                     .then(response => {
@@ -990,8 +990,8 @@
                         console.error('Could not load ita:', err);
                         if (col) { col.classList.remove('is-loading'); col.classList.add('is-error'); }
                     });
-            })();
-            (function() {
+            };
+            chartLoaders['chart_indpro'] = function() {
                 const col = document.getElementById('chart_indpro')?.parentElement;
                 fetch('../data/indpro.json')
                     .then(response => {
@@ -1055,8 +1055,8 @@
                         console.error('Could not load indpro:', err);
                         if (col) { col.classList.remove('is-loading'); col.classList.add('is-error'); }
                     });
-            })();
-            (function() {
+            };
+            chartLoaders['chart_pnfi'] = function() {
                 const col = document.getElementById('chart_pnfi')?.parentElement;
                 fetch('../data/pnfi.json')
                     .then(response => {
@@ -1120,8 +1120,8 @@
                         console.error('Could not load pnfi:', err);
                         if (col) { col.classList.remove('is-loading'); col.classList.add('is-error'); }
                     });
-            })();
-            (function() {
+            };
+            chartLoaders['chart_gpdi'] = function() {
                 const col = document.getElementById('chart_gpdi')?.parentElement;
                 fetch('../data/gpdi.json')
                     .then(response => {
@@ -1185,8 +1185,8 @@
                         console.error('Could not load gpdi:', err);
                         if (col) { col.classList.remove('is-loading'); col.classList.add('is-error'); }
                     });
-            })();
-            (function() {
+            };
+            chartLoaders['chart_drtscilm'] = function() {
                 const col = document.getElementById('chart_drtscilm')?.parentElement;
                 fetch('../data/drtscilm.json')
                     .then(response => {
@@ -1250,8 +1250,8 @@
                         console.error('Could not load drtscilm:', err);
                         if (col) { col.classList.remove('is-loading'); col.classList.add('is-error'); }
                     });
-            })();
-            (function() {
+            };
+            chartLoaders['chart_xli'] = function() {
                 const col = document.getElementById('chart_xli')?.parentElement;
                 fetch('../data/xli.json')
                     .then(response => {
@@ -1315,8 +1315,8 @@
                         console.error('Could not load xli:', err);
                         if (col) { col.classList.remove('is-loading'); col.classList.add('is-error'); }
                     });
-            })();
-            (function() {
+            };
+            chartLoaders['chart_pld'] = function() {
                 const col = document.getElementById('chart_pld')?.parentElement;
                 fetch('../data/pld.json')
                     .then(response => {
@@ -1380,8 +1380,8 @@
                         console.error('Could not load pld:', err);
                         if (col) { col.classList.remove('is-loading'); col.classList.add('is-error'); }
                     });
-            })();
-            (function() {
+            };
+            chartLoaders['chart_dgs10'] = function() {
                 const col = document.getElementById('chart_dgs10')?.parentElement;
                 fetch('../data/dgs10.json')
                     .then(response => {
@@ -1445,9 +1445,24 @@
                         console.error('Could not load dgs10:', err);
                         if (col) { col.classList.remove('is-loading'); col.classList.add('is-error'); }
                     });
-            })();
+            };
+
+            const observer = new IntersectionObserver(function(entries) {
+                entries.forEach(function(entry) {
+                    if (entry.isIntersecting) {
+                        const canvas = entry.target.querySelector('canvas');
+                        if (canvas && chartLoaders[canvas.id]) {
+                            chartLoaders[canvas.id]();
+                            observer.unobserve(entry.target);
+                        }
+                    }
+                });
+            }, { rootMargin: '200px' });
+
+            document.querySelectorAll('.indicators-chart-col').forEach(function(col) {
+                observer.observe(col);
+            });
         });
     </script>
-    <!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "a34250a0e59745ed920c8f35983db99d"}'></script><!-- End Cloudflare Web Analytics -->
 </body>
 </html>
