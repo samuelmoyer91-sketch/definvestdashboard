@@ -170,6 +170,14 @@ def generate_html_page(deals, deals_per_page=10):
     <title>Defense Investment Activity - Defense Capital Dashboard</title>
     <link rel="icon" type="image/svg+xml" href="../favicon.svg">
     <link rel="stylesheet" href="../css/style.css">
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-CS5MJEVNGN"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){{dataLayer.push(arguments);}}
+      gtag('js', new Date());
+      gtag('config', 'G-CS5MJEVNGN');
+    </script>
 </head>
 <body>
     <nav>
