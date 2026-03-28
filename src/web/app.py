@@ -525,8 +525,9 @@ async def accept_item(
         if accepted_company and accepted_raw and accepted_raw.published_date:
             window_start = accepted_raw.published_date - timedelta(days=7)
             window_end = accepted_raw.published_date + timedelta(days=7)
+            # Load candidates with their AIExtraction in one query
             candidates = (
-                session.query(RawItem)
+                session.query(RawItem, AIExtraction)
                 .join(AIExtraction, AIExtraction.item_id == RawItem.id)
                 .filter(
                     RawItem.id != item_id,
@@ -536,14 +537,21 @@ async def accept_item(
                 )
                 .all()
             )
-            for candidate in candidates:
-                ai = session.query(AIExtraction).filter_by(item_id=candidate.id).first()
-                if ai and ai.company and ai.company.strip().lower() == accepted_company:
-                    already_handled = (
-                        session.query(MasterItem).filter_by(item_id=candidate.id).first() or
-                        session.query(RejectedItem).filter_by(item_id=candidate.id).first()
-                    )
-                    if not already_handled:
+            if candidates:
+                candidate_ids = [c.id for c, _ in candidates]
+                # Fetch already-handled IDs in two bulk queries instead of N*2
+                accepted_ids = {
+                    r.item_id for r in session.query(MasterItem.item_id)
+                    .filter(MasterItem.item_id.in_(candidate_ids)).all()
+                }
+                rejected_ids = {
+                    r.item_id for r in session.query(RejectedItem.item_id)
+                    .filter(RejectedItem.item_id.in_(candidate_ids)).all()
+                }
+                handled_ids = accepted_ids | rejected_ids
+                for candidate, ai in candidates:
+                    if (ai and ai.company and ai.company.strip().lower() == accepted_company
+                            and candidate.id not in handled_ids):
                         candidate.status = 'rejected'
                         session.add(RejectedItem(
                             item_id=candidate.id,
@@ -763,6 +771,22 @@ async def restore_item(item_id: int, session=Depends(get_db)):
     return RedirectResponse(url="/excluded", status_code=303)
 
 
+def _update_investor_deal_counts(session, investor_ids):
+    """Update deal_count for a set of investor IDs using a single grouped query."""
+    if not investor_ids:
+        return
+    from sqlalchemy import func
+    counts = dict(
+        session.query(DealInvestor.investor_id, func.count(DealInvestor.id))
+        .filter(DealInvestor.investor_id.in_(investor_ids))
+        .group_by(DealInvestor.investor_id)
+        .all()
+    )
+    investors = session.query(Investor).filter(Investor.id.in_(investor_ids)).all()
+    for investor in investors:
+        investor.deal_count = counts.get(investor.id, 0)
+
+
 def _sync_investor_links(session, master):
     """Parse master.investors text, get-or-create Investor records, create DealInvestor links.
 
@@ -779,10 +803,7 @@ def _sync_investor_links(session, master):
 
     if not master.investors:
         # Update counts for removed investors only
-        for inv_id in affected_investor_ids:
-            investor = session.query(Investor).filter_by(id=inv_id).first()
-            if investor:
-                investor.deal_count = session.query(DealInvestor).filter_by(investor_id=inv_id).count()
+        _update_investor_deal_counts(session, affected_investor_ids)
         return
 
     parsed = parse_investors(master.investors)
@@ -815,10 +836,7 @@ def _sync_investor_links(session, master):
         session.add(link)
 
     # Update deal counts only for affected investors
-    for inv_id in affected_investor_ids:
-        investor = session.query(Investor).filter_by(id=inv_id).first()
-        if investor:
-            investor.deal_count = session.query(DealInvestor).filter_by(investor_id=inv_id).count()
+    _update_investor_deal_counts(session, affected_investor_ids)
 
 
 @app.get("/edit/{master_id}", response_class=HTMLResponse)
