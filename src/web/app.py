@@ -200,6 +200,18 @@ async def run_startup_migrations():
             conn.commit()
             logger.info("additional_source_url column added successfully")
 
+        # Add performance indexes (CREATE INDEX IF NOT EXISTS is idempotent)
+        indexes = [
+            ("idx_raw_items_status", "raw_items", "status"),
+            ("idx_raw_items_published_date", "raw_items", "published_date"),
+            ("idx_deal_investors_investor_id", "deal_investors", "investor_id"),
+            ("idx_deal_investors_master_item_id", "deal_investors", "master_item_id"),
+        ]
+        for idx_name, table, col in indexes:
+            conn.execute(sa_text(f"CREATE INDEX IF NOT EXISTS {idx_name} ON {table} ({col})"))
+        conn.commit()
+        logger.info("Performance indexes verified")
+
 
 # =============================================================================
 # Global Exception Handler
@@ -404,8 +416,6 @@ templates = Jinja2Templates(directory=str(templates_dir))
 async def home(request: Request, session=Depends(get_db)):
     """Home page showing triage queue."""
     from sqlalchemy.orm import joinedload
-
-    sync_turso()  # Pull latest data from Turso cloud before reading
 
     # Get items that:
     # 1. Have been successfully scraped

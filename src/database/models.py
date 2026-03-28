@@ -32,10 +32,10 @@ class RawItem(Base):
     url = Column(String, unique=True, nullable=False, index=True)
     title = Column(String, nullable=False)
     rss_summary = Column(Text)
-    published_date = Column(DateTime)
+    published_date = Column(DateTime, index=True)
     feed_source = Column(String)  # Which Google Alert feed
     date_found = Column(DateTime, default=datetime.utcnow)
-    status = Column(String, default='new')  # new, ai_screened_out, scraped, failed, auto_rejected
+    status = Column(String, default='new', index=True)  # new, ai_screened_out, scraped, failed, auto_rejected
 
     # Relevance scoring (added 2026-01-22)
     relevance_score = Column(Float)  # 0.0-1.0, based on keyword matching
@@ -186,8 +186,8 @@ class DealInvestor(Base):
     __tablename__ = 'deal_investors'
 
     id = Column(Integer, primary_key=True)
-    master_item_id = Column(Integer, ForeignKey('master_list.id'), nullable=False)
-    investor_id = Column(Integer, ForeignKey('investors.id'), nullable=False)
+    master_item_id = Column(Integer, ForeignKey('master_list.id'), nullable=False, index=True)
+    investor_id = Column(Integer, ForeignKey('investors.id'), nullable=False, index=True)
     is_lead = Column(Boolean, default=False)
 
     # Relationships
