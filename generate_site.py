@@ -138,6 +138,14 @@ def main():
         required=True
     )
 
+    # Step 4b: Export map data
+    print_header("Step 4b: Export Map Data")
+    run_step(
+        "Exporting geocoded deals to map-data.json",
+        [sys.executable, "src/export/export_map_data.py"],
+        required=False
+    )
+
     # Step 5: Verify site structure
     print_header("Step 5: Verify Site Structure")
 
@@ -147,6 +155,7 @@ def main():
         'css/style.css',
         'js/main.js',
         'deals/index.html',
+        'deals/map.html',
         'charts/indicators.html'
     ]
 

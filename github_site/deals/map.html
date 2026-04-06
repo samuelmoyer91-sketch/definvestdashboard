@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deal Map - Defense Capital Dashboard</title>
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-CS5MJEVNGN"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-CS5MJEVNGN');
+    </script>
+    <style>
+        #map {
+            width: 100%;
+            height: calc(100vh - 200px);
+            min-height: 500px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 8px var(--shadow);
+            margin-top: var(--spacing-md);
+        }
+        .map-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: var(--spacing-md);
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+        }
+        .popup-company {
+            font-size: 15px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 4px;
+        }
+        .popup-title {
+            font-size: 13px;
+            color: #475569;
+            margin-bottom: 6px;
+            line-height: 1.4;
+        }
+        .popup-meta {
+            font-size: 12px;
+            color: #64748b;
+            margin-bottom: 2px;
+        }
+        .popup-amount {
+            font-size: 13px;
+            font-weight: 600;
+            color: #1e456e;
+            margin-bottom: 4px;
+        }
+        .popup-district {
+            display: inline-block;
+            margin-top: 6px;
+            padding: 2px 8px;
+            background: #e8f0f7;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #1e456e;
+        }
+        .popup-link {
+            display: inline-block;
+            margin-top: 8px;
+            font-size: 12px;
+            color: #1e456e;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .popup-link:hover {
+            color: #88c540;
+            text-decoration: underline;
+        }
+        .leaflet-popup-content-wrapper {
+            border-radius: 6px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="container">
+            <a href="../index.html" class="logo" style="display: flex; align-items: center; gap: 10px;">
+                <svg width="24" height="24" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+                    <rect x="4" y="4" width="16" height="16" rx="2" stroke="white" stroke-width="1.5" opacity="0.15"/>
+                    <rect x="24" y="4" width="16" height="16" rx="2" stroke="white" stroke-width="1.5" opacity="0.15"/>
+                    <rect x="44" y="4" width="16" height="16" rx="2" stroke="white" stroke-width="1.5" opacity="0.25"/>
+                    <rect x="4" y="24" width="16" height="16" rx="2" stroke="white" stroke-width="1.5" opacity="0.15"/>
+                    <rect x="24" y="24" width="16" height="16" rx="2" stroke="white" stroke-width="1.5" opacity="0.35"/>
+                    <rect x="44" y="24" width="16" height="16" rx="2" fill="white" opacity="0.55"/>
+                    <rect x="4" y="44" width="16" height="16" rx="2" stroke="white" stroke-width="1.5" opacity="0.25"/>
+                    <rect x="24" y="44" width="16" height="16" rx="2" fill="white" opacity="0.55"/>
+                    <rect x="44" y="44" width="16" height="16" rx="2" fill="white"/>
+                </svg>
+                Defense Capital Dashboard
+            </a>
+            <button class="mobile-menu-toggle" aria-label="Toggle navigation">☰</button>
+            <ul>
+                <li><a href="../index.html">Home</a></li>
+                <li><a href="index.html">Deal Tracker</a></li>
+                <li><a href="map.html" class="active">Deal Map</a></li>
+                <li><a href="../charts/indicators.html">Indicators</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="page-header">
+        <div class="page-header-inner">
+            <p class="page-header-title">Defense investment activity by location and congressional district</p>
+            <p class="page-header-updated" id="lastUpdated">Loading...</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="map"></div>
+        <div class="map-meta">
+            <span id="dealCount"></span>
+            <span>Click any marker for deal details</span>
+        </div>
+    </div>
+
+    <script src="../js/main.js"></script>
+    <script>
+    fetch('map-data.json')
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById('lastUpdated').textContent = 'Last updated: ' + data.generated_at;
+            document.getElementById('dealCount').textContent = data.count + ' geocoded deal' + (data.count !== 1 ? 's' : '');
+
+            const map = L.map('map').setView([38.5, -96], 4);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+                maxZoom: 18,
+            }).addTo(map);
+
+            const markerIcon = L.divIcon({
+                className: '',
+                html: `<svg width="20" height="28" viewBox="0 0 20 28" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M10 0C4.48 0 0 4.48 0 10c0 7.5 10 18 10 18s10-10.5 10-18C20 4.48 15.52 0 10 0z"
+                          fill="#88c540" stroke="white" stroke-width="1.5"/>
+                    <circle cx="10" cy="10" r="4" fill="white" opacity="0.9"/>
+                </svg>`,
+                iconSize: [20, 28],
+                iconAnchor: [10, 28],
+                popupAnchor: [0, -30],
+            });
+
+            data.features.forEach(function(f) {
+                const sectors = f.sectors
+                    ? f.sectors.split(',').map(s => s.trim()).filter(Boolean).join(' · ')
+                    : '';
+
+                let html = `<div class="popup-company">${f.company || 'Unknown Company'}</div>`;
+                if (f.title) html += `<div class="popup-title">${f.title}</div>`;
+                if (f.amount) html += `<div class="popup-amount">${f.amount}</div>`;
+                if (f.date) html += `<div class="popup-meta">${f.date}</div>`;
+                if (f.location) html += `<div class="popup-meta">📍 ${f.location}</div>`;
+                if (sectors) html += `<div class="popup-meta" style="margin-top:4px;">${sectors}</div>`;
+                if (f.district) html += `<span class="popup-district">Congressional District: ${f.district}</span>`;
+                if (f.url) html += `<br><a class="popup-link" href="${f.url}" target="_blank" rel="noopener">View source →</a>`;
+
+                L.marker([f.lat, f.lng], { icon: markerIcon })
+                    .addTo(map)
+                    .bindPopup(html, { maxWidth: 280 });
+            });
+        })
+        .catch(err => {
+            document.getElementById('map').innerHTML =
+                '<p style="padding:2rem;color:#666;">Map data unavailable. Please check back after the next publish run.</p>';
+        });
+    </script>
+</body>
+</html>
