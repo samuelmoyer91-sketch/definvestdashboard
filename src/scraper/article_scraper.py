@@ -25,27 +25,26 @@ def load_config(config_path='config/feeds.json'):
 
 
 def extract_real_url_from_google_redirect(google_url):
-    """Extract the actual article URL from a Google News redirect URL.
+    """Extract the actual article URL from a Google Alerts redirect URL.
 
-    Google News URLs look like:
+    Google Alerts URLs look like:
     https://www.google.com/url?rct=j&sa=t&url=https://example.com/article&ct=ga&...
 
     This function extracts: https://example.com/article
+
+    Note: Google News RSS URLs (news.google.com/articles/...) are handled
+    separately in scrape_article() via HTTP redirect following.
     """
     try:
         parsed = urlparse(google_url)
 
-        # Check if it's a Google redirect URL
+        # Google Alerts redirect: /url?...url=...
         if 'google.com' in parsed.netloc and '/url' in parsed.path:
-            # Parse query parameters
             params = parse_qs(parsed.query)
-
-            # Extract the 'url' parameter
             if 'url' in params:
                 real_url = params['url'][0]
-                return unquote(real_url)  # Decode URL encoding
+                return unquote(real_url)
 
-        # Not a Google redirect, return original URL
         return google_url
 
     except Exception as e:
@@ -53,9 +52,17 @@ def extract_real_url_from_google_redirect(google_url):
         return google_url
 
 
+# Full browser headers for sites that block basic scrapers (Google News, paywalls)
+_BROWSER_HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+    'Accept-Language': 'en-US,en;q=0.9',
+}
+
+
 def scrape_article(url, config):
     """Scrape full article content from URL."""
-    # Extract real URL from Google redirect if needed
+    # Extract real URL from Google Alerts redirect if needed
     original_url = url
     url = extract_real_url_from_google_redirect(url)
 
@@ -63,9 +70,11 @@ def scrape_article(url, config):
         print(f"  → Extracted real URL from Google redirect")
         print(f"     {url[:80]}...")
 
-    headers = {
-        'User-Agent': config['scraping']['user_agent']
-    }
+    # Google News RSS URLs (news.google.com/articles/...) redirect to the real
+    # article but block non-browser user agents. Use full browser headers so
+    # allow_redirects=True lands us on the actual source page.
+    is_google_news = 'news.google.com' in url
+    headers = _BROWSER_HEADERS if is_google_news else {'User-Agent': config['scraping']['user_agent']}
 
     try:
         response = requests.get(
@@ -74,6 +83,10 @@ def scrape_article(url, config):
             timeout=config['scraping']['timeout_seconds'],
             allow_redirects=True
         )
+
+        # Log where Google News redirected us
+        if is_google_news and response.url != url:
+            print(f"  → Google News redirected to: {response.url[:80]}...")
 
         if response.status_code != 200:
             return None, f"HTTP {response.status_code}"
