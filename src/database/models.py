@@ -151,6 +151,11 @@ class MasterItem(Base):
     source_url = Column(Text)             # Replaces raw_item.url as primary source link (optional)
     additional_source_url = Column(Text)  # Optional second source link shown alongside primary
 
+    # Geolocation (populated by scripts/geocode_locations.py)
+    latitude = Column(Float)
+    longitude = Column(Float)
+    congressional_district = Column(String)  # e.g. "TX-21", "CA-18"
+
     # Curation metadata
     human_notes = Column(Text)
     curated_by = Column(String)  # Future: user authentication

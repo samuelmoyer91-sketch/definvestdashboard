@@ -200,6 +200,16 @@ async def run_startup_migrations():
             conn.commit()
             logger.info("additional_source_url column added successfully")
 
+        # Check if geolocation columns exist on master_list
+        for col, typedef in [("latitude", "REAL"), ("longitude", "REAL"), ("congressional_district", "TEXT")]:
+            try:
+                conn.execute(sa_text(f"SELECT {col} FROM master_list LIMIT 1"))
+            except Exception:
+                logger.info(f"Adding {col} column to master_list...")
+                conn.execute(sa_text(f"ALTER TABLE master_list ADD COLUMN {col} {typedef}"))
+                conn.commit()
+                logger.info(f"master_list.{col} column added successfully")
+
         # Check if deal_status column exists on ai_extractions
         try:
             conn.execute(sa_text("SELECT deal_status FROM ai_extractions LIMIT 1"))
