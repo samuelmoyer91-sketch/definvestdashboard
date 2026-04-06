@@ -271,11 +271,16 @@ def get_engine(db_path='databases/tracker.db'):
                     _libsql_conn.sync()  # Sync once on first connection
                     logger.info("Initial Turso sync complete")
                 else:
-                    # Verify the cached connection is still alive
+                    # Verify the cached connection is still alive.
+                    # Catch BaseException (not just Exception) because a stale
+                    # libsql connection raises pyo3_runtime.PanicException on
+                    # execute(), which is a BaseException subclass and bypasses
+                    # a plain `except Exception` block.
                     try:
                         _libsql_conn.execute("SELECT 1")
-                    except Exception:
+                    except BaseException:
                         logger.warning("Cached libsql connection stale, reconnecting...")
+                        _libsql_conn = None
                         _libsql_conn = libsql.connect('turso_replica.db',
                             sync_url=turso_url,
                             auth_token=turso_token)
