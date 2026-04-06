@@ -26,6 +26,12 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Geocode new deals
+        env:
+          TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+        run: python scripts/geocode_locations.py
+
       - name: Generate site
         env:
           TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
