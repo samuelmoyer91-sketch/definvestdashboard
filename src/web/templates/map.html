@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block title %}Deal Map — Defense Capital Tracker{% endblock %}
+{% block content %}
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<style>
+    .map-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+    }
+    .map-header h2 {
+        font-size: 22px;
+        font-weight: 600;
+        color: #1a1a2e;
+    }
+    .map-header .count-badge {
+        background: #1a1a2e;
+        color: #88c0d0;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+    }
+    #map {
+        width: 100%;
+        height: calc(100vh - 180px);
+        min-height: 500px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .leaflet-popup-content-wrapper {
+        border-radius: 6px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    .popup-company {
+        font-size: 15px;
+        font-weight: 700;
+        color: #1a1a2e;
+        margin-bottom: 4px;
+    }
+    .popup-title {
+        font-size: 13px;
+        color: #444;
+        margin-bottom: 6px;
+        line-height: 1.4;
+    }
+    .popup-meta {
+        font-size: 12px;
+        color: #666;
+        margin-bottom: 2px;
+    }
+    .popup-link {
+        display: inline-block;
+        margin-top: 8px;
+        font-size: 12px;
+        color: #5e81ac;
+        text-decoration: none;
+    }
+    .popup-link:hover { text-decoration: underline; }
+    .popup-district {
+        display: inline-block;
+        margin-top: 6px;
+        padding: 2px 8px;
+        background: #e8f4fb;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 600;
+        color: #1a1a2e;
+    }
+</style>
+
+<div class="map-header">
+    <h2>Deal Locations</h2>
+    <span class="count-badge">{{ count }} geocoded deal{{ 's' if count != 1 else '' }}</span>
+</div>
+
+<div id="map"></div>
+
+<script>
+const features = {{ features_json | safe }};
+
+const map = L.map('map').setView([38.5, -96], 4);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    maxZoom: 18,
+}).addTo(map);
+
+// Custom marker using accent green
+const markerIcon = L.divIcon({
+    className: '',
+    html: `<svg width="20" height="28" viewBox="0 0 20 28" xmlns="http://www.w3.org/2000/svg">
+        <path d="M10 0C4.48 0 0 4.48 0 10c0 7.5 10 18 10 18s10-10.5 10-18C20 4.48 15.52 0 10 0z"
+              fill="#88c540" stroke="white" stroke-width="1.5"/>
+        <circle cx="10" cy="10" r="4" fill="white" opacity="0.9"/>
+    </svg>`,
+    iconSize: [20, 28],
+    iconAnchor: [10, 28],
+    popupAnchor: [0, -30],
+});
+
+features.forEach(function(f) {
+    const sectors = f.sectors
+        ? f.sectors.split(',').map(s => s.trim()).filter(Boolean).join(' · ')
+        : '';
+
+    let popupHtml = `<div class="popup-company">${f.company || 'Unknown Company'}</div>`;
+    if (f.title) {
+        popupHtml += `<div class="popup-title">${f.title}</div>`;
+    }
+    if (f.amount) {
+        popupHtml += `<div class="popup-meta"><strong>${f.amount}</strong></div>`;
+    }
+    if (f.location) {
+        popupHtml += `<div class="popup-meta">📍 ${f.location}</div>`;
+    }
+    if (sectors) {
+        popupHtml += `<div class="popup-meta" style="margin-top:4px;">${sectors}</div>`;
+    }
+    if (f.district) {
+        popupHtml += `<span class="popup-district">District ${f.district}</span>`;
+    }
+    if (f.url) {
+        popupHtml += `<br><a class="popup-link" href="${f.url}" target="_blank" rel="noopener">View source →</a>`;
+    }
+
+    L.marker([f.lat, f.lng], { icon: markerIcon })
+        .addTo(map)
+        .bindPopup(popupHtml, { maxWidth: 280 });
+});
+</script>
+
+{% endblock %}

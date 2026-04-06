@@ -3,6 +3,7 @@
 import base64
 import hashlib
 import hmac
+import json
 import logging
 import os
 import secrets
@@ -1101,6 +1102,36 @@ async def sector_deals(request: Request, sector_name: str, session=Depends(get_d
         "request": request,
         "sector_name": sector_name,
         "items": items,
+    })
+
+
+@app.get("/map", response_class=HTMLResponse)
+async def map_view(request: Request, session=Depends(get_db)):
+    """Interactive map of geocoded master list deals."""
+    sync_turso()
+    items = session.query(MasterItem).filter(
+        MasterItem.latitude != None
+    ).order_by(MasterItem.curated_at.desc()).all()
+
+    features = []
+    for item in items:
+        raw = item.raw_item
+        features.append({
+            "lat": item.latitude,
+            "lng": item.longitude,
+            "company": item.company or "",
+            "title": item.title or "",
+            "amount": item.investment_amount or "",
+            "district": item.congressional_district or "",
+            "location": item.location or "",
+            "sectors": item.sectors or "",
+            "url": item.source_url or (raw.url if raw else ""),
+        })
+
+    return templates.TemplateResponse("map.html", {
+        "request": request,
+        "features_json": json.dumps(features),
+        "count": len(features),
     })
 
 
