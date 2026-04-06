@@ -105,6 +105,7 @@ def generate_summaries(limit=5, force_regenerate=False):
                 extraction.sectors = ','.join(summary.get('sectors', [])) if summary.get('sectors') else None
                 extraction.location = summary.get('location')
                 extraction.strategic_significance = summary.get('strategic_significance')
+                extraction.deal_status = summary.get('deal_status')
                 extraction.summary_complete = summary.get('summary_complete', False)
                 extraction.model_used = summary.get('model_used')
             else:
@@ -121,6 +122,7 @@ def generate_summaries(limit=5, force_regenerate=False):
                     sectors=','.join(summary.get('sectors', [])) if summary.get('sectors') else None,
                     location=summary.get('location'),
                     strategic_significance=summary.get('strategic_significance'),
+                    deal_status=summary.get('deal_status'),
                     summary_complete=summary.get('summary_complete', False),
                     model_used=summary.get('model_used')
                 )

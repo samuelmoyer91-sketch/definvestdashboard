@@ -102,6 +102,11 @@ class AIExtraction(Base):
     project_type = Column(String)  # factory, lab, test range, acquisition
     ai_summary = Column(Text)  # General summary field
 
+    # Deal certainty — set by AI extractor
+    # "announced": formally announced deal; money committed (may or may not be closed yet)
+    # "speculative": rumors, plans, intentions, "considering", "exploring", "seeks"
+    deal_status = Column(String)
+
     # Metadata
     confidence_score = Column(Float)
     extracted_at = Column(DateTime, default=datetime.utcnow)

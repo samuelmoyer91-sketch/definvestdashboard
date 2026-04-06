@@ -200,6 +200,15 @@ async def run_startup_migrations():
             conn.commit()
             logger.info("additional_source_url column added successfully")
 
+        # Check if deal_status column exists on ai_extractions
+        try:
+            conn.execute(sa_text("SELECT deal_status FROM ai_extractions LIMIT 1"))
+        except Exception:
+            logger.info("Adding deal_status column to ai_extractions...")
+            conn.execute(sa_text("ALTER TABLE ai_extractions ADD COLUMN deal_status TEXT"))
+            conn.commit()
+            logger.info("ai_extractions.deal_status column added successfully")
+
         # Add performance indexes (CREATE INDEX IF NOT EXISTS is idempotent)
         indexes = [
             ("idx_raw_items_status", "raw_items", "status"),
@@ -440,7 +449,9 @@ async def home(request: Request, session=Depends(get_db)):
             session.query(RejectedItem.item_id)
         ),
         # Exclude routine Contract/Award items (SBIR, grants, procurement)
-        ~((AIExtraction.transaction_type != None) & (AIExtraction.transaction_type == 'Contract/Award'))
+        ~((AIExtraction.transaction_type != None) & (AIExtraction.transaction_type == 'Contract/Award')),
+        # Exclude speculative deals (rumors, plans, "considering", "seeks", etc.)
+        ~((AIExtraction.deal_status != None) & (AIExtraction.deal_status == 'speculative'))
     ).order_by(
         RawItem.published_date.desc()
     ).limit(200).all()

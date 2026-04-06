@@ -64,6 +64,10 @@ Extract the following information (use "Unknown" if not found):
 8. LOCATION: Where the company is headquartered or where the deal/project is located. Format as "City, State, Country" for US locations (e.g., "San Diego, CA, USA") or "City, Country" for international (e.g., "London, UK"). Use null if not mentioned.
 9. STRATEGIC SIGNIFICANCE: In 2-3 sentences, describe specifically what the company will do with this capital — which products, programs, facilities, or capabilities it will fund or develop. Name them explicitly; do not generalize. If the investor or fund is not well-known or has an unusual structure (e.g., a government-backed development bank, a sector-specific fund), briefly explain what it is and what it invests in. Be factual and specific. Do not editorialize about why this matters, what it signals, or how it positions the company. Write in third person present tense. Example style: "AeroVironment is significantly expanding domestic manufacturing capacity for directed energy laser systems, anti-drone systems, and laser communications. State and local resourcing include $5 million from the state of New Mexico and $1 million from the City of Albuquerque."
 
+10. DEAL STATUS: Classify the certainty of this deal as exactly one of:
+- "announced": The deal has been formally announced, signed, or closed. Money is committed. A press release, SEC filing, or direct company statement confirms it. Pending regulatory/shareholder approval is fine — what matters is that the parties have agreed and publicly committed.
+- "speculative": The deal has NOT been formally announced. This includes rumors, reports from anonymous sources, companies "exploring" or "considering" options, "seeking" a buyer/partner/investor, or plans that have not been confirmed by the parties involved. If the article uses language like "could", "may", "plans to", "eyes", "mulls", "seeks", "explores", "is in talks", "sources say", "reportedly" — classify as speculative.
+
 Format your response as JSON:
 {{
   "title": "...",
@@ -74,7 +78,8 @@ Format your response as JSON:
   "deal_amount": "...",
   "investors": "...",
   "location": "City, State, Country",
-  "strategic_significance": "..."
+  "strategic_significance": "...",
+  "deal_status": "announced"
 }}
 
 Notes:
