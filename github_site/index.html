@@ -7,6 +7,13 @@
     <meta name="description" content="Tracking defense sector investments, economic indicators, and market trends">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="stylesheet" href="css/style.css">
+    <style>
+        @media (max-width: 768px) {
+            .map-subhero-panel { max-width: 100% !important; border-radius: 8px !important; }
+            .map-subhero-wrap { height: 280px !important; }
+            .map-subhero-cta { padding: 24px !important; align-items: flex-end !important; }
+        }
+    </style>
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-CS5MJEVNGN"></script>
     <script>
@@ -30,7 +37,7 @@
         </div>
     </nav>
 
-    <div class="hero-banner" style="position: relative; background: linear-gradient(180deg, #1e456e 0%, #162f4d 40%, #0f1d30 100%); padding: 64px 24px 56px; overflow: hidden;">
+    <div class="hero-banner" style="position: relative; background: linear-gradient(180deg, #1e456e 0%, #162f4d 40%, #0f1d30 100%); padding: 36px 24px 32px; overflow: hidden;">
         <!-- Green dot grid with diagonal fade -->
         <div style="position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: 1;
             background-image: radial-gradient(circle, #88c540 1.3px, transparent 1.3px);
@@ -60,40 +67,42 @@
         </div>
     </div>
 
+    <!-- Map sub-hero -->
+    <div class="map-subhero-wrap" style="position: relative; width: 100%; height: 280px; overflow: hidden; cursor: pointer; " onclick="window.location='deals/map.html'">
+        <!-- 3D perspective map background -->
+        <div style="position: absolute; inset: 0; z-index: 1; pointer-events: none; perspective: 320px; overflow: hidden;">
+            <!-- Base: crisp -->
+            <img src="images/map-bg.png" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 50%; transform-origin: center bottom; transform: scale(2.4) rotateX(55deg); filter: brightness(0.65) saturate(0.2);" />
+            <!-- Blur overlay: blurry, masked to fade in from the top -->
+            <img src="images/map-bg.png" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 50%; transform-origin: center bottom; transform: scale(2.4) rotateX(55deg); filter: brightness(0.65) saturate(0.2) blur(30px) contrast(1.3); -webkit-mask-image: linear-gradient(to bottom, black 0%, transparent 50%); mask-image: linear-gradient(to bottom, black 0%, transparent 50%);" />
+        </div>
+        <!-- Thin overall overlay + top darkening -->
+        <div style="position: absolute; inset: 0; z-index: 2; background: linear-gradient(to bottom, rgba(15,29,48,1.0) 0%, rgba(15,29,48,0.55) 20%, rgba(15,29,48,0.10) 50%, rgba(15,29,48,0.10) 100%); pointer-events: none;"></div>
+        <!-- Left-anchored translucent CTA panel -->
+        <div class="map-subhero-cta" style="position: absolute; inset: 0; z-index: 3; display: flex; align-items: center; padding: 40px 48px;">
+            <div class="map-subhero-panel" style="background: rgba(10,18,30,0.55); border-left: 3px solid #88c540; border-radius: 0 8px 8px 0; padding: 20px 28px; max-width: 380px; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);">
+                <div style="font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #88c540; margin-bottom: 6px;">Interactive Map</div>
+                <div style="font-size: 1.35rem; font-weight: 700; color: white; letter-spacing: -0.3px; line-height: 1.2; margin-bottom: 8px; text-shadow: 0 1px 8px rgba(0,0,0,0.5);">See where defense capital is flowing</div>
+                <div style="font-size: 0.9rem; color: rgba(255,255,255,0.70); line-height: 1.5; margin-bottom: 14px;">Deals plotted by location — searchable by state or congressional district.</div>
+                <a href="deals/map.html" onclick="event.stopPropagation();" style="padding: 11px 24px; background: #88c540; color: #0f1d30; font-size: 0.9rem; font-weight: 700; border-radius: 8px; text-decoration: none; display: inline-block; box-shadow: 0 2px 12px rgba(136,197,64,0.4);">Explore the Map →</a>
+            </div>
+        </div>
+    </div>
+
     <div class="container">
 
         <div class="grid grid-2">
             <div class="card">
                 <h2>Deal Tracker</h2>
-                <p>Monitor private capital investments in the defense sector:</p>
-                <ul style="margin: 1rem 0; padding-left: 1.5rem;">
-                    <li>Venture capital deals</li>
-                    <li>Private equity investments</li>
-                    <li>Corporate transactions</li>
-                    <li>Public-private partnerships</li>
-                </ul>
+                <p style="margin-bottom: 1rem;">VC, PE, and corporate transactions in the U.S. defense sector.</p>
                 <a href="deals/index.html" class="btn btn-primary">View Deals</a>
             </div>
 
             <div class="card">
                 <h2>Business Environment Indicators</h2>
-                <p>17 indicators tracking the defense business environment:</p>
-                <ul style="margin: 1rem 0; padding-left: 1.5rem;">
-                    <li>Capital flows — defense orders, VC, M&A, public company investment</li>
-                    <li>Industrial base — aircraft production, equipment output, defense spending</li>
-                    <li>Macro context — industrial production, lending standards, Treasury yields</li>
-                </ul>
+                <p style="margin-bottom: 1rem;">17 indicators across capital flows, industrial base, and macro context.</p>
                 <a href="charts/indicators.html" class="btn btn-primary">View Indicators</a>
             </div>
-        </div>
-
-        <div class="card" style="background: linear-gradient(135deg, #1e456e 0%, #162f4d 100%); color: white; display: flex; align-items: center; justify-content: space-between; gap: 2rem; flex-wrap: wrap;">
-            <div style="flex: 1; min-width: 260px;">
-                <div style="font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #88c540; margin-bottom: 0.5rem;">New</div>
-                <h2 style="color: white; margin-bottom: 0.5rem;">Deal Map</h2>
-                <p style="color: rgba(255,255,255,0.75); margin: 0; line-height: 1.6;">See where defense capital is flowing — deals plotted by location and searchable by state or congressional district. Updated daily.</p>
-            </div>
-            <a href="deals/map.html" class="btn btn-primary" style="background: #88c540; color: #0f1d30; font-weight: 700; white-space: nowrap; flex-shrink: 0;">Explore the Map</a>
         </div>
 
         <div class="card">
