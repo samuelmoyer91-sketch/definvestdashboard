@@ -11,6 +11,7 @@ from urllib.parse import urlparse, parse_qs, unquote
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
 from src.database import RawItem, ArticleContent, get_session
+from src.database.models import _reset_turso_connection
 
 PROJECT_ROOT = Path(__file__).parent.parent.parent
 
@@ -250,7 +251,13 @@ def scrape_pending_items(limit=None, delay=1.0):
             error_count += 1
             print(f"  ✗ Failed: {error}")
 
-        session.commit()
+        try:
+            session.commit()
+        except BaseException as e:
+            print(f"  ⚠ DB commit failed ({e}), resetting Turso connection and continuing...")
+            session.rollback()
+            _reset_turso_connection()
+            session = get_session()
 
         # Delay between requests
         if i < len(items):

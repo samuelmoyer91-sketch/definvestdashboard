@@ -321,6 +321,14 @@ def get_engine(db_path='databases/tracker.db'):
         return engine
 
 
+def _reset_turso_connection():
+    """Reset cached Turso connection state so the next get_session() reconnects."""
+    global _libsql_conn, _turso_engine, _session_factory
+    _libsql_conn = None
+    _turso_engine = None
+    _session_factory = None
+
+
 def sync_turso():
     """Sync the local Turso replica with the cloud after writes.
 
