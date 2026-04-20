@@ -130,30 +130,44 @@ Productive session covering pipeline diagnostics, a 30-day feed evaluation, prom
 
 ## Turso Resilience Fixes (2026-04-20, follow-on session)
 
-Two consecutive pipeline failures:
-1. "SQLite error: out of memory" during scrape — fixed with BaseException handler in scraper (prior session)
-2. `ValueError: sync error: json value error, unexpected value: {"error":"Internal Server Error"}` during RSS fetch — Turso cloud returned 500 on initial `.sync()` call
+### Morning Diagnosis
 
-**Root cause analysis:** A single transient Turso cloud error crashed the entire pipeline because no retry or reconnect logic existed at the sync layer or at commit points in rss_fetcher, title screener, or AI summarizer.
+Two consecutive 11:00 UTC ingest runs failed after the prior session's changes shipped:
 
-**Fixes shipped:**
+**Run 1 (24665207049) — "out of memory" during scrape:**
+- Error: `SQLite error: out of memory` at `session.commit()` in `article_scraper.py`
+- The scraper had no error handling around commits — one Turso memory error crashed the entire scrape step
+- Fix shipped (prior session): wrapped commit in `except BaseException` with rollback + `_reset_turso_connection()` + reconnect
+
+**Run 2 (24665930522) — "Internal Server Error" during RSS fetch:**
+- After deploying the scraper fix, triggered a manual re-run
+- New failure, different step: `ValueError: sync error: json value error, unexpected value: {"error":"Internal Server Error"}` at the very first DB operation in `rss_fetcher.py`
+- Error originated in `get_libsql_connection()` → `_libsql_conn.sync()` — Turso cloud returned an HTTP 500 on the initial replica sync, which propagated uncaught up through `get_engine()` → `get_session()` → `fetch_all_feeds()` → dead process
+
+**Key diagnostic question:** Is this a code bug or a Turso reliability problem?
+- Conclusion: **both** — Turso is occasionally flaky (transient 500s, out-of-memory on writes), AND the pipeline had zero resilience to any of it. A single cloud hiccup at any step killed the whole run.
+- This is distinct from the 2026-02-20 Turso 403 billing incident — that was an account issue; this is transient cloud errors from high write volume (three rapid ingest runs in 24 hours likely hit rate limits or memory pressure on the Turso side)
+
+**Scope of the problem:** Audit revealed that `article_scraper.py` (fixed prior session) was the *only* pipeline step with BaseException handling. The other three steps — RSS fetch, title screen, AI summarizer — all had bare `session.commit()` calls with no protection. Any commit failure in any step was a full pipeline abort.
+
+### Fixes Shipped (commit 21c3951)
 
 `src/database/models.py`:
-- Added `_sync_with_retry()` helper: 3 attempts, 5s/10s backoff, logs each retry
-- Both `.sync()` calls in `get_libsql_connection()` (initial + stale reconnect path) now go through retry
-- `get_engine()`'s except block now also clears `_libsql_conn` (was only clearing `_turso_engine`)
+- Added `_sync_with_retry()` helper: 3 attempts, 5s/10s backoff, logs each attempt
+- Both `.sync()` calls in `get_libsql_connection()` (initial connection + stale reconnect path) now go through retry instead of failing immediately
+- `get_engine()`'s except block now also clears `_libsql_conn` (was only clearing `_turso_engine`, leaving a stale partial connection in cache)
 
 `src/ingest/rss_fetcher.py`:
 - `session.commit()` in `save_to_database()` now wrapped in BaseException → rollback + re-raise
-- Per-feed loop in `fetch_all_feeds()` catches DB errors → reset connection → retry once per feed → continue on second failure
+- Per-feed loop in `fetch_all_feeds()` catches DB errors → reset connection → retry once per feed → continue on second failure (bad feed no longer aborts remaining feeds)
 
 `src/scraper/run_title_screen.py`:
-- Main `session.commit()` (line 86) wrapped in BaseException → rollback + reset + single retry
+- Main `session.commit()` wrapped in BaseException → rollback + reset + single retry
 
 `src/scraper/generate_ai_summaries.py`:
 - Per-item `session.commit()` wrapped in BaseException → rollback + reset + re-add + single retry per item
 
-**Net effect:** A transient Turso 500 now triggers a logged retry (up to 3×, 5–10s wait) at the connection layer. Mid-run commit failures trigger a reconnect and single retry per item/feed, then continue rather than crashing the run.
+**Net effect:** A transient Turso 500 now triggers a logged retry (up to 3×, 5–10s wait) at the connection layer. Mid-run commit failures trigger a reconnect and single retry, then continue rather than crashing the run. The pipeline is now consistent with the resilience model already in `article_scraper.py`.
 
 ## Open Items
 - Verify Google News URL resolver worked (check 11:00 UTC ingest log for "→ Google News resolved to:" messages)
