@@ -195,8 +195,22 @@ The zero-item outcome today is a feed issue (experimental Google News search fee
 ## Session Summary
 Two-day session. Day 1 (2026-04-19): pipeline diagnostics, 30-day feed evaluation, prompt improvements, multiple fixes. Day 2 (2026-04-20): diagnosed two consecutive ingest failures caused by transient Turso cloud errors, added resilience across all four pipeline steps, shipped and verified. Google News resolver attempted and reverted after proving unworkable from GitHub Actions. Pipeline confirmed healthy.
 
+### Triage Queue State at Close-Out
+
+DB query at session close (2026-04-20 ~13:00 UTC):
+- **232 items visible in triage** (after speculative/IPO/Contract filters)
+- 298 total processed and not yet accepted/rejected
+  - 53 filtered as Contract/Award
+  - 12 filtered as speculative
+  - 1 filtered as IPO
+- 0 items pending scrape
+
+The 232-item queue is the result of the 365-day age filter change (2026-04-19) — not a normal daily volume. Typical daily run produces 5–20 triage-eligible items. Queue will drain as Sam triages; future daily runs will add a small trickle.
+
+Note: Railway's `sync_if_stale()` (5-min throttle) may need a page refresh to show the full queue after today's ingest runs.
+
 ## Open Items
-- **Google News search feeds** (Defense M&A Transactions, Defense Tech Funding): consistently low yield because GitHub Actions can't resolve `news.google.com` redirect URLs and Google ignores date filters. Long-term fix: convert to Google Alerts, which deliver direct article URLs and genuinely new-only content.
-- **Backfill 117 dropped items** from 2026-04-20 (`scrape_success=False`, `error_message='insufficient_content'`, `date_found >= 2026-04-20`) — these were real deals that got caught by the retroactive threshold fix. Can be re-scraped manually if worth recovering.
+- **Google News search feeds** (Defense M&A Transactions, Defense Tech Funding): GitHub Actions IPs can't resolve `news.google.com` redirect URLs; Google ignores date filters on these feeds. Long-term fix: convert to Google Alerts for direct article URLs and genuinely new-only content.
+- **Backfill 117 dropped items** from 2026-04-20 (`scrape_success=False`, `error_message='insufficient_content'`) — real deals caught by the retroactive 200-char threshold fix; can be manually re-scraped if worth recovering.
 - Entity-specific feed performance review (Carlyle, Corp Ventures, VC Specialists)
 - Optionally clean up 5 existing master_list entries with county-level locations
