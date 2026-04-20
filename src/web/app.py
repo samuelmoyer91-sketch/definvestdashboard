@@ -8,7 +8,7 @@ import logging
 import os
 import secrets
 import time
-from fastapi import FastAPI, Request, Form, Query, Depends
+from fastapi import BackgroundTasks, FastAPI, Request, Form, Query, Depends
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -506,6 +506,7 @@ async def view_item(request: Request, item_id: int, session=Depends(get_db)):
 @app.post("/accept/{item_id}")
 async def accept_item(
     item_id: int,
+    background_tasks: BackgroundTasks,
     title: str = Form(""),
     company: str = Form(""),
     investors: str = Form(""),
@@ -593,13 +594,13 @@ async def accept_item(
                         ))
 
         session.commit()
-        sync_turso()  # Push write to Turso cloud
+        background_tasks.add_task(sync_turso)
 
     return RedirectResponse(url="/", status_code=303)
 
 
 @app.post("/reject/{item_id}")
-async def reject_item(item_id: int, rejection_reason: str = Form(default=None), session=Depends(get_db)):
+async def reject_item(item_id: int, background_tasks: BackgroundTasks, rejection_reason: str = Form(default=None), session=Depends(get_db)):
     """Reject item and remove from triage queue."""
     existing = session.query(RejectedItem).filter_by(item_id=item_id).first()
 
@@ -607,7 +608,7 @@ async def reject_item(item_id: int, rejection_reason: str = Form(default=None), 
         rejected = RejectedItem(item_id=item_id, rejection_reason=rejection_reason)
         session.add(rejected)
         session.commit()
-        sync_turso()  # Push write to Turso cloud
+        background_tasks.add_task(sync_turso)
 
     return RedirectResponse(url="/", status_code=303)
 
