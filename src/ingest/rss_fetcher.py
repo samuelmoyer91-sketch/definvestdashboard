@@ -56,7 +56,7 @@ def parse_feed(feed_url, feed_name):
     return entries
 
 
-MAX_AGE_DAYS = 7
+MAX_AGE_DAYS = 365
 
 
 def save_to_database(entries, session, config=None):
