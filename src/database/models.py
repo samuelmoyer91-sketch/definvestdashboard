@@ -1,6 +1,7 @@
 """Database models for the Defense Capital Tracker."""
 
 import logging
+import time
 from datetime import datetime
 from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, Boolean, Float, ForeignKey, text
 from sqlalchemy.ext.declarative import declarative_base
@@ -272,13 +273,28 @@ def get_engine(db_path='databases/tracker.db'):
                 def __getattr__(self, name):
                     return getattr(self._conn, name)
 
+            def _sync_with_retry(conn, label):
+                """Attempt conn.sync() up to 3 times with 5s/10s backoff."""
+                for attempt in range(3):
+                    try:
+                        conn.sync()
+                        return
+                    except Exception as e:
+                        if attempt < 2:
+                            wait = 5 * (attempt + 1)
+                            logger.warning(f"Turso sync attempt {attempt + 1} failed ({e}), retrying in {wait}s...")
+                            time.sleep(wait)
+                        else:
+                            logger.error(f"Turso sync failed after 3 attempts ({label}): {e}")
+                            raise
+
             def get_libsql_connection():
                 global _libsql_conn
                 if _libsql_conn is None:
                     _libsql_conn = libsql.connect('turso_replica.db',
                         sync_url=turso_url,
                         auth_token=turso_token)
-                    _libsql_conn.sync()  # Sync once on first connection
+                    _sync_with_retry(_libsql_conn, "initial")
                     logger.info("Initial Turso sync complete")
                 else:
                     # Verify the cached connection is still alive.
@@ -294,7 +310,7 @@ def get_engine(db_path='databases/tracker.db'):
                         _libsql_conn = libsql.connect('turso_replica.db',
                             sync_url=turso_url,
                             auth_token=turso_token)
-                        _libsql_conn.sync()
+                        _sync_with_retry(_libsql_conn, "reconnect")
                 return LibsqlConnectionWrapper(_libsql_conn)
 
             _turso_engine = create_engine(
@@ -312,6 +328,7 @@ def get_engine(db_path='databases/tracker.db'):
         except Exception as e:
             logger.error(f"Turso connection failed: {e}")
             _turso_engine = None
+            _libsql_conn = None
             raise
     else:
         # Fall back to local SQLite

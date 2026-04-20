@@ -10,6 +10,7 @@ import sys
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
 from src.database import RawItem, get_session
+from src.database.models import _reset_turso_connection
 from src.utils.relevance_scorer import calculate_relevance_score, should_auto_reject
 
 
@@ -121,7 +122,14 @@ def save_to_database(entries, session, config=None):
         session.add(raw_item)
         new_count += 1
 
-    session.commit()
+    try:
+        session.commit()
+    except BaseException as e:
+        try:
+            session.rollback()
+        except BaseException:
+            pass
+        raise RuntimeError(f"DB commit failed: {e}") from e
     print(f"Saved {new_count} new items ({auto_rejected_count} auto-rejected), skipped {duplicate_count} duplicates, {stale_count} stale (>{MAX_AGE_DAYS}d)")
 
     return new_count, duplicate_count, auto_rejected_count, stale_count
@@ -153,7 +161,21 @@ def fetch_all_feeds(config_path='config/feeds.json', db_path='databases/tracker.
 
         print()
         entries = parse_feed(feed_config['url'], feed_config['name'])
-        new, dupes, rejected, stale = save_to_database(entries, session, config)
+        try:
+            new, dupes, rejected, stale = save_to_database(entries, session, config)
+        except Exception as e:
+            print(f"  ⚠ DB error saving {feed_config['name']} ({e}), resetting connection and retrying...")
+            try:
+                session.close()
+            except BaseException:
+                pass
+            _reset_turso_connection()
+            session = get_session(db_path)
+            try:
+                new, dupes, rejected, stale = save_to_database(entries, session, config)
+            except Exception as e2:
+                print(f"  ✗ Retry also failed for {feed_config['name']}: {e2}")
+                new, dupes, rejected, stale = 0, 0, 0, 0
 
         total_new += new
         total_duplicates += dupes

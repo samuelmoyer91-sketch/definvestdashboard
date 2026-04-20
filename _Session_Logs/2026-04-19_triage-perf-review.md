@@ -128,7 +128,36 @@ Productive session covering pipeline diagnostics, a 30-day feed evaluation, prom
 3. **AI failure rate** — should be near zero now that 200-char threshold is in place. Confirm in ingest log ("SUMMARY: X successful, Y failed" in Generate AI summaries step).
 4. **Triage queue** — should be populated with legitimate items from the new feeds. Check that collapsed card titles show AI-generated titles (not raw RSS headlines).
 
+## Turso Resilience Fixes (2026-04-20, follow-on session)
+
+Two consecutive pipeline failures:
+1. "SQLite error: out of memory" during scrape — fixed with BaseException handler in scraper (prior session)
+2. `ValueError: sync error: json value error, unexpected value: {"error":"Internal Server Error"}` during RSS fetch — Turso cloud returned 500 on initial `.sync()` call
+
+**Root cause analysis:** A single transient Turso cloud error crashed the entire pipeline because no retry or reconnect logic existed at the sync layer or at commit points in rss_fetcher, title screener, or AI summarizer.
+
+**Fixes shipped:**
+
+`src/database/models.py`:
+- Added `_sync_with_retry()` helper: 3 attempts, 5s/10s backoff, logs each retry
+- Both `.sync()` calls in `get_libsql_connection()` (initial + stale reconnect path) now go through retry
+- `get_engine()`'s except block now also clears `_libsql_conn` (was only clearing `_turso_engine`)
+
+`src/ingest/rss_fetcher.py`:
+- `session.commit()` in `save_to_database()` now wrapped in BaseException → rollback + re-raise
+- Per-feed loop in `fetch_all_feeds()` catches DB errors → reset connection → retry once per feed → continue on second failure
+
+`src/scraper/run_title_screen.py`:
+- Main `session.commit()` (line 86) wrapped in BaseException → rollback + reset + single retry
+
+`src/scraper/generate_ai_summaries.py`:
+- Per-item `session.commit()` wrapped in BaseException → rollback + reset + re-add + single retry per item
+
+**Net effect:** A transient Turso 500 now triggers a logged retry (up to 3×, 5–10s wait) at the connection layer. Mid-run commit failures trigger a reconnect and single retry per item/feed, then continue rather than crashing the run.
+
 ## Open Items
+- Verify Google News URL resolver worked (check 11:00 UTC ingest log for "→ Google News resolved to:" messages)
+- Backfill 117 dropped items from 2026-04-20 (scrape_success=False, error_message='insufficient_content')
 - Consider converting experimental feeds to Google Alerts for genuinely new-only content
 - Entity-specific feed performance review (Carlyle, Corp Ventures, VC Specialists)
 - Optionally clean up 5 existing master_list entries with county-level locations

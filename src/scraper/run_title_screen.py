@@ -18,6 +18,7 @@ from datetime import datetime
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
 from src.database import RawItem, ArticleContent, ApiUsageLog, get_session
+from src.database.models import _reset_turso_connection
 from src.utils.title_screener import screen_titles
 from src.utils.pricing import calculate_cost
 
@@ -83,7 +84,20 @@ def run_title_screen(dry_run=False):
             print(f"    Reason: {result['reason']}")
 
     if not dry_run:
-        session.commit()
+        try:
+            session.commit()
+        except BaseException as e:
+            print(f"  ⚠ DB commit failed ({e}), resetting connection and retrying...")
+            try:
+                session.rollback()
+            except BaseException:
+                pass
+            _reset_turso_connection()
+            session = get_session()
+            try:
+                session.commit()
+            except BaseException as e2:
+                print(f"  ✗ Retry commit also failed: {e2}")
 
         # Log API usage
         try:
