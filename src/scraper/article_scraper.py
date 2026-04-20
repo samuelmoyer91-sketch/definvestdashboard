@@ -61,43 +61,6 @@ _BROWSER_HEADERS = {
 }
 
 
-def resolve_google_news_url(url, timeout):
-    """Resolve a Google News RSS article URL to the actual publisher URL.
-
-    Google News RSS links (news.google.com/rss/articles/...) serve a
-    JavaScript redirect page rather than doing a plain HTTP redirect.
-    This function follows the initial request and, if still on Google's
-    domain, extracts the real article URL from the page HTML.
-    """
-    try:
-        resp = requests.get(url, headers=_BROWSER_HEADERS, timeout=timeout, allow_redirects=True)
-        final_url = resp.url
-
-        # If redirected off Google's domain, we have the real URL
-        if 'google.com' not in urlparse(final_url).netloc:
-            return final_url
-
-        # Still on Google — parse the page for the real article link
-        soup = BeautifulSoup(resp.content, 'lxml')
-
-        # 1. Canonical link is most reliable
-        canonical = soup.find('link', rel='canonical')
-        if canonical and canonical.get('href'):
-            href = canonical['href']
-            if 'google.com' not in href and href.startswith('http'):
-                return href
-
-        # 2. First external <a> link in the page body
-        for a in soup.find_all('a', href=True):
-            href = a['href']
-            if href.startswith('http') and 'google.com' not in href:
-                return href
-
-        return None  # Could not resolve
-    except Exception:
-        return None
-
-
 def scrape_article(url, config):
     """Scrape full article content from URL."""
     # Extract real URL from Google Alerts redirect if needed
@@ -107,15 +70,6 @@ def scrape_article(url, config):
     if url != original_url:
         print(f"  → Extracted real URL from Google redirect")
         print(f"     {url[:80]}...")
-
-    # Google News RSS URLs serve a JS redirect page — resolve to real article URL first
-    if 'news.google.com' in url:
-        resolved = resolve_google_news_url(url, config['scraping']['timeout_seconds'])
-        if resolved:
-            print(f"  → Google News resolved to: {resolved[:80]}...")
-            url = resolved
-        else:
-            return None, "google_news_unresolvable"
 
     headers = {'User-Agent': config['scraping']['user_agent']}
 
