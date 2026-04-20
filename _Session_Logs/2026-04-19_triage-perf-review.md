@@ -169,9 +169,34 @@ Two consecutive 11:00 UTC ingest runs failed after the prior session's changes s
 
 **Net effect:** A transient Turso 500 now triggers a logged retry (up to 3×, 5–10s wait) at the connection layer. Mid-run commit failures trigger a reconnect and single retry, then continue rather than crashing the run. The pipeline is now consistent with the resilience model already in `article_scraper.py`.
 
+### Google News Resolver: Experiment and Revert (commit f447bb0)
+
+After the Turso resilience fixes, a test run (run 24666654386) completed cleanly but showed 0 successful scrapes — all 40 items failed with `google_news_unresolvable`. The resolver added in the prior session was running but could not resolve any URLs.
+
+**Root cause:** GitHub Actions IPs are blocked or rate-limited by Google. The resolver makes an HTTP request to `news.google.com` to follow the redirect, but Google returns a captcha/blocked response from CI. The resolver returns `None` for every item, which was coded as a hard failure.
+
+**Decision:** Revert the resolver entirely. It was a speculative feature to improve yield from the experimental Google News search feeds, but it created a worse outcome than before (hard `google_news_unresolvable` failure vs. the prior soft `insufficient_content` failure). The experimental feeds remain low-yield but the pipeline is no longer blocked by them.
+
+**Reverted:** `resolve_google_news_url()` function and `if 'news.google.com' in url:` block removed from `src/scraper/article_scraper.py`.
+
+### Final Verification (run 24667132412)
+
+Post-revert run completed in **1m42s**, all steps green:
+- RSS fetch: 14 new items, 389 duplicates (heavy duplication from 4 runs in one day)
+- Title screen: 3 passed, 8 screened out
+- Scrape: 0 successful, 3 failed (`insufficient_content` — all 3 were `news.google.com` URLs, expected behavior)
+- AI summaries: nothing to process
+- **No Turso errors. No crashes. Pipeline proven healthy.**
+
+The zero-item outcome today is a feed issue (experimental Google News search feeds dominating the queue), not a pipeline issue. Tomorrow's scheduled run will process fresh items from the Google Alerts feeds via direct URLs and should populate triage normally.
+
+---
+
+## Session Summary
+Two-day session. Day 1 (2026-04-19): pipeline diagnostics, 30-day feed evaluation, prompt improvements, multiple fixes. Day 2 (2026-04-20): diagnosed two consecutive ingest failures caused by transient Turso cloud errors, added resilience across all four pipeline steps, shipped and verified. Google News resolver attempted and reverted after proving unworkable from GitHub Actions. Pipeline confirmed healthy.
+
 ## Open Items
-- Verify Google News URL resolver worked (check 11:00 UTC ingest log for "→ Google News resolved to:" messages)
-- Backfill 117 dropped items from 2026-04-20 (scrape_success=False, error_message='insufficient_content')
-- Consider converting experimental feeds to Google Alerts for genuinely new-only content
+- **Google News search feeds** (Defense M&A Transactions, Defense Tech Funding): consistently low yield because GitHub Actions can't resolve `news.google.com` redirect URLs and Google ignores date filters. Long-term fix: convert to Google Alerts, which deliver direct article URLs and genuinely new-only content.
+- **Backfill 117 dropped items** from 2026-04-20 (`scrape_success=False`, `error_message='insufficient_content'`, `date_found >= 2026-04-20`) — these were real deals that got caught by the retroactive threshold fix. Can be re-scraped manually if worth recovering.
 - Entity-specific feed performance review (Carlyle, Corp Ventures, VC Specialists)
 - Optionally clean up 5 existing master_list entries with county-level locations
