@@ -197,17 +197,17 @@ Two-day session. Day 1 (2026-04-19): pipeline diagnostics, 30-day feed evaluatio
 
 ### Triage Queue State at Close-Out
 
-DB query at session close (2026-04-20 ~13:00 UTC):
-- **232 items visible in triage** (after speculative/IPO/Contract filters)
-- 298 total processed and not yet accepted/rejected
-  - 53 filtered as Contract/Award
-  - 12 filtered as speculative
-  - 1 filtered as IPO
+Post-session investigation revealed the triage site (2 items) was correct all along. An earlier diagnostic query used a bad SQLAlchemy join (chained `.join(ArticleContent).join(AIExtraction)` without explicit ON conditions) that produced a cross-join and inflated the count to a false 232/298. Lesson: always validate ORM query counts against the exact query the app uses.
+
+Actual DB state at close (verified against Turso using exact triage query logic):
+- **2 items in triage** — correct
+- 929 total scrape_success=True across all time; 242 accepted, 650 rejected — vast majority of historical items already processed
 - 0 items pending scrape
 
-The 232-item queue is the result of the 365-day age filter change (2026-04-19) — not a normal daily volume. Typical daily run produces 5–20 triage-eligible items. Queue will drain as Sam triages; future daily runs will add a small trickle.
+**Why the "big dump" didn't happen:**
+The 253-item batch ingested at 01:43 UTC was dominated by Google News URLs from the experimental feeds. Those all failed scraping (insufficient_content) without the resolver. The few non-Google-News items were mostly duplicates. The pipeline ran correctly — there simply wasn't new, scrapeable content today.
 
-Note: Railway's `sync_if_stale()` (5-min throttle) may need a page refresh to show the full queue after today's ingest runs.
+Expect a normal trickle from the Alerts feeds starting with tomorrow's 11:00 UTC run.
 
 ## Open Items
 - **Google News search feeds** (Defense M&A Transactions, Defense Tech Funding): GitHub Actions IPs can't resolve `news.google.com` redirect URLs; Google ignores date filters on these feeds. Long-term fix: convert to Google Alerts for direct article URLs and genuinely new-only content.
