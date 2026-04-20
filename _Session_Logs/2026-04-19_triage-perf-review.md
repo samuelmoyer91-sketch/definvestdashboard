@@ -121,6 +121,13 @@
 ## Session Summary
 Productive session covering pipeline diagnostics, a 30-day feed evaluation, prompt improvements, and numerous follow-on fixes discovered during a live ingest test. All changes committed and pushed.
 
+## Tomorrow's Follow-Up (check after 11:00 UTC ingest run)
+
+1. **Google News URL resolver** — did it work? Check ingest log for "→ Google News resolved to:" messages. If articles like Anduril $60B, Howmet $1.8B, CACI $2.6B show up in triage, the fix worked. If still failing, investigate further.
+2. **Backfill 117 dropped items** — the real deals dropped today (scrape_success=False, error_message='insufficient_content', date_found >= 2026-04-20) can be re-scraped now that the resolver is in place. Run: `python src/scraper/run_scraper.py` or trigger a targeted re-scrape of those items.
+3. **AI failure rate** — should be near zero now that 200-char threshold is in place. Confirm in ingest log ("SUMMARY: X successful, Y failed" in Generate AI summaries step).
+4. **Triage queue** — should be populated with legitimate items from the new feeds. Check that collapsed card titles show AI-generated titles (not raw RSS headlines).
+
 ## Open Items
 - Consider converting experimental feeds to Google Alerts for genuinely new-only content
 - Entity-specific feed performance review (Carlyle, Corp Ventures, VC Specialists)
