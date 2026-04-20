@@ -63,7 +63,7 @@
     <!-- COLLAPSED VIEW (Default) -->
     <div class="item-collapsed" id="collapsed-{{ item.id }}">
         <div class="item-header">
-            <div class="item-title">{{ item.title }}</div>
+            <div class="item-title">{{ item.ai_extraction.title if item.ai_extraction and item.ai_extraction.title else item.title }}</div>
         </div>
 
         <div class="item-meta" style="margin-top: 8px;">
