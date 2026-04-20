@@ -118,6 +118,18 @@ def get_db():
         session.close()
 
 
+_last_sync_time: float = 0
+_SYNC_INTERVAL = 300  # seconds (5 minutes)
+
+def sync_if_stale():
+    """Sync Turso replica if more than 5 minutes have passed since last sync."""
+    global _last_sync_time
+    import time
+    now = time.time()
+    if now - _last_sync_time > _SYNC_INTERVAL:
+        sync_turso()
+        _last_sync_time = now
+
 # =============================================================================
 # Startup Migration — ensures schema is current on deploy
 # =============================================================================
@@ -436,6 +448,7 @@ templates = Jinja2Templates(directory=str(templates_dir))
 async def home(request: Request, session=Depends(get_db)):
     """Home page showing triage queue."""
     from sqlalchemy.orm import joinedload
+    sync_if_stale()
 
     # Get items that:
     # 1. Have been successfully scraped
