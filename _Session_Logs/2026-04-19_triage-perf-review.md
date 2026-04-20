@@ -69,7 +69,25 @@
 
 ---
 
+## AI Prompt Changes (commit 547d169)
+
+### Strategic significance
+- Changed from "2-3 sentences" to "1-2 sentences"
+- Removed instruction to explain unusual investors (was generating filler)
+- Removed "do not editorialize" — replaced with "do not restate the deal structure or add market context"
+- Pattern confirmed by comparing ai_extractions vs master_list on post-2026-03-08 accepts: Sam consistently trims verbose AI output, keeps specific product/program names, cuts restatements and background context
+
+### Titles
+- Added: "Never use county names — use the state name or abbreviation instead"
+- Example fix: "Lockheed Martin Invests $150M in Pike County Facility" → "...in Alabama Facility"
+- 5 existing master_list records have county names in location field (GE Aerospace/Muskegon County, Castelion/Sandoval County, Avio USA/Pittsylvania County, USAC/Sanders County, Lockheed/Pike County) — not retroactively fixed
+
+### Location field
+- Added: "Never use county names — fall back to state abbreviation only if county is the only geography mentioned"
+
+---
+
 ## Open Items
-- Confirm and implement AI prompt tightening (1-2 sentences, cut filler)
 - Consider converting experimental feeds to Google Alerts for genuinely new-only content
 - Entity-specific feed performance review (Carlyle, Corp Ventures, VC Specialists)
+- Optionally clean up 5 existing master_list entries with county-level locations
