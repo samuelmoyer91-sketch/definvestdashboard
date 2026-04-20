@@ -127,6 +127,9 @@ def scrape_article(url, config):
         chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
         text = ' '.join(chunk for chunk in chunks if chunk)
 
+        if not text.strip():
+            return None, "empty_content"
+
         return {
             'html': str(soup),
             'clean_text': text,

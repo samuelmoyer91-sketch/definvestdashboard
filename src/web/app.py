@@ -597,13 +597,12 @@ async def accept_item(
 
 
 @app.post("/reject/{item_id}")
-async def reject_item(item_id: int, session=Depends(get_db)):
+async def reject_item(item_id: int, rejection_reason: str = Form(default=None), session=Depends(get_db)):
     """Reject item and remove from triage queue."""
-    # Check if already rejected
     existing = session.query(RejectedItem).filter_by(item_id=item_id).first()
 
     if not existing:
-        rejected = RejectedItem(item_id=item_id)
+        rejected = RejectedItem(item_id=item_id, rejection_reason=rejection_reason)
         session.add(rejected)
         session.commit()
         sync_turso()  # Push write to Turso cloud

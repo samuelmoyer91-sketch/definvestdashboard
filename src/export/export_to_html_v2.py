@@ -242,7 +242,7 @@ def generate_html_page(deals, deals_per_page=10):
         <p><strong>Defense Capital Dashboard</strong></p>
         <p>Deal intelligence curated from open sources</p>
         <p style="font-size: 0.75rem; opacity: 0.7; margin-top: 0.5rem;">This product uses the FRED&reg; API but is not endorsed or certified by the Federal Reserve Bank of St. Louis.</p>
-        <p>Created by Sam Moyer | <a href="https://github.com/samuelmoyer91-sketch" target="_blank" rel="noopener noreferrer">GitHub</a></p>
+        <p>Created by Sam Moyer | <a href="https://github.com/samuelmoyer91-sketch" target="_blank" rel="noopener noreferrer">GitHub</a> | <a href="mailto:samuel.moyer91@gmail.com">samuel.moyer91@gmail.com</a></p>
     </footer>
 
     <script src="../js/main.js"></script>

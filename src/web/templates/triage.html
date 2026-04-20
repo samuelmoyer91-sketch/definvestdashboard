@@ -473,9 +473,24 @@ function acceptItem(id, formEl) {
 }
 
 function rejectItem(id) {
-    if (!confirm('Reject this item? This cannot be undone.')) return;
+    document.getElementById('reject-modal-item-id').value = id;
+    document.getElementById('reject-modal-custom').value = '';
+    document.getElementById('reject-modal').style.display = 'flex';
+}
+
+function submitReject(reason) {
+    const id = document.getElementById('reject-modal-item-id').value;
+    const custom = document.getElementById('reject-modal-custom').value.trim();
+    const finalReason = reason === '__custom__' ? (custom || 'Other') : reason;
+    document.getElementById('reject-modal').style.display = 'none';
+
+    const body = new URLSearchParams();
+    body.append('rejection_reason', finalReason);
+
     fetch('/reject/' + id, {
         method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: body.toString(),
         redirect: 'follow'
     }).then(response => {
         if (response.ok) {
@@ -556,6 +571,26 @@ function formatCurrencyInput(input) {
     }
 }
 </script>
+
+<!-- Reject reason modal -->
+<div id="reject-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:1000; align-items:center; justify-content:center;">
+    <div style="background:#fff; border-radius:8px; padding:24px; max-width:380px; width:90%; box-shadow:0 4px 20px rgba(0,0,0,0.2);">
+        <h3 style="margin:0 0 16px; font-size:16px;">Why are you rejecting this?</h3>
+        <input type="hidden" id="reject-modal-item-id">
+        <div style="display:flex; flex-direction:column; gap:8px;">
+            <button onclick="submitReject('Not relevant / out of scope')" class="btn btn-secondary" style="text-align:left;">Not relevant / out of scope</button>
+            <button onclick="submitReject('Commentary or analysis, not a deal')" class="btn btn-secondary" style="text-align:left;">Commentary or analysis, not a deal</button>
+            <button onclick="submitReject('Duplicate')" class="btn btn-secondary" style="text-align:left;">Duplicate</button>
+            <button onclick="submitReject('International company')" class="btn btn-secondary" style="text-align:left;">International company</button>
+            <button onclick="submitReject('Contract / government award')" class="btn btn-secondary" style="text-align:left;">Contract / government award</button>
+            <div style="display:flex; gap:8px; margin-top:4px;">
+                <input type="text" id="reject-modal-custom" placeholder="Other reason…" style="flex:1; padding:6px 10px; border:1px solid #ccc; border-radius:4px; font-size:14px;">
+                <button onclick="submitReject('__custom__')" class="btn btn-secondary">Submit</button>
+            </div>
+        </div>
+        <button onclick="document.getElementById('reject-modal').style.display='none'" style="margin-top:14px; background:none; border:none; color:#888; cursor:pointer; font-size:13px;">Cancel</button>
+    </div>
+</div>
 
 {% endif %}
 {% endblock %}
