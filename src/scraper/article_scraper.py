@@ -127,8 +127,8 @@ def scrape_article(url, config):
         chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
         text = ' '.join(chunk for chunk in chunks if chunk)
 
-        if not text.strip():
-            return None, "empty_content"
+        if len(text.strip()) < 200:
+            return None, "insufficient_content"
 
         return {
             'html': str(soup),
