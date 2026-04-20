@@ -518,16 +518,12 @@ def generate_deal_card(master, raw, ai):
                 </div>"""
 
     # Investors: prioritize master.investors
-    # For Internal Investment, show "Self-funded" instead of repeating company name
     investors = master.investors if master and master.investors else (ai.investors if ai else None)
     if is_known(investors):
-        investors_display = investors
-        if master and master.transaction_type == 'Internal Investment':
-            investors_display = 'Self-funded'
         card_html += f"""
                 <div class="deal-meta-line">
                     <span class="meta-label">Investors</span>
-                    <span>{e(investors_display)}</span>
+                    <span>{e(investors)}</span>
                 </div>"""
 
     # Capital Sources (already extracted above for data attributes)
