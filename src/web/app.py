@@ -461,6 +461,8 @@ async def home(request: Request, session=Depends(get_db)):
         ),
         # Exclude routine Contract/Award items (SBIR, grants, procurement)
         ~((AIExtraction.transaction_type != None) & (AIExtraction.transaction_type == 'Contract/Award')),
+        # Exclude IPOs (0% accept rate — filings are not capital deployment events)
+        ~((AIExtraction.transaction_type != None) & (AIExtraction.transaction_type == 'IPO')),
         # Exclude speculative deals (rumors, plans, "considering", "seeks", etc.)
         ~((AIExtraction.deal_status != None) & (AIExtraction.deal_status == 'speculative'))
     ).order_by(

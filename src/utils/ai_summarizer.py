@@ -66,7 +66,7 @@ Extract the following information (use "Unknown" if not found):
 
 10. DEAL STATUS: Classify the certainty of this deal as exactly one of:
 - "announced": The deal has been formally announced, signed, or closed. Money is committed. A press release, SEC filing, or direct company statement confirms it. Pending regulatory/shareholder approval is fine — what matters is that the parties have agreed and publicly committed.
-- "speculative": The deal has NOT been formally announced. This includes rumors, reports from anonymous sources, companies "exploring" or "considering" options, "seeking" a buyer/partner/investor, or plans that have not been confirmed by the parties involved. If the article uses language like "could", "may", "plans to", "eyes", "mulls", "seeks", "explores", "is in talks", "sources say", "reportedly" — classify as speculative.
+- "speculative": The deal has NOT been formally announced. This includes rumors, reports from anonymous sources, companies "exploring" or "considering" options, "seeking" a buyer/partner/investor, or plans that have not been confirmed by the parties involved. If the article uses language like "could", "may", "plans to", "eyes", "mulls", "seeks", "explores", "is in talks", "in talks", "nears", "market chatter", "sources say", "reportedly", "likely to", "expected to", "considering", "weighing" — classify as speculative. When in doubt, classify as speculative.
 
 Format your response as JSON:
 {{
