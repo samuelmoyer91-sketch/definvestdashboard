@@ -87,8 +87,39 @@
 
 ---
 
+## Additional Changes (post-session-close)
+
+### Triage noise reduction (commit c18f239)
+- Speculative prompt: added "in talks", "nears", "market chatter", "likely to", "expected to", "considering", "weighing"; added "when in doubt, classify as speculative"
+- Triage query: auto-exclude IPO transaction type (0% accept rate across all history)
+
+### Accept/reject speed fix (commit a9446a3)
+- sync_turso() was blocking the redirect on every accept and reject (~1-3s delay)
+- Moved to FastAPI BackgroundTasks — redirect fires immediately, sync happens after
+
+### Self-funded investor backfill (commit 2b091ec + data fix)
+- AI prompt: self-funded/internal deals now return company name as investor instead of "Self-funded"
+- Export: removed hardcoded "Self-funded" override for Internal Investment cards
+- Retroactively updated 46 master_list.investors records and reassigned 51 deal_investor links to correct company investor records; Self-funded investor record now at 0 deals
+
+### Triage queue sync fix (commit cf0cf5b)
+- Removing sync_turso() from home route (March 28 fix) broke ingest visibility — new items from GitHub Actions never appeared in triage
+- Replaced with sync_if_stale(): syncs from Turso cloud only if 5+ minutes since last sync; rapid page reloads stay fast
+
+### Manual ingest trigger + AI failure investigation
+- Triggered manual ingest at 01:43 UTC 2026-04-20 to test 365-day age filter
+- Result: 253 ingested (Defense M&A: 97, Defense Tech Funding: 69 — new feeds working), 121 scraped, 65 AI summaries complete, 35 failed
+- Root cause of 35 failures: MSN and paywall pages returning 3-200 chars of text (e.g. literally "MSN"), passing the empty-text check but causing Claude to return empty JSON
+- Fix (commit 1df8192): raised minimum text threshold from >0 to ≥200 chars; retroactively marked 312 existing short-text items as scrape_success=False
+
+### Triage collapsed card title (commit 4b6bb39)
+- Collapsed cards were showing raw RSS headline instead of AI-generated analyst title
+- Now shows AI extraction title, falls back to raw title if AI hasn't run
+
+---
+
 ## Session Summary
-Productive session covering pipeline diagnostics, a 30-day feed evaluation, and three prompt improvements. All changes committed and pushed. No open bugs; experimental feeds are working but low-yield by design. Queue should be larger tomorrow after the age filter change.
+Productive session covering pipeline diagnostics, a 30-day feed evaluation, prompt improvements, and numerous follow-on fixes discovered during a live ingest test. All changes committed and pushed.
 
 ## Open Items
 - Consider converting experimental feeds to Google Alerts for genuinely new-only content
