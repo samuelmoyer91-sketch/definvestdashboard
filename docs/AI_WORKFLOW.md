@@ -118,6 +118,19 @@ python3 src/scraper/generate_ai_summaries.py --force
 - Respects Anthropic's rate limits
 - Safely handles API errors
 
+### Step 3b: Triage Auto-Filters
+
+Before a deal reaches the triage UI, it is automatically excluded if any of the following are true:
+
+| Rule | Rationale |
+|------|-----------|
+| `transaction_type = 'Contract/Award'` | Routine government procurement — not private capital |
+| `transaction_type = 'IPO'` | 0% historical accept rate — filings are not capital deployment events |
+| `deal_status = 'speculative'` | Unconfirmed deals (rumors, "considering", "in talks", etc.) |
+| `capital_deployment = 'transfer'` AND `deal_amount` is null | Ownership transfer with no dollar signal — no new capital flowing into defense capability |
+
+Auto-excluded items are visible at `/excluded` on the triage app for review or restoration.
+
 ### Step 4: Curate Deals (Triage UI)
 
 Review AI-extracted deals and approve for publication using the FastAPI triage interface:
@@ -194,9 +207,11 @@ Stores AI-extracted deal information:
 | `deal_amount` | String | Investment amount (e.g., "$300M") |
 | `investors` | Text | Key investors/acquirers (clean comma-separated list) |
 | `location` | String | Company HQ or deal location (e.g., "San Diego, CA, USA") |
-| `strategic_significance` | Text | Why this matters (2-3 sentences) |
-| `market_implications` | Text | What this signals (1-2 sentences) |
+| `strategic_significance` | Text | Why this matters (1-2 sentences) |
+| `market_implications` | Text | **UNUSED**: No longer requested from AI; column retained for old records |
 | `company_description` | Text | **UNUSED**: No longer requested from AI; column retained for old records |
+| `deal_status` | String | `announced` or `speculative` — speculative deals are auto-excluded from triage |
+| `capital_deployment` | String | `growth`, `transfer`, or `unclear` — ownership-transfer deals with no dollar amount are auto-excluded from triage |
 | `summary_complete` | Boolean | Was extraction successful? |
 | `model_used` | String | Claude model used |
 | `extracted_at` | DateTime | When extracted |

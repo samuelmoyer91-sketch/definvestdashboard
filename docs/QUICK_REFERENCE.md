@@ -22,6 +22,19 @@ gh workflow run publish.yml
 
 ---
 
+## 📱 Telegram Bot (Manual Article Intake)
+
+Send URLs directly to the bot to queue articles outside the daily RSS ingest.
+
+**Bot commands:**
+- Send any URL → queued as `status='new'` for next ingest scrape + AI extraction
+- `/status` → shows current queue counts
+- `/help` → shows available commands
+
+**Webhook:** Auto-registers on every Railway deploy using `RAILWAY_PUBLIC_DOMAIN`. If the bot stops responding, check Railway startup logs for `Telegram webhook registered` — if missing, the `TELEGRAM_BOT_TOKEN` or `RAILWAY_PUBLIC_DOMAIN` env vars may need attention.
+
+---
+
 ## 🔧 Common Tasks
 
 ### Test Site Locally
@@ -169,6 +182,11 @@ Both `ingest.yml` and `publish.yml` create a GitHub issue if they fail. Check th
 ### Railway App Down
 - Check Railway dashboard — ensure plan is active (paid plan required for 24/7 uptime).
 - Or run triage locally: `uvicorn src.web.app:app --reload`
+
+### Telegram Bot Not Responding
+- Check Railway startup logs for: `Telegram webhook registered: https://...`
+- If that line is missing, the `TELEGRAM_BOT_TOKEN` or `RAILWAY_PUBLIC_DOMAIN` env vars aren't set in Railway
+- If that line is present but bot still silent, check for errors on the `/api/telegram-webhook` endpoint in Railway logs
 
 ---
 

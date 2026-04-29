@@ -107,13 +107,14 @@ PC Dashboard/
 
 ## Deal Curation Pipeline
 
-1. **RSS Fetch** — Google News Alerts deliver defense deal articles
+1. **RSS Fetch** — Google News Alerts deliver defense deal articles. Articles can also be manually queued via the Telegram bot (send any URL to the bot).
 2. **AI Title Screen** — Claude filters noise (earnings calls, opinion pieces) from genuine deals
 3. **Article Scraping** — Full article text retrieved for AI processing
-4. **AI Extraction** — Claude extracts structured data (company, amount, investors, sectors) and drafts an analytical summary
-5. **Human Triage** — Reviewer accepts/rejects deals, edits any field before publication. Optionally overrides the source URL (e.g., swap a Google News redirect for a direct article link) or attaches a second source link that appears alongside the primary in the published card footer.
-6. **Investor Normalization** — On accept/edit, investor text is parsed into structured `Investor` records linked to deals. The parser strips AI prose artifacts ("led by", "backed by", "with participation from", semicolons, trailing annotations like "as acquirer") to extract clean entity names. Investor records are deduplicated by slug.
-7. **Export** — Only human-approved content appears on the public site (raw AI and RSS data never shown). Source URL overrides flow through to deal card footers on the public dashboard.
+4. **AI Extraction** — Claude extracts structured data (company, amount, investors, sectors, deal status, capital deployment) and drafts an analytical summary
+5. **Auto-Filter** — Before triage, the following are silently excluded: `Contract/Award` transactions, `IPO` filings, speculative/unconfirmed deals, and ownership-transfer deals with no dollar amount disclosed. Auto-excluded items are visible at `/excluded` for review or restoration.
+6. **Human Triage** — Reviewer accepts/rejects deals, edits any field before publication. Optionally overrides the source URL (e.g., swap a Google News redirect for a direct article link) or attaches a second source link that appears alongside the primary in the published card footer.
+7. **Investor Normalization** — On accept/edit, investor text is parsed into structured `Investor` records linked to deals. The parser strips AI prose artifacts ("led by", "backed by", "with participation from", semicolons, trailing annotations like "as acquirer") to extract clean entity names. Investor records are deduplicated by slug.
+8. **Export** — Only human-approved content appears on the public site (raw AI and RSS data never shown). Source URL overrides flow through to deal card footers on the public dashboard.
 
 Capital type taxonomy: Seed, Venture Capital, Private Equity, Corporate M&A, Government/Contract, Public Markets, Internal/Self-funded, Fund Raise.
 
