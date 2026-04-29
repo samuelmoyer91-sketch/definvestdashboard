@@ -107,6 +107,7 @@ def generate_summaries(limit=5, force_regenerate=False):
                 extraction.location = summary.get('location')
                 extraction.strategic_significance = summary.get('strategic_significance')
                 extraction.deal_status = summary.get('deal_status')
+                extraction.capital_deployment = summary.get('capital_deployment')
                 extraction.summary_complete = summary.get('summary_complete', False)
                 extraction.model_used = summary.get('model_used')
             else:
@@ -124,6 +125,7 @@ def generate_summaries(limit=5, force_regenerate=False):
                     location=summary.get('location'),
                     strategic_significance=summary.get('strategic_significance'),
                     deal_status=summary.get('deal_status'),
+                    capital_deployment=summary.get('capital_deployment'),
                     summary_complete=summary.get('summary_complete', False),
                     model_used=summary.get('model_used')
                 )

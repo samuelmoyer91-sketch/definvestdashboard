@@ -232,6 +232,15 @@ async def run_startup_migrations():
             conn.commit()
             logger.info("ai_extractions.deal_status column added successfully")
 
+        # Check if capital_deployment column exists on ai_extractions
+        try:
+            conn.execute(sa_text("SELECT capital_deployment FROM ai_extractions LIMIT 1"))
+        except Exception:
+            logger.info("Adding capital_deployment column to ai_extractions...")
+            conn.execute(sa_text("ALTER TABLE ai_extractions ADD COLUMN capital_deployment TEXT"))
+            conn.commit()
+            logger.info("ai_extractions.capital_deployment column added successfully")
+
         # Add performance indexes (CREATE INDEX IF NOT EXISTS is idempotent)
         indexes = [
             ("idx_raw_items_status", "raw_items", "status"),
@@ -477,7 +486,13 @@ async def home(request: Request, session=Depends(get_db)):
         # Exclude IPOs (0% accept rate — filings are not capital deployment events)
         ~((AIExtraction.transaction_type != None) & (AIExtraction.transaction_type == 'IPO')),
         # Exclude speculative deals (rumors, plans, "considering", "seeks", etc.)
-        ~((AIExtraction.deal_status != None) & (AIExtraction.deal_status == 'speculative'))
+        ~((AIExtraction.deal_status != None) & (AIExtraction.deal_status == 'speculative')),
+        # Exclude ownership-transfer deals with no dollar amount (no new capital signal)
+        ~(
+            (AIExtraction.capital_deployment != None) &
+            (AIExtraction.capital_deployment == 'transfer') &
+            (AIExtraction.deal_amount == None)
+        )
     ).order_by(
         RawItem.published_date.desc()
     ).limit(200).all()

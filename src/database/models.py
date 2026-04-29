@@ -108,6 +108,12 @@ class AIExtraction(Base):
     # "speculative": rumors, plans, intentions, "considering", "exploring", "seeks"
     deal_status = Column(String)
 
+    # Capital deployment — set by AI extractor
+    # "growth": new capital flowing into the company for expansion/enhancement
+    # "transfer": primarily an ownership change with no stated growth thesis
+    # "unclear": insufficient information to determine
+    capital_deployment = Column(String)
+
     # Metadata
     confidence_score = Column(Float)
     extracted_at = Column(DateTime, default=datetime.utcnow)

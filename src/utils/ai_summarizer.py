@@ -68,6 +68,13 @@ Extract the following information (use "Unknown" if not found):
 - "announced": The deal has been formally announced, signed, or closed. Money is committed. A press release, SEC filing, or direct company statement confirms it. Pending regulatory/shareholder approval is fine — what matters is that the parties have agreed and publicly committed.
 - "speculative": The deal has NOT been formally announced. This includes rumors, reports from anonymous sources, companies "exploring" or "considering" options, "seeking" a buyer/partner/investor, or plans that have not been confirmed by the parties involved. If the article uses language like "could", "may", "plans to", "eyes", "mulls", "seeks", "explores", "is in talks", "in talks", "nears", "market chatter", "sources say", "reportedly", "likely to", "expected to", "considering", "weighing" — classify as speculative. When in doubt, classify as speculative.
 
+11. CAPITAL DEPLOYMENT: Does this deal result in new capital being deployed toward expanding or enhancing defense capability? Choose exactly one:
+- "growth": New capital flows into the company for expansion — VC/growth equity rounds, PE acquisitions with a stated investment thesis (build facilities, fund R&D, merge into a larger platform, expand production capacity), or internal CapEx/R&D investments
+- "transfer": Primarily an ownership change with no stated growth thesis — one financial sponsor selling to another, a buyout with no expansion narrative, restructuring
+- "unclear": Article does not provide enough information to determine
+
+Note: For Equity Funding Rounds and Internal Investments, default to "growth". For Acquisitions and PE deals, assess the stated rationale — if the article describes a plan to invest in or expand the acquired company, use "growth"; if it is purely financial, use "transfer".
+
 Format your response as JSON:
 {{
   "title": "...",
@@ -79,7 +86,8 @@ Format your response as JSON:
   "investors": "...",
   "location": "City, State, Country",
   "strategic_significance": "...",
-  "deal_status": "announced"
+  "deal_status": "announced",
+  "capital_deployment": "growth"
 }}
 
 Notes:
