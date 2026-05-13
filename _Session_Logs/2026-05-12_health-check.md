@@ -207,3 +207,49 @@ After confirming current API spend is ~$2.50/month total (Sonnet 4 summarizer at
 - Slightly better extraction quality on each summary (Sonnet 4.6 vs ~12-month-old Sonnet 4)
 - Cost neutral per item (same per-MTok pricing)
 - The `--limit 300` raise is defensive insurance — current actual usage is ~5/day; even after Rock 1 widens the funnel, expected throughput is 15–40/day. Worst case if running at the new ceiling: ~$3/day = $90/month. Realistic case: $5–15/month.
+
+## Late-session change — empty triage cards investigated
+
+Sam asked why empty cards (everything "Unknown") sometimes appear in the triage queue. Investigated and found a serious quality issue: **23% of all ai_extractions in the last 90 days (163 of 709) are completely empty** — `company`, `deal_amount`, AND `deal_type` all NULL/Unknown.
+
+### Root cause
+
+Many feeds (Defense Tech Funding, Defense M&A, In-Q-Tel, etc.) pull from `news.google.com/rss/...` URLs. Each RSS entry has an encrypted Google News redirect URL, not the actual article URL. When the scraper hits the redirect, Google often serves a near-empty landing page that scrapes to just **"Google News"** (literally 11 characters). The AI summarizer then dutifully tries to extract a deal from those 11 chars and returns Unknown for everything.
+
+Real defense deals lost to this pattern (all from April 20, 2026 alone, all from the Defense Tech Funding feed):
+- Forterra $238M at $1B valuation
+- Sierra Space $550M Series C
+- Onebrief $200M (defense-tech unicorn)
+- Overland AI $100M
+- J2 Ventures $250M Brookhaven Fund
+- Smart Shooter $65M IPO
+- Digantara $50M
+- Valinor $54M Series A
+- Terra Industries $22M
+- ...and many more
+
+Date distribution shows two big spikes (April 20: 67 empties; March 8: 55) tied to known pipeline disruptions, plus a 1–3/day baseline from ongoing Google News redirect failures.
+
+### Why Google News URL resolution is hard (and was reverted)
+
+A previous attempt (commit `1b5438c`, April 19) added a Google News URL resolver. It was reverted the next day in `f447bb0` because:
+
+> *"Resolver was blocking all items from Google News search feeds since GitHub Actions IPs can't resolve news.google.com redirects."*
+
+Layered reasons it's hard:
+
+1. **The URL is encrypted.** `news.google.com/rss/articles/CBMi...` — the blob is base64-encoded encrypted payload. No documented decryption path.
+2. **The redirect requires Google's blessing on your IP.** Cloud-provider IPs (AWS, GCP, Azure, GitHub Actions) get a "Google News" landing page or CAPTCHA instead of a redirect. Same code, different IP, different response — silent failure mode.
+3. **Reverse-engineering libraries break quarterly.** `googlenewsdecoder` etc. work great until Google rotates the encryption key, then silently produce garbage URLs.
+4. **Headless browser + residential proxy works** but adds 2–5 sec/item, requires Chrome in CI, and costs $50–200/mo for proxy service.
+5. **Rate limiting** compounds everything — Google blocks aggressive resolution.
+
+### Fix shipped this session (small only)
+
+Commit `bf6684b` — added a triage-query filter in `src/web/app.py` to hide records where `company`, `deal_amount`, AND `deal_type` are all NULL/empty/Unknown. Items with no AIExtraction row at all still appear (those are legitimate pending items waiting for AI summarization). Doesn't fix the cause — just stops the empty cards from cluttering the triage view.
+
+### Deferred (queued for next session, see top-of-file priority section)
+
+- **Medium fix:** refuse to AI-extract when `clean_text < 500 chars` or matches stub patterns. Mitigation, not cure.
+- **Big fix:** the structurally correct answer is **direct publisher RSS feeds** — sidesteps Google News entirely, gets real article URLs, no IP discrimination. This is the framing for the next session and addresses three problems at once (coverage gaps, empty cards, dead-weight feeds). See the dedicated "TOP PRIORITY FOR NEXT SESSION" section in the project memory's `project_current_state.md`.
+- **Backfill:** mark the 163 existing empty stub records as auto-rejected so they leave the database. 5 min one-off, do alongside the feed strategy work.
