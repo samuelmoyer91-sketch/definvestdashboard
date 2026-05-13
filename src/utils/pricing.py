@@ -9,12 +9,14 @@ Prices are in USD per 1,000,000 tokens (MTok).
 MODEL_PRICING = {
     "claude-haiku-4-5-20251001": {"input": 0.80, "output": 4.00},
     "claude-sonnet-4-20250514":  {"input": 3.00, "output": 15.00},
+    "claude-sonnet-4-6":         {"input": 3.00, "output": 15.00},
 }
 
 # Human-readable labels for the costs page
 MODEL_LABELS = {
     "claude-haiku-4-5-20251001": "Claude Haiku 4.5",
     "claude-sonnet-4-20250514":  "Claude Sonnet 4",
+    "claude-sonnet-4-6":         "Claude Sonnet 4.6",
 }
 
 

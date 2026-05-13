@@ -151,6 +151,59 @@ Will know within a few daily ingest cycles whether the filter is now well-calibr
 
 ## What was NOT done
 
-- **Did not push to main.** Sam needs to approve push since this affects the GitHub Actions ingest pipeline.
 - **Did not change the keyword auto-rejector.** Confirmed it's working correctly post-3-08.
 - **Did not address rejection-reason capture, dropout report, or feed cleanup.** All deferred — the AI screener fix is the highest-leverage change and worth observing in isolation before stacking more changes.
+
+(Note: Rock 1 was committed and pushed in this session — `37c98a2` on `main`.)
+
+## Queued for next session — Google Alerts / feed strategy
+
+Sam asked whether the analysis sheds light on Google Alerts configurations. It does, and there's enough material for a full follow-up session. Key findings captured for next time:
+
+**Per-feed diagnosis (last 90 days):**
+- Carlyle Defense: 78 raw → 0 accepted. Retire.
+- Defense Corporate Ventures (RTX/Northrop/L3Harris Ventures): 138 → 0. Retire or expand to actually-active corporate VCs (Boeing HorizonX, Lockheed Martin Ventures, Booz Allen Ventures, BAE FAST Labs, GD Ventures, Honeywell Ventures).
+- In-Q-Tel: 120 → 2 (1.7%). Query is fine; the keyword auto-rejector is killing 66% before they reach AI screening. Real IQT investments (Cerabyte, Antheia $56M Series C) lost. After Rock 1 stabilizes, investigate IQT-specific handling in the keyword scorer.
+- Defense VC Specialists: same pattern — 58% killed by keyword auto-rejector.
+- Private Equity Defense: noisy but productive (4.1% accept). Workable.
+- New Factory Defense Products: noisy. "Expansion" and "military" are the main noise vectors. Suggested narrower query in main session response.
+- Defense M&A Transactions, Defense Tech Funding (experimental): low yield in published deals but caught Helsing and Firestorm. The deals were lost downstream, not at the feed. Keep.
+
+**Structural Google Alerts limitations** (Sam's concern was right):
+- 24–72 hour latency
+- Black-box ranking — Google decides what to surface, no visibility into what was filtered out
+- Loose boolean parsing — long compound queries become token-relevance, not strict AND/OR
+- Source bias toward high-traffic outlets — defense trade press undersurfaced, niche substacks invisible
+- No retroactive control on past items
+
+**Sam's idea (use this as the framing for next session):**
+> "Let's review the existing deal list to see what the best sources were; then we can use those for the RSS feeds. I've noticed some interesting industry sites that I wouldn't have thought of."
+
+This is the right approach. Concrete plan for next session:
+1. Pull every accepted deal in `master_list` and group by `source_url` domain
+2. Rank publishers by accepted-deal count and by accepted-deal dollar volume
+3. For top 15–20 publishers, check whether they have direct RSS feeds
+4. Build a target list: replace Google-alert intermediation with direct publisher feeds wherever possible
+5. Layer in structural sources Sam may not have considered: SEC EDGAR (8-K filings — every public-company M&A and material event), SAM.gov (facility/capacity contract awards), PR Newswire/Business Wire defense categories
+6. Decide what to retire (Carlyle, Corporate Ventures) and what to rewrite
+
+Sam mentioned he's noticed some interesting industry sites that he wouldn't have thought of — capture those during the session and include them in the target list.
+
+## Late-session change — model upgrade + summarizer limit raise
+
+After confirming current API spend is ~$2.50/month total (Sonnet 4 summarizer at $4.59/90d, Haiku 4.5 title screener at $0.46/90d), Sam decided to upgrade the summarizer model and raise the daily limit.
+
+**Changes:**
+- `src/utils/ai_summarizer.py` — model `claude-sonnet-4-20250514` → `claude-sonnet-4-6` (and the `model_used` metadata string)
+- `src/scraper/generate_ai_summaries.py` — `SONNET_MODEL` constant updated to match
+- `src/utils/pricing.py` — added `claude-sonnet-4-6` to MODEL_PRICING and MODEL_LABELS at the same $3/$15 per MTok rate as Sonnet 4 (kept the old entry so historical `api_usage_log` records still resolve)
+- `.github/workflows/ingest.yml` — `--limit 100` → `--limit 300` on the AI summarizer step
+
+**Migration check** (per the claude-api skill's model-migration guide): clean swap. The summarizer code uses no `temperature`/`top_p`, no `budget_tokens`, no assistant prefills, no `output_format`, and `max_tokens=2048` is well under the streaming threshold. No breaking changes between Sonnet 4 and Sonnet 4.6 apply to this code path.
+
+**Title screener (Haiku 4.5):** intentionally NOT upgraded. Haiku 4.5 is the latest Haiku and the filter task doesn't need bigger model capacity. The recent failures were a too-aggressive prompt (Rock 1, fixed earlier this session), not a Haiku capability issue.
+
+**Expected effect:**
+- Slightly better extraction quality on each summary (Sonnet 4.6 vs ~12-month-old Sonnet 4)
+- Cost neutral per item (same per-MTok pricing)
+- The `--limit 300` raise is defensive insurance — current actual usage is ~5/day; even after Rock 1 widens the funnel, expected throughput is 15–40/day. Worst case if running at the new ceiling: ~$3/day = $90/month. Realistic case: $5–15/month.
