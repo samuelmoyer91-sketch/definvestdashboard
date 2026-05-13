@@ -45,39 +45,29 @@ def screen_title_batch(items):
 
     titles_text = "\n".join(title_list)
 
-    prompt = f"""You are a filter for a defense/aerospace investment tracking system. Review these article titles and summaries. For each one, decide if it is likely about an actual BUSINESS event in the defense/aerospace sector.
+    prompt = f"""You are a filter for a defense/aerospace investment tracking system. A human triages everything that passes this filter — they have capacity, so when in doubt, PASS IT THROUGH. Only filter out items that are clearly not about a defense/aerospace business event.
 
-RELEVANT articles are about:
-- Investment deals (VC funding, PE acquisitions, mergers, IPOs)
+RELEVANT (pass through):
+- Investment deals (VC funding, PE acquisitions, mergers, IPOs) involving a defense, aerospace, space, dual-use, or national-security company
+- Defense-focused VCs or PE funds raising new funds (e.g., Shield Capital, Paladin, Razor's Edge, Harpoon Ventures, In-Q-Tel, a16z American Dynamism, Booz Allen Ventures)
 - New factories, facilities, or manufacturing expansions for defense/aerospace
-- Corporate strategic partnerships or joint ventures in defense
-- Defense company financial results, capex, or R&D spending
-- Production capacity grants or industrial base expansion programs
+- Corporate strategic partnerships, joint ventures, or major capex/R&D announcements in defense
+- Production capacity grants or industrial-base expansion programs
+- Reported but not-yet-closed deals from major outlets (TechCrunch, CNBC, Bloomberg, Reuters, WSJ, Financial Times, Defense News, Breaking Defense, DefenseScoop, SpaceNews, The Information, Axios, Fortune) when a SPECIFIC company and SPECIFIC dollar amount are named — even if hedged with "sources say," "reportedly," "is in talks to," etc. The human will decide.
+- Cybersecurity deals where any defense/government/IC angle is plausible — pass through and let the human decide. Only filter purely commercial cyber (consumer privacy, identity/access, SaaS security with no government angle).
 
-NOT RELEVANT articles are about:
-- Routine government contracts and awards (e.g., "$50M contract to supply X", task orders, delivery orders, IDIQ awards) — UNLESS they involve industrial base expansion, new facility construction, or production capacity grants
-- Government policy, budgets, or political debates (unless a specific contract/deal)
-- Legal/criminal cases (even if defense-related keywords appear)
-- Geopolitical news, military operations, or troop movements
-- Social issues, protests, immigration enforcement
-- Sports, entertainment, personal finance, non-defense industries
-- Market commentary, forecasts, or outlooks (e.g., "defense stocks set for banner year", "analysts bullish on aerospace sector", "why defense is a good investment in 2025") — no specific transaction
-- Think tank reports, opinion pieces, or analyst notes without a specific transaction
-- Earnings/quarterly results articles unless they announce a specific deal, acquisition, or major capex program
-- Articles about a company's stock price movement without an underlying transaction
-- Lists, rankings, or "best of" articles (e.g., "top 10 defense stocks to watch")
-- Speculative or intent-based articles where no deal has been formally announced. Filter these out aggressively:
-  * "Seeking" language: "Company seeks buyer/partner/investor", "seeks merger", "seeks acquisition"
-  * Planning language: "plans to build", "plans to expand", "slated for", "scheduled to open", "set to open", "expected to open"
-  * Consideration language: "considering acquisition", "exploring options", "eyes deal", "mulls bid", "in talks to", "could acquire"
-  * Rumor language: "sources say", "reportedly", "is said to be", "may raise", "could raise", "looking to raise"
-  * Intent language: "aims to", "intends to", "hopes to", "seeks to raise", "is looking for investors"
-  * Exception: "pending regulatory approval" or "subject to shareholder vote" on a FORMALLY ANNOUNCED deal is fine — the deal has been signed, the parties have committed.
-- Cybersecurity deals with no clear defense or national security connection — general commercial cybersecurity funding (enterprise security, SaaS security tools, identity/access management, consumer privacy) should be filtered out UNLESS the company explicitly serves defense/government/IC customers, the investor is a known defense-sector fund, or the article specifically mentions DoD, military, intelligence community, or national security applications
+NOT RELEVANT (filter out):
+- Routine government contracts and task/delivery orders (e.g., "$50M contract to supply X") UNLESS they involve facility construction, capacity expansion, or industrial-base programs
+- Government policy, budgets, or political debates with no specific transaction
+- Legal/criminal cases (even with defense-related keywords)
+- Geopolitical news, military operations, troop movements, war reporting, weapons used in combat
+- Sports (including hockey/basketball "defense"), entertainment, obituaries, social issues, immigration enforcement
+- Market commentary, forecasts, analyst notes, "outlook" pieces, rankings ("top 10 defense stocks"), opinion pieces, think tank reports — anything that is not reporting a concrete event
+- Earnings/quarterly results UNLESS they announce a specific new deal, acquisition, or major capex program
+- Stock price movements, ETF news, share buybacks
+- Vague speculative items with NO company and NO amount named (e.g., "PE firms eyeing defense sector" — no specific deal)
 
-The key test: has money been formally committed? A deal is "announced" when the parties have publicly confirmed it via press release, SEC filing, or official statement — even if not yet closed. A deal is "speculative" if it's a plan, rumor, or consideration that has not been publicly confirmed by the parties. When in doubt, filter it out.
-
-For cybersecurity specifically: when in doubt, filter it out. Only pass through cybersecurity deals where the defense/national security angle is explicit, not merely plausible.
+The bar to filter out is: the article is clearly NOT a defense business event. The bar to pass through is: the article COULD be a defense business event (specific company, specific deal, defense angle plausible). When uncertain, pass through.
 
 Review each article:
 
@@ -89,7 +79,7 @@ Return a JSON array with one object per article, in order:
   {{"id": 2, "relevant": false, "reason": "Market outlook piece, no specific deal"}}
 ]
 
-Be selective. If the title sounds like news commentary, a forecast, or general industry analysis rather than a specific business event, filter it out. Only pass through articles that are likely reporting on a concrete transaction."""
+Default to relevant=true when uncertain. The human triage step is fast and they prefer false positives to false negatives."""
 
     try:
         message = client.messages.create(
