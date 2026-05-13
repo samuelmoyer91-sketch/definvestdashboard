@@ -457,6 +457,7 @@ templates = Jinja2Templates(directory=str(templates_dir))
 async def home(request: Request, session=Depends(get_db)):
     """Home page showing triage queue."""
     from sqlalchemy.orm import joinedload
+    from sqlalchemy import func
     sync_if_stale()
 
     # Get items that:
@@ -465,6 +466,7 @@ async def home(request: Request, session=Depends(get_db)):
     # 3. Have not been rejected
     # 4. Were not screened out by AI title filter
     # 5. Are not Contract/Award transaction type (routine contracts/SBIR auto-filtered)
+    # 6. Have not been AI-extracted to all-Unknown stub (failed scrapes summarized as empty)
     items = session.query(RawItem).join(
         ArticleContent, RawItem.id == ArticleContent.item_id
     ).outerjoin(
@@ -492,6 +494,16 @@ async def home(request: Request, session=Depends(get_db)):
             (AIExtraction.capital_deployment != None) &
             (AIExtraction.capital_deployment == 'transfer') &
             (AIExtraction.deal_amount == None)
+        ),
+        # Exclude all-Unknown stub extractions (typically from failed Google News
+        # redirect scrapes that returned ~11 chars of stub text — show up as empty
+        # cards). Items with no AIExtraction row at all still pass through (they're
+        # legitimate pending items waiting for AI summarization).
+        ~(
+            (AIExtraction.id != None) &
+            func.lower(func.coalesce(AIExtraction.company, '')).in_(['unknown', 'none', '']) &
+            func.lower(func.coalesce(AIExtraction.deal_amount, '')).in_(['unknown', '']) &
+            func.lower(func.coalesce(AIExtraction.deal_type, '')).in_(['unknown', ''])
         )
     ).order_by(
         RawItem.published_date.desc()
