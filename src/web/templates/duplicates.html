@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}Duplicate Check - Defense Capital Tracker{% endblock %}
+
+{% block content %}
+<h2 style="margin-bottom: 8px;">Duplicate Check</h2>
+
+<p style="color: #666; margin-bottom: 20px; font-size: 14px; max-width: 760px;">
+    Deals that look like the same underlying event — same company, matching dollar
+    amount within {{ window_days }} days (±{{ tolerance_pct }}%). This is a
+    <strong>read-only report</strong>; nothing is changed automatically. Review each
+    cluster and merge or remove confirmed duplicates using the <em>Edit</em> link.
+    Cards marked <span style="color:#bf616a; font-weight:700;">&raquo;</span> are the
+    ones matched as likely duplicates; others share the company name but were judged
+    distinct (e.g. different facilities that happen to share an amount).
+</p>
+
+<div class="card" style="margin-bottom: 24px; display: flex; gap: 32px; flex-wrap: wrap;">
+    <div><div class="stat-number">{{ likely | length }}</div><div style="color:#666; font-size:13px;">likely-dup clusters</div></div>
+    <div><div class="stat-number">{{ scanned }}</div><div style="color:#666; font-size:13px;">deals scanned</div></div>
+    <div><div class="stat-number" style="color:#bf616a;">{{ overcount_fmt }}</div><div style="color:#666; font-size:13px;">est. double-counted capital</div></div>
+</div>
+
+{% if likely | length == 0 %}
+<div class="card"><p style="text-align:center; color:#666;">No likely duplicates found. 🎉</p></div>
+{% endif %}
+
+{% for cluster in likely %}
+<div class="card" style="border-left: 4px solid #bf616a; margin-bottom: 16px;">
+    <div style="font-weight: 600; font-size: 15px; margin-bottom: 10px;">
+        {{ cluster.company }}
+        <span style="font-weight: normal; font-size: 13px; color: #888;">
+            — {{ cluster.entries | length }} cards, {{ cluster.pairs | length }} matching pair(s)
+        </span>
+    </div>
+    <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+        {% for d in cluster.entries %}
+        <tr style="border-top: 1px solid #eee; {% if d.is_flagged %}background: #fbeaec;{% endif %}">
+            <td style="padding: 6px 8px; width: 28px; color: #bf616a; font-weight: 700;">{% if d.is_flagged %}&raquo;{% endif %}</td>
+            <td style="padding: 6px 8px; white-space: nowrap; color: #666;">{{ d.date_fmt }}</td>
+            <td style="padding: 6px 8px; white-space: nowrap; font-weight: 600;">{{ d.amount_fmt }}</td>
+            <td style="padding: 6px 8px;">{{ d.title }}</td>
+            <td style="padding: 6px 8px; white-space: nowrap;"><a href="/edit/{{ d.id }}">Edit</a></td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endfor %}
+
+{% if distinct | length > 0 %}
+<details style="margin-top: 28px;">
+    <summary style="cursor: pointer; color: #555; font-size: 14px;">
+        Show {{ distinct | length }} multi-card companies judged <em>distinct</em> (e.g. GE Aerospace's separate facilities)
+    </summary>
+    <div style="margin-top: 12px;">
+        {% for cluster in distinct %}
+        <div class="card" style="border-left: 4px solid #d8dee9; margin-bottom: 12px;">
+            <div style="font-weight: 600; font-size: 14px; margin-bottom: 8px;">
+                {{ cluster.company }}
+                <span style="font-weight: normal; font-size: 13px; color: #888;">— {{ cluster.entries | length }} cards</span>
+            </div>
+            <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                {% for d in cluster.entries %}
+                <tr style="border-top: 1px solid #eee;">
+                    <td style="padding: 6px 8px; white-space: nowrap; color: #666;">{{ d.date_fmt }}</td>
+                    <td style="padding: 6px 8px; white-space: nowrap; font-weight: 600;">{{ d.amount_fmt }}</td>
+                    <td style="padding: 6px 8px;">{{ d.title }}</td>
+                    <td style="padding: 6px 8px; white-space: nowrap;"><a href="/edit/{{ d.id }}">Edit</a></td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+        {% endfor %}
+    </div>
+</details>
+{% endif %}
+{% endblock %}

@@ -676,6 +676,49 @@ async def master_list(request: Request, session=Depends(get_db)):
     })
 
 
+@app.get("/duplicates", response_class=HTMLResponse)
+async def duplicates(request: Request, session=Depends(get_db)):
+    """Read-only duplicate-deal report over the master list.
+
+    Surfaces deals that look like the same underlying event (same company +
+    matching amount within a time window) so they can be merged/removed via
+    the edit UI. Does NOT modify anything — purely a report. Matching logic
+    and thresholds live in src/utils/dedup.py (shared with the CLI script).
+    """
+    from src.utils import dedup
+    sync_turso()
+
+    rows = session.query(MasterItem).all()
+    deals = [{
+        'id': r.id,
+        'company': r.company or r.title,
+        'amount': r.investment_amount,
+        'date': r.curated_at or r.published_at,
+        'title': r.title or r.company,
+        'source': r.source_url,
+    } for r in rows]
+
+    result = dedup.find_clusters(deals)
+
+    # Pre-format for the template (Jinja can't call our helpers easily)
+    for bucket in (result['likely'], result['distinct']):
+        for cluster in bucket:
+            for d in cluster['entries']:
+                d['amount_fmt'] = dedup.fmt_amount(d['amount_num'])
+                d['date_fmt'] = d['date'].strftime('%Y-%m-%d') if d['date'] else '—'
+                d['is_flagged'] = d['id'] in cluster['flagged_ids']
+
+    return templates.TemplateResponse("duplicates.html", {
+        "request": request,
+        "likely": result['likely'],
+        "distinct": result['distinct'],
+        "overcount_fmt": dedup.fmt_amount(result['overcount']),
+        "scanned": len(deals),
+        "window_days": dedup.WINDOW_DAYS,
+        "tolerance_pct": int(dedup.AMOUNT_TOLERANCE * 100),
+    })
+
+
 @app.get("/rejected", response_class=HTMLResponse)
 async def rejected_list(request: Request, session=Depends(get_db)):
     """View rejected items."""
