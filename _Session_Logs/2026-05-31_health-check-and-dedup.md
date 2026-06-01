@@ -92,3 +92,44 @@ Check the following on `raw_items` where `feed_source LIKE 'Direct:%'`:
 
 ### Do NOT
 - Re-attempt the Google News URL resolver (reverted `f447bb0` — cloud IPs blocked by Google). Direct RSS is the superset solution.
+
+---
+
+## NEXT BUILD (agreed, spec'd, not yet built) — pre-triage "Possible Duplicates" bucket
+
+**Goal (Sam's words):** catch duplicates *before* they reach the triage queue, so he doesn't sort through items only to reject them as dups. Deferred to next session (hit usage limit 2026-05-31); design is locked below — execute from this spec.
+
+### Locked design decisions
+- **Option B — separate bucket, not inline banners.** Flagged likely-dup items are filtered OUT of the main triage queue into a dedicated review page. Main queue stays clean.
+- **Flag-and-route, NEVER auto-delete.** Auto-rejecting on a match would silently kill real distinct deals (the GE Rutland $42M vs Lynn $42M coincidence — same company/amount/±1 day but different facilities). Every flagged item keeps a one-click "send to queue" escape hatch. This is non-negotiable given Sam's #1 fear (missing deals).
+- **Query-time computation, no pipeline/schema changes.** Compute on page load from data that already exists (queue items' AIExtraction company/deal_amount; published master_list company/investment_amount). Mirrors how `/excluded` and `/duplicates` already work. Tuning stays in `src/utils/dedup.py`.
+- **Reuse `dedup.find_clusters`** — same matching logic as `/duplicates`. Union the matched pairs into connected components to form one "deal group" per real-world deal.
+
+### What each queue item is checked against
+1. Already-published deals (`master_list`) → if already on the dashboard, default action = reject the incoming dup.
+2. Other items currently in the triage queue → two outlets, same fresh deal → default = keep best source, reject the rest.
+
+### Grouped review UX (the part Sam cares about — group by DEAL, not a flat list)
+- **Type 1 group (matches a published deal):** show the published deal greyed as a non-actionable reference anchor at top; incoming queue dup(s) below with [Reject as dup] / [Keep →] buttons.
+- **Type 2 group (queue-only cluster, none published):** show the 2+ queue items together with a "keep the best source, reject the rest" affordance.
+- **Three speed features:**
+  1. Always show the **match reason** ("same company · ~$28.5M · within 8 days") so Sam can spot coincidences.
+  2. Show **location + source outlet prominently in every row** — location is the tell for facility false-positives (Rutland vs Lynn).
+  3. **Sort groups by confidence** — exact-amount + same-company + tight-window first; weaker (both no-$, wider gap) lower. Plus a one-line **insight snippet** per card to confirm same event without opening it.
+
+### Implementation checklist
+1. `src/utils/dedup.py`: add a helper to union matched pairs into connected components (deal-groups), and a function that takes (queue_items, published_items) and returns grouped dup clusters with type tag (matches-published vs queue-only) + flagged queue-item ids.
+2. `src/web/app.py` `home()`: exclude flagged-dup queue items from the main triage query (so they leave the main flow).
+3. New route `/possible-duplicates` (or `/dup-queue`) rendering the grouped view.
+4. New template (grouped, two group types, per the mockup in this session's chat).
+5. POST actions: `reject as duplicate` (→ rejected_items with reason "duplicate of #X"), `keep one / reject rest` (group-level convenience), `send to queue` (false-positive escape → back to main queue). NOTE: this also finally starts populating `rejection_reason` for dups — ties into the deferred rejection-reason gap.
+6. Nav link ("Possible Dups" + count badge).
+7. Test: dedup grouping logic, template render, each POST action, and confirm flagged items truly leave the main queue and can be restored.
+
+### One open question to confirm at build time
+Sam leaned toward wanting the **group-level "keep one, reject the rest"** button (handy for Karman ×3, Integrate ×2). Confirm vs per-item-only before finalizing the template.
+
+### Relationship to other deferred work
+- This supersedes/absorbs the earlier "ingest-time dedup upgrade" note — same goal, cleaner (query-time, no schema change).
+- It partially addresses the `rejection_reason` NULL gap (dup rejections will carry a reason).
+- Best built AFTER the direct-feed Phase 1 lands, since direct feeds will increase interim duplicates — making this bucket more valuable and giving real data to tune against.
