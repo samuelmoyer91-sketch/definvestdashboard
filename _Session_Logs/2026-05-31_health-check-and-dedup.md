@@ -133,3 +133,34 @@ Sam leaned toward wanting the **group-level "keep one, reject the rest"** button
 - This supersedes/absorbs the earlier "ingest-time dedup upgrade" note — same goal, cleaner (query-time, no schema change).
 - It partially addresses the `rejection_reason` NULL gap (dup rejections will carry a reason).
 - Best built AFTER the direct-feed Phase 1 lands, since direct feeds will increase interim duplicates — making this bucket more valuable and giving real data to tune against.
+
+---
+
+## BUILT & SHIPPED 2026-06-01 — Possible Duplicates bucket (commit `8642179`)
+
+Built per the spec above. Sam confirmed the open question: **both** group-level "keep one, reject the rest" AND per-item buttons.
+
+### What shipped
+- `src/utils/dedup.py`: `find_queue_duplicates(queue_items, published_items)` — union-find groups each queue item with the published deal and/or other queue items it matches. Returns confidence-sorted deal-groups (Type 1 = matches_published, Type 2 = queue_only) + `flagged_ids`. Reuses existing `normalize_company` / `parse_amount` / `amounts_match`. Plus `_match_reason()` helper.
+- `src/web/app.py`:
+  - `_triage_queue_items(session)` — extracted the shared base queue query (used by `/` and `/possible-duplicates`).
+  - `_queue_dup_flagged_ids()` — computes flagged ids, skipping items carrying the keep marker.
+  - `home()` — routes flagged items OUT of main queue; passes `dup_count` for a banner.
+  - `/possible-duplicates` (GET) — grouped view.
+  - `/reject-dup/{id}`, `/reject-dup-group`, `/keep-dup/{id}` (POST) — actions. Dup rejections write `rejection_reason="Duplicate of …"`.
+  - `DEDUP_KEEP_MARKER = "dedup_keep"` appended to `RawItem.relevance_flags` (no schema change) when Sam clicks Keep.
+- Templates: new `possible_duplicates.html`; banner added to `triage.html`; nav updated — "Possible Dups" (this bucket, next to Triage Queue) + relabeled the prior report "Published Dup Check".
+
+### Design-review risks — RAISED and CONSCIOUSLY ACCEPTED by Sam (2026-06-01)
+Did a final critical pass before pushing. Three risks surfaced; Sam chose to ship as-is because **he reviews the Possible Dups bucket every time he triages**, which neutralizes the main one.
+
+1. **(Most important) Type 2 queue-only clusters leave the main queue entirely.** When two outlets report the SAME brand-new (never-published) deal, BOTH copies are routed to the bucket — so a genuinely-new deal appears in ZERO places in the main queue; it lives only in the bucket. Today those show as 2 cards in the main queue (annoying but impossible to miss). **Mitigation Sam relies on: he always reviews the bucket.** If that workflow ever lapses, revisit — the safer alternative is: only remove items that match an ALREADY-PUBLISHED deal (Type 1), leave Type 2 clusters in the main queue and merely surface them in the bucket. That change also simplifies the code (no representative-picking). Documented here so it's not lost.
+2. **Weak-signal no-amount matches.** `amounts_match(None,None)` is True, so two no-dollar items match on company + date-window alone. For serial acquirers (Boeing, GE, Anduril, Lockheed) two unrelated no-amount events within 30 days could group as dups and (per risk 1) get held out of the main queue. Keep button recovers them. Tunable later via `dedup.py` if it proves noisy.
+3. **Minor:** keep-marker lives in `relevance_flags` — a re-score would wipe it (self-corrects, click Keep again). `home()` loads all `master_list` each page load (trivial at 242 rows; revisit ~2000+).
+
+### Verified before push
+dedup logic on synthetic edge cases (Type 1, Type 2, GE Rutland/Lynn false-positive flagged-but-distinguishable via location, solo item NOT flagged); both templates render; all 4 routes register; triage banner shows/hides on `dup_count`.
+
+### Follow-up to watch (next session)
+- After a few real triage sessions: is the bucket catching real dups without burying real new deals? Check `/possible-duplicates` group quality and whether anything legitimate got stuck.
+- If risk 1 or 2 bites, apply the "Type 1 only auto-removes" simplification from risk 1 above.
