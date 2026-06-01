@@ -42,3 +42,53 @@ All pushed to `main` (through `f6dafbe`). Railway auto-redeploys the triage app;
 2. **Ingest-time dedup upgrade** — the `/duplicates` page is detection/cleanup after the fact. A future improvement: warn at triage time when an incoming item matches an existing master_list deal (company+amount+window), using the same `dedup.find_clusters` logic. Natural next step once Sam trusts the matching.
 3. **Backfill cleanup** of the 163 empty stub records (5-min one-off).
 4. **rejection_reason capture** in triage UI (93% NULL).
+
+---
+
+## Direct-publisher RSS feed rollout — STAGED, in progress (started 2026-05-31)
+
+### Why (recap)
+Source analysis of 335 published deals: all 8 active feeds route through Google News (the middleman behind empty-card scrapes, coverage gaps, latency). Direct publisher feeds carry REAL article URLs (`feedparser` reads `<link>` generically in `rss_fetcher.py`), so they scrape cleanly and bypass Google. Source distribution is long-tailed (211 domains for 335 deals, 74% appear once) — so direct RSS won't cover the local-business-journal long tail, but it captures the addressable high-value layer: defense trade press + newswires + funding trackers. Premier outlets (Breaking Defense, Defense News, DefenseScoop) barely appear in current data — strong sign Google under-surfaces them.
+
+### Important framing correction (for accurate expectations)
+The funnel has three very different numbers. Earlier in the session I sloppily conflated them. Real funnel (from 5/12 health check, 90d):
+- **Raw ingested (pre-filter):** ~42/day now
+- **Reach triage (after keyword + AI title filters):** ~5/day now (458/90d)
+- **Published (Sam accepts):** ~2.3/day now
+
+Adding feeds mostly inflates the RAW number; the triage queue and published counts rise modestly. Sam will NOT see "100/day" anywhere — that confusion came from me summing the feeds' visible item-windows (snapshot buffers, ~134 items) and mislabeling it as daily flow. **We do not actually know the net daily new-item rate from these feeds yet — that's the #1 thing Phase 1 measures.** Rough guess post-rollout: raw ~85-110/day, triage ~10-20/day, published ~3-5/day. Verify, don't trust the guess.
+
+### Cost impact
+Negligible. Title screener is Haiku at ~$0.00025/item. Even +150 raw/day = ~+$1.30/mo.
+
+### Phase 1 — LIVE NOW (3 tight, proven feeds; committed `<this session>`, config/feeds.json)
+- **Direct: PR Newswire Aerospace & Defense** — category-filtered newswire, deal-first, tight
+- **Direct: GlobeNewswire Aerospace & Defence** — same
+- **Direct: SpaceNews** — #1 proven source (13 deals); the one full-site feed in Phase 1, so its volume/noise is the main watch item
+
+All 3 verified returning live RSS items. Real article URLs.
+
+### Phase 2 — STAGED OFF (enabled:false in config/feeds.json, ready to flip on)
+- **Direct: Breaking Defense**, **Direct: Defense News**, **Direct: DefenseScoop** — premier full-site feeds, enable together after Phase 1 proves out
+- **Direct: Pulse 2.0** — VC funding tracker (13 deals) but NOT defense-specific = noisiest; enable LAST and watch accept rate
+
+### COMPLETION CRITERIA — measure after ~1 week of Phase 1 (need Turso creds / or query live), then complete Phase 2
+Check the following on `raw_items` where `feed_source LIKE 'Direct:%'`:
+1. **Flow:** Are the 3 feeds actually producing raw_items? (sanity — confirms ingest reads them)
+2. **Net daily volume:** raw items/day from the 3 feeds (the number we don't know yet).
+3. **Clean scrapes:** confirm `article_content.clean_text` length is healthy (NOT the ~11-char "Google News" stubs) — this validates the whole premise that direct URLs scrape cleanly.
+4. **Reach-triage rate & accept rate:** how many got to triage, how many Sam accepted. Compare signal vs the Google feeds.
+5. **Duplicate impact:** check `/duplicates` — did direct feeds create many new clusters (same deal via Google + direct)? Expected yes in interim; quantify.
+6. **New catches:** did the direct feeds surface any deal the Google feeds missed? (the upside test)
+
+**If Phase 1 looks good** (clean scrapes confirmed, manageable volume/noise, real catches): flip Breaking Defense + Defense News + DefenseScoop to enabled:true (Phase 2), re-measure ~1 week, then add Pulse 2.0 last.
+
+### Phase 3 — LATER (after direct feeds prove out)
+- **Retire dead-weight Google feeds:** Carlyle Defense (0% accept), Defense Corporate Ventures (0% accept).
+- **Rewrite New Factory Defense Products query:** drop "expansion" and "military" noise vectors.
+- **Fix In-Q-Tel:** keyword scorer kills 66% of IQT items before AI screening — needs IQT-specific handling.
+- **Structural sources (separate ingest paths, more work):** SEC EDGAR 8-K filings (every public-company M&A/material event, day-of, machine-readable), SAM.gov (industrial-base contract awards), Business Wire defense category (verify RSS — not yet checked).
+- **Endgame:** once direct feeds cover the high-value layer, retiring Google feeds makes duplicates go DOWN (clean canonical URLs, no redirect dups).
+
+### Do NOT
+- Re-attempt the Google News URL resolver (reverted `f447bb0` — cloud IPs blocked by Google). Direct RSS is the superset solution.

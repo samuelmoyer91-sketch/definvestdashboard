@@ -1,6 +1,55 @@
 {
   "rss_feeds": [
     {
+      "name": "Direct: PR Newswire Aerospace & Defense",
+      "url": "https://www.prnewswire.com/rss/aerospace-defense-latest-news/aerospace-defense-latest-news-list.rss",
+      "enabled": true,
+      "google_alert_query": "(direct publisher RSS — not a Google query)",
+      "notes": "Added 2026-05-31, PHASE 1 (live). Direct newswire, category-filtered at source. Companies announce funding/M&A/facility deals here FIRST, before trade press or local journals. Real article URLs (no Google redirect = scrapes cleanly). Tight, low-noise. Evaluate accept rate + duplicate rate after ~1 week."
+    },
+    {
+      "name": "Direct: GlobeNewswire Aerospace & Defence",
+      "url": "https://www.globenewswire.com/RssFeed/industry/4530-Aerospace%20and%20Defence/feedTitle/GlobeNewswire%20-%20Aerospace%20and%20Defence",
+      "enabled": true,
+      "google_alert_query": "(direct publisher RSS — not a Google query)",
+      "notes": "Added 2026-05-31, PHASE 1 (live). Direct newswire, category-filtered. Same rationale as PR Newswire — primary-source press releases for deals/M&A. Real article URLs."
+    },
+    {
+      "name": "Direct: SpaceNews",
+      "url": "https://spacenews.com/feed/",
+      "enabled": true,
+      "google_alert_query": "(direct publisher RSS — not a Google query)",
+      "notes": "Added 2026-05-31, PHASE 1 (live). Top performer in the published-deal source analysis (13 deals). Full-site feed — keyword scorer + AI title screener narrow to deals. Real article URLs. The one full-site feed in Phase 1 — its volume/noise is the main thing to watch."
+    },
+    {
+      "name": "Direct: Breaking Defense",
+      "url": "https://breakingdefense.com/feed/",
+      "enabled": false,
+      "google_alert_query": "(direct publisher RSS — not a Google query)",
+      "notes": "Added 2026-05-31, STAGED OFF (Phase 2). Premier defense outlet under-surfaced by Google News (e.g. Anduril Arsenal-1 only came via it). Full-site feed; filters narrow to deals. Enable after Phase 1 (the 3 tight feeds) proves out — see _Session_Logs/2026-05-31 rollout plan."
+    },
+    {
+      "name": "Direct: Defense News",
+      "url": "https://www.defensenews.com/arc/outboundfeeds/rss/?outputType=xml",
+      "enabled": false,
+      "google_alert_query": "(direct publisher RSS — not a Google query)",
+      "notes": "Added 2026-05-31, STAGED OFF (Phase 2). Premier defense-industry outlet, under-surfaced by Google. Full-site feed; filters narrow to deals. Enable after Phase 1 proves out."
+    },
+    {
+      "name": "Direct: DefenseScoop",
+      "url": "https://defensescoop.com/feed/",
+      "enabled": false,
+      "google_alert_query": "(direct publisher RSS — not a Google query)",
+      "notes": "Added 2026-05-31, STAGED OFF (Phase 2). Defense tech/business outlet. Full-site feed; filters narrow to deals. Enable after Phase 1 proves out."
+    },
+    {
+      "name": "Direct: Pulse 2.0",
+      "url": "https://pulse2.com/feed/",
+      "enabled": false,
+      "google_alert_query": "(direct publisher RSS — not a Google query)",
+      "notes": "Added 2026-05-31, STAGED OFF (Phase 2, evaluate last). VC/funding-round tracker — delivered 13 published deals but NOT defense-specific, so it's the noisiest candidate. Enable only after the other direct feeds prove out, and watch accept rate closely."
+    },
+    {
       "name": "Private Equity Defense",
       "url": "https://www.google.com/alerts/feeds/09025431128020683164/3776232429289321661",
       "enabled": true,
