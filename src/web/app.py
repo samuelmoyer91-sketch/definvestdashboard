@@ -453,12 +453,18 @@ templates_dir.mkdir(exist_ok=True)
 templates = Jinja2Templates(directory=str(templates_dir))
 
 
-@app.get("/", response_class=HTMLResponse)
-async def home(request: Request, session=Depends(get_db)):
-    """Home page showing triage queue."""
+# Marker appended to RawItem.relevance_flags when Sam confirms a flagged item
+# is NOT a duplicate (so it stays in the main queue on future loads). Reusing
+# the existing TEXT column avoids a schema change.
+DEDUP_KEEP_MARKER = "dedup_keep"
+
+
+def _triage_queue_items(session):
+    """Base triage-queue query, shared by the main queue (/) and the
+    Possible Duplicates page. Returns RawItem rows with .article_content and
+    .ai_extraction attached. Centralizing this keeps the two views in sync."""
     from sqlalchemy.orm import joinedload
     from sqlalchemy import func
-    sync_if_stale()
 
     # Get items that:
     # 1. Have been successfully scraped
@@ -509,10 +515,58 @@ async def home(request: Request, session=Depends(get_db)):
         RawItem.published_date.desc()
     ).limit(200).all()
 
-    # Map relationships to the attribute names templates expect
     for item in items:
         item.article_content = item.article
         item.ai_extraction = item.extraction
+    return items
+
+
+def _queue_dup_flagged_ids(session, queue_items):
+    """Return the set of queue RawItem.ids that look like duplicates of an
+    already-published deal or of another queue item. Pure read; uses
+    dedup.find_queue_duplicates. Used to split flagged items out of the main
+    queue and into the Possible Duplicates page."""
+    from src.utils import dedup
+
+    def q_dict(item):
+        ext = item.ai_extraction
+        return {
+            'id': item.id,
+            'company': (ext.company if ext else None) or item.title,
+            'amount': (ext.deal_amount if ext else None),
+            'date': item.published_date,
+            'title': (ext.title if ext and ext.title else item.title),
+            'source': item.feed_source,
+            'location': (ext.location if ext else None),
+            'insight': (ext.strategic_significance if ext else None),
+        }
+
+    published = [{
+        'id': m.id,
+        'company': m.company,
+        'amount': m.investment_amount,
+        'date': m.curated_at or m.published_at,
+        'title': m.title or m.company,
+        'source': m.source_url,
+        'location': m.location,
+    } for m in session.query(MasterItem).all()]
+
+    # Items Sam explicitly confirmed are NOT duplicates carry a marker in
+    # relevance_flags; never re-flag them.
+    eligible = [i for i in queue_items if DEDUP_KEEP_MARKER not in (i.relevance_flags or "")]
+    result = dedup.find_queue_duplicates([q_dict(i) for i in eligible], published)
+    return result['flagged_ids']
+
+
+@app.get("/", response_class=HTMLResponse)
+async def home(request: Request, session=Depends(get_db)):
+    """Home page showing triage queue (with likely-duplicate items routed out
+    to the Possible Duplicates page so they don't clutter the main flow)."""
+    sync_if_stale()
+
+    all_items = _triage_queue_items(session)
+    flagged = _queue_dup_flagged_ids(session, all_items)
+    items = [i for i in all_items if i.id not in flagged]
 
     total_items = len(items)
     master_count = session.query(MasterItem).count()
@@ -521,8 +575,123 @@ async def home(request: Request, session=Depends(get_db)):
         "request": request,
         "items": items,
         "total_items": total_items,
-        "master_count": master_count
+        "master_count": master_count,
+        "dup_count": len(flagged),
     })
+
+
+@app.get("/possible-duplicates", response_class=HTMLResponse)
+async def possible_duplicates(request: Request, session=Depends(get_db)):
+    """Likely-duplicate triage items, grouped by the deal they duplicate.
+
+    Read-only computation (reuses dedup.find_queue_duplicates). Each group is
+    either a queue item matching an already-published deal (Type 1, shown with
+    the published deal as a greyed anchor) or a cluster of queue items that look
+    like the same fresh deal (Type 2). Nothing is auto-removed — Sam decides via
+    [Reject as dup] / [Keep] / group-level keep-best."""
+    from src.utils import dedup
+    sync_if_stale()
+
+    queue_items = _triage_queue_items(session)
+    by_id = {i.id: i for i in queue_items}
+    # Skip items Sam already confirmed are not duplicates
+    eligible = [i for i in queue_items if DEDUP_KEEP_MARKER not in (i.relevance_flags or "")]
+
+    def q_dict(item):
+        ext = item.ai_extraction
+        return {
+            'id': item.id,
+            'company': (ext.company if ext else None) or item.title,
+            'amount': (ext.deal_amount if ext else None),
+            'date': item.published_date,
+            'title': (ext.title if ext and ext.title else item.title),
+            'source': item.feed_source,
+            'location': (ext.location if ext else None),
+            'insight': (ext.strategic_significance if ext else None),
+        }
+
+    published = [{
+        'id': m.id,
+        'company': m.company,
+        'amount': m.investment_amount,
+        'date': m.curated_at or m.published_at,
+        'title': m.title or m.company,
+        'source': m.source_url,
+        'location': m.location,
+    } for m in session.query(MasterItem).all()]
+
+    result = dedup.find_queue_duplicates([q_dict(i) for i in eligible], published)
+
+    # decorate each queue entry with the live URL (for "View Original")
+    for g in result['groups']:
+        for q in g['queue']:
+            raw = by_id.get(q['id'])
+            q['url'] = raw.url if raw else '#'
+            q['amount_fmt'] = dedup.fmt_amount(q['amount_num'])
+            q['date_fmt'] = q['date'].strftime('%Y-%m-%d') if q['date'] else '—'
+        for p in g['published']:
+            p['amount_fmt'] = dedup.fmt_amount(p['amount_num'])
+            p['date_fmt'] = p['date'].strftime('%Y-%m-%d') if p['date'] else '—'
+
+    return templates.TemplateResponse("possible_duplicates.html", {
+        "request": request,
+        "groups": result['groups'],
+        "group_count": len(result['groups']),
+        "flagged_count": len(result['flagged_ids']),
+    })
+
+
+@app.post("/reject-dup/{item_id}")
+async def reject_duplicate(item_id: int, background_tasks: BackgroundTasks,
+                           dup_of: str = Form(default=""), session=Depends(get_db)):
+    """Reject a single queue item as a duplicate (from the Possible Dups page).
+    Records a rejection_reason so the action is auditable."""
+    existing = session.query(RejectedItem).filter_by(item_id=item_id).first()
+    if not existing:
+        reason = f"Duplicate of {dup_of}" if dup_of else "Duplicate (flagged pre-triage)"
+        session.add(RejectedItem(item_id=item_id, rejection_reason=reason))
+        session.commit()
+        background_tasks.add_task(sync_turso)
+    return RedirectResponse(url="/possible-duplicates", status_code=303)
+
+
+@app.post("/reject-dup-group")
+async def reject_duplicate_group(background_tasks: BackgroundTasks,
+                                 keep_id: int = Form(...),
+                                 reject_ids: str = Form(default=""),
+                                 dup_of: str = Form(default=""),
+                                 session=Depends(get_db)):
+    """Group-level 'keep one, reject the rest'. keep_id stays in the queue;
+    every id in reject_ids (comma-separated) is rejected as a duplicate."""
+    ids = [int(x) for x in reject_ids.split(',') if x.strip().isdigit()]
+    for rid in ids:
+        if rid == keep_id:
+            continue
+        if not session.query(RejectedItem).filter_by(item_id=rid).first():
+            reason = f"Duplicate of #{keep_id}" + (f" ({dup_of})" if dup_of else "")
+            session.add(RejectedItem(item_id=rid, rejection_reason=reason))
+    session.commit()
+    background_tasks.add_task(sync_turso)
+    return RedirectResponse(url="/possible-duplicates", status_code=303)
+
+
+@app.post("/keep-dup/{item_id}")
+async def keep_duplicate(item_id: int, background_tasks: BackgroundTasks, session=Depends(get_db)):
+    """Mark a flagged item as NOT a duplicate so it returns to the main queue
+    and stays there on future loads.
+
+    The dup flag is computed live on every page load, so 'keep' must persist a
+    decision. No schema change (per the locked design): we append a marker to
+    the existing RawItem.relevance_flags TEXT column. Both the main-queue dup
+    splitter and the Possible Duplicates page skip items carrying this marker."""
+    raw = session.query(RawItem).filter_by(id=item_id).first()
+    if raw:
+        flags = raw.relevance_flags or ""
+        if DEDUP_KEEP_MARKER not in flags:
+            raw.relevance_flags = (flags + "," + DEDUP_KEEP_MARKER).lstrip(",")
+            session.commit()
+            background_tasks.add_task(sync_turso)
+    return RedirectResponse(url="/possible-duplicates", status_code=303)
 
 
 @app.get("/item/{item_id}", response_class=HTMLResponse)

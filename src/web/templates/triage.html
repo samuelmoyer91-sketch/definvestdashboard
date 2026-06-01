@@ -47,6 +47,13 @@
 
 <h2 style="margin-bottom: 20px;">Triage Queue</h2>
 
+{% if dup_count and dup_count > 0 %}
+<div class="card" style="border-left:4px solid #bf616a; margin-bottom:16px; font-size:14px;">
+    ⚠ {{ dup_count }} item{{ 's' if dup_count != 1 else '' }} held out of this queue as possible duplicates.
+    <a href="/possible-duplicates">Review them →</a>
+</div>
+{% endif %}
+
 {% if total_items == 0 %}
 <div class="card">
     <p style="text-align: center; color: #666;">
