@@ -24,30 +24,30 @@
     {
       "name": "Direct: Breaking Defense",
       "url": "https://breakingdefense.com/feed/",
-      "enabled": false,
+      "enabled": true,
       "google_alert_query": "(direct publisher RSS — not a Google query)",
-      "notes": "Added 2026-05-31, STAGED OFF (Phase 2). Premier defense outlet under-surfaced by Google News (e.g. Anduril Arsenal-1 only came via it). Full-site feed; filters narrow to deals. Enable after Phase 1 (the 3 tight feeds) proves out — see _Session_Logs/2026-05-31 rollout plan."
+      "notes": "Added 2026-05-31. PHASE 2 LIVE 2026-06-03. Premier defense outlet under-surfaced by Google News (e.g. Anduril Arsenal-1 only came via it). Full-site trade-press feed; expected to behave like SpaceNews (clean/relevant) per Phase 1. Filters narrow to deals."
     },
     {
       "name": "Direct: Defense News",
       "url": "https://www.defensenews.com/arc/outboundfeeds/rss/?outputType=xml",
-      "enabled": false,
+      "enabled": true,
       "google_alert_query": "(direct publisher RSS — not a Google query)",
-      "notes": "Added 2026-05-31, STAGED OFF (Phase 2). Premier defense-industry outlet, under-surfaced by Google. Full-site feed; filters narrow to deals. Enable after Phase 1 proves out."
+      "notes": "Added 2026-05-31. PHASE 2 LIVE 2026-06-03. Premier defense-industry outlet, under-surfaced by Google. Full-site trade-press feed; filters narrow to deals."
     },
     {
       "name": "Direct: DefenseScoop",
       "url": "https://defensescoop.com/feed/",
-      "enabled": false,
+      "enabled": true,
       "google_alert_query": "(direct publisher RSS — not a Google query)",
-      "notes": "Added 2026-05-31, STAGED OFF (Phase 2). Defense tech/business outlet. Full-site feed; filters narrow to deals. Enable after Phase 1 proves out."
+      "notes": "Added 2026-05-31. PHASE 2 LIVE 2026-06-03. Defense tech/business outlet. Full-site trade-press feed; filters narrow to deals."
     },
     {
       "name": "Direct: Pulse 2.0",
       "url": "https://pulse2.com/feed/",
       "enabled": false,
       "google_alert_query": "(direct publisher RSS — not a Google query)",
-      "notes": "Added 2026-05-31, STAGED OFF (Phase 2, evaluate last). VC/funding-round tracker — delivered 13 published deals but NOT defense-specific, so it's the noisiest candidate. Enable only after the other direct feeds prove out, and watch accept rate closely."
+      "notes": "Added 2026-05-31, STILL STAGED OFF (Phase 3 — the last holdout). VC/funding-round tracker — delivered 13 published deals but NOT defense-specific, so it's the noisiest candidate. Phase 1 showed non-defense newswires get ~83% auto-rejected (filter handles it, but high log noise + dup volume). Enable only after the 3 trade-press feeds (Phase 2, live 6-03) prove out, and watch accept rate closely."
     },
     {
       "name": "Private Equity Defense",
