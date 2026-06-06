@@ -45,9 +45,9 @@
     {
       "name": "Direct: Pulse 2.0",
       "url": "https://pulse2.com/feed/",
-      "enabled": false,
+      "enabled": true,
       "google_alert_query": "(direct publisher RSS — not a Google query)",
-      "notes": "Added 2026-05-31, STILL STAGED OFF (Phase 3 — the last holdout). VC/funding-round tracker — delivered 13 published deals but NOT defense-specific, so it's the noisiest candidate. Phase 1 showed non-defense newswires get ~83% auto-rejected (filter handles it, but high log noise + dup volume). Enable only after the 3 trade-press feeds (Phase 2, live 6-03) prove out, and watch accept rate closely."
+      "notes": "Added 2026-05-31. PHASE 3 LIVE 2026-06-06 (final direct feed). VC/funding-round tracker — 13 historical published deals but NOT defense-specific, so the noisiest direct feed; keyword filter expected to auto-reject most. Enabled after the 6/6 verify_feeds.py run confirmed direct feeds scrape 90% clean and are producing accepted deals. WATCH: accept rate + dup volume; disable if it floods the queue or the Possible Dups bucket."
     },
     {
       "name": "Private Equity Defense",
@@ -87,16 +87,16 @@
     {
       "name": "Defense Corporate Ventures",
       "url": "https://news.google.com/rss/search?q=%22RTX%20Ventures%22%20OR%20%22Northrop%20Grumman%20Ventures%22%20OR%20%22L3Harris%20Ventures%22&hl=en-US&gl=US&ceid=US:en",
-      "enabled": true,
+      "enabled": false,
       "google_alert_query": "\"RTX Ventures\" OR \"Northrop Grumman Ventures\" OR \"L3Harris Ventures\"",
-      "notes": "Prime contractor venture arms. Exact name matching keeps noise low."
+      "notes": "RETIRED 2026-06-06. Prime contractor venture arms. 0% accept rate over its lifetime (0 published deals, ~0 new items/run in 6/2 + 6/6 logs) — these corporate VCs are barely active. Disabled as dead weight once direct feeds proved out. Re-enable only if expanded to actually-active corporate VCs (Boeing HorizonX, Lockheed Martin Ventures, Booz Allen Ventures, etc.)."
     },
     {
       "name": "Carlyle Defense",
       "url": "https://news.google.com/rss/search?q=%22Carlyle%20Group%22%20%28defense%20OR%20aerospace%20OR%20military%29&hl=en-US&gl=US&ceid=US:en",
-      "enabled": true,
+      "enabled": false,
       "google_alert_query": "\"Carlyle Group\" (defense OR aerospace OR military)",
-      "notes": "Carlyle is a large PE firm — needs sector filter to reduce noise from non-defense deals."
+      "notes": "RETIRED 2026-06-06. Single-firm Carlyle feed. 0% accept rate over its lifetime — most hits are Carlyle's non-defense business with 'defense' appearing incidentally. Disabled as dead weight once direct feeds proved out."
     },
     {
       "name": "Defense M&A Transactions",
