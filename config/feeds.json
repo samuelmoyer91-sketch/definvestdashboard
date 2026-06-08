@@ -113,6 +113,41 @@
       "notes": "Experimental feed added 2026-03-18. Transaction-signal design: targets journalist language for VC/growth investments in defense-adjacent startups. 'dual-use' is a specific term unlikely to appear outside defense context. Intent: catch funding rounds from non-traditional investors. No named entities. Evaluate accept rate after 30 days."
     },
     {
+      "name": "Generalist Defense Investors",
+      "url": "https://news.google.com/rss/search?q=%28%22Founders%20Fund%22%20OR%20%22Thrive%20Capital%22%20OR%20%22General%20Catalyst%22%20OR%20%228VC%22%20OR%20%22Sequoia%20Capital%22%20OR%20%22Lux%20Capital%22%20OR%20%22Coatue%22%29%20%28defense%20OR%20%22national%20security%22%20OR%20military%20OR%20aerospace%20OR%20%22defense%20tech%22%20OR%20autonomy%20OR%20hypersonic%20OR%20munitions%29%20%28raises%20OR%20raised%20OR%20funding%20OR%20Series%20OR%20led%20OR%20invests%29&hl=en-US&gl=US&ceid=US:en",
+      "enabled": true,
+      "google_alert_query": "(\"Founders Fund\" OR \"Thrive Capital\" OR \"General Catalyst\" OR \"8VC\" OR \"Sequoia Capital\" OR \"Lux Capital\" OR \"Coatue\") (defense OR \"national security\" OR military OR aerospace OR \"defense tech\" OR autonomy OR hypersonic OR munitions) (raises OR raised OR funding OR Series OR led OR invests)",
+      "notes": "Added 2026-06-06 (gap-fill: generalist/crossover investors). Catches megafund-led defense rounds the boutique-VC feed misses. Verified 6/6 — sample hits: Lux $1.5B defense fund, Hadrian $260M led by Founders Fund, General Catalyst Indian defense round, 8VC Israeli defense. Named megafunds + defense context + deal verb. Uses existing scorer words (no vocab change needed). The named-firm list will need periodic refresh as the crossover roster shifts."
+    },
+    {
+      "name": "Gov Strategic Capital",
+      "url": "https://news.google.com/rss/search?q=%28%22Office%20of%20Strategic%20Capital%22%20OR%20STRATFI%20OR%20TACFI%20OR%20%22Industrial%20Base%20Analysis%20and%20Sustainment%22%20OR%20%22Defense%20Industrial%20Base%20Fund%22%29%20%28loan%20OR%20investment%20OR%20award%20OR%20equity%20OR%20million%20OR%20billion%20OR%20funds%20OR%20financing%29&hl=en-US&gl=US&ceid=US:en",
+      "enabled": true,
+      "google_alert_query": "(\"Office of Strategic Capital\" OR STRATFI OR TACFI OR \"Industrial Base Analysis and Sustainment\" OR \"Defense Industrial Base Fund\") (loan OR investment OR award OR equity OR million OR billion OR funds OR financing)",
+      "notes": "Added 2026-06-06 (gap-fill: government strategic capital — leading indicator of industrial expansion). IMPORTANT: deliberately does NOT use 'Defense Production Act' or bare 'Title III' — tested 6/6 and those terms returned almost entirely Trump/coal/energy DPA noise. Anchored on defense-specific program names (OSC, STRATFI/TACFI) + capital verb. Verified clean: OSC $700M Vulcan loan, OSC/MP Materials critical-minerals loan, $20B loan-program budget request. Precise terms = very low noise."
+    },
+    {
+      "name": "Defense Private Credit",
+      "url": "https://news.google.com/rss/search?q=%28%22venture%20debt%22%20OR%20%22private%20credit%22%20OR%20%22credit%20facility%22%20OR%20%22term%20loan%22%20OR%20%22debt%20financing%22%29%20%28defense%20OR%20aerospace%20OR%20%22defense%20tech%22%20OR%20military%20OR%20%22national%20security%22%29&hl=en-US&gl=US&ceid=US:en",
+      "enabled": false,
+      "google_alert_query": "(\"venture debt\" OR \"private credit\" OR \"credit facility\" OR \"term loan\" OR \"debt financing\") (defense OR aerospace OR \"defense tech\" OR military OR \"national security\")",
+      "notes": "Added 2026-06-06 (gap-fill: private credit / venture debt), STAGED OFF. Returns items (75 in 6/6 test) but NOT YET ENABLED because the keyword scorer lacks debt vocabulary ('venture debt','private credit','credit facility') — enabling without those scorer additions risks items getting auto-rejected at stage 1. ENABLE TOGETHER WITH the matching scorer phrase additions (use multi-word phrases, not bare 'credit'/'debt', to avoid loosening existing feeds)."
+    },
+    {
+      "name": "Defense Critical Minerals",
+      "url": "https://news.google.com/rss/search?q=%28%22rare%20earth%22%20OR%20%22rare%20earths%22%20OR%20%22critical%20minerals%22%20OR%20%22permanent%20magnets%22%29%20%28defense%20OR%20military%20OR%20Pentagon%20OR%20%22supply%20chain%22%20OR%20investment%20OR%20funding%20OR%20facility%29&hl=en-US&gl=US&ceid=US:en",
+      "enabled": false,
+      "google_alert_query": "(\"rare earth\" OR \"rare earths\" OR \"critical minerals\" OR \"permanent magnets\") (defense OR military OR Pentagon OR \"supply chain\" OR investment OR funding OR facility)",
+      "notes": "Added 2026-06-06 (gap-fill: critical minerals / defense supply chain), STAGED OFF. Returns items (100 in 6/6 test). ENABLE TOGETHER WITH scorer phrase additions ('rare earth','critical minerals','permanent magnets') so items survive stage 1. Multi-word phrases keep noise low. Note partial overlap with Gov Strategic Capital (OSC/MP Materials surfaced in both — the Possible Dups bucket handles it)."
+    },
+    {
+      "name": "Defense Corporate Ventures v2",
+      "url": "https://news.google.com/rss/search?q=%28%22Lockheed%20Martin%20Ventures%22%20OR%20%22RTX%20Ventures%22%20OR%20%22Booz%20Allen%20Ventures%22%20OR%20%22Boeing%20Ventures%22%20OR%20%22Honeywell%20Ventures%22%29%20%28invests%20OR%20investment%20OR%20backs%20OR%20funding%20OR%20portfolio%20OR%20round%29&hl=en-US&gl=US&ceid=US:en",
+      "enabled": false,
+      "google_alert_query": "(\"Lockheed Martin Ventures\" OR \"RTX Ventures\" OR \"Booz Allen Ventures\" OR \"Boeing Ventures\" OR \"Honeywell Ventures\") (invests OR investment OR backs OR funding OR portfolio OR round)",
+      "notes": "Added 2026-06-06, STAGED OFF. Replaces the retired Defense Corporate Ventures (which used dead arms RTX/Northrop/L3Harris Ventures, 0% accept). Broader active-arm list + deal verb. Uses existing scorer words (no vocab change needed) — could be enabled independently. Named-entity = more brittle (per the lesson that named feeds underperform transaction-signal ones); watch accept rate, this segment may just be low-volume."
+    },
+    {
       "name": "a16z Defense",
       "url": "https://news.google.com/rss/search?q=%22Andreessen%20Horowitz%22%20%28defense%20OR%20%22national%20security%22%29&hl=en-US&gl=US&ceid=US:en",
       "enabled": false,
