@@ -56,9 +56,29 @@ from urllib.parse import urlparse
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from database.models import get_session, MasterItem, RawItem, AIExtraction
+from utils.dedup import parse_amount, detect_currency, fmt_amount
 
 
 _UNKNOWN_VALUES = {'unknown', 'n/a', 'none', 'null', '-', ''}
+
+
+def display_amount(amount):
+    """Render a deal amount for the public site, converted to USD.
+
+    If the source figure is already USD (or no currency detected), show it
+    as-is. If it's a non-USD currency we can convert, show the USD value with
+    the original in parentheses for transparency, e.g. "~$119M (€110M)".
+    Falls back to the raw string if it can't be parsed.
+    """
+    if not is_known(amount):
+        return amount
+    code = detect_currency(amount)
+    if code == 'USD':
+        return amount
+    usd = parse_amount(amount)  # already converted to USD by parse_amount
+    if not usd:
+        return amount  # unparseable currency amount — show original untouched
+    return f"~{fmt_amount(usd)} ({amount.strip()})"
 
 def is_known(val):
     """Return True if val is a non-empty, non-placeholder string."""
@@ -508,13 +528,13 @@ def generate_deal_card(master, raw, ai):
     card_html += """
             <div class="deal-metadata">"""
 
-    # Amount: prioritize master.investment_amount
+    # Amount: prioritize master.investment_amount; convert non-USD to USD for display
     amount = master.investment_amount if master and master.investment_amount else (ai.deal_amount if ai else None)
     if is_known(amount):
         card_html += f"""
                 <div class="deal-meta-line">
                     <span class="meta-label">Amount</span>
-                    <span>{e(amount)}</span>
+                    <span>{e(display_amount(amount))}</span>
                 </div>"""
 
     # Investors: prioritize master.investors
