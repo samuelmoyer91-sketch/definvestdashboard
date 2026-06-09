@@ -28,6 +28,22 @@ NAME_NOISE = [
     'inc', 'incorporated', 'corp', 'corporation', 'llc', 'ltd', 'limited',
     'co', 'company', 'plc', 'lp', 'holdings', 'group', 'the',
 ]
+
+# Fixed (approximate) FX rates -> USD. Deliberately simple, not live: a deal
+# tracker doesn't need to-the-cent accuracy, and fixed rates keep amounts
+# stable/comparable over time. Edit these occasionally if a rate drifts a lot.
+# Detection matches the symbol OR the 3-letter code anywhere in the amount text.
+FX_RATES = {
+    'EUR': 1.08,   # € euro
+    'GBP': 1.27,   # £ pound sterling
+    'CAD': 0.73,   # C$ Canadian dollar
+    'AUD': 0.66,   # A$ Australian dollar
+    'JPY': 0.0067, # ¥ yen
+    'INR': 0.012,  # ₹ Indian rupee
+    'ILS': 0.27,   # ₪ Israeli shekel
+}
+# Symbol -> currency code. Order matters for C$/A$ before plain $.
+FX_SYMBOLS = [('€', 'EUR'), ('£', 'GBP'), ('₪', 'ILS'), ('₹', 'INR'), ('¥', 'JPY')]
 # -------------------------------------------------------------------------
 
 
@@ -41,12 +57,35 @@ def normalize_company(name):
     return ' '.join(words).strip()
 
 
-def parse_amount(amount):
-    """Parse a deal-amount string into dollars (float), or None.
+def detect_currency(amount):
+    """Return a 3-letter currency code for an amount string, defaulting to USD.
+
+    Checks symbols (€ £ ₪ ₹ ¥), C$/A$ prefixes, and 3-letter codes (EUR, GBP,
+    CAD, AUD, JPY, INR, ILS) anywhere in the text. Plain '$' / no marker = USD.
+    """
+    if not amount:
+        return 'USD'
+    s = str(amount).lower()
+    if re.search(r'\bc\$|\bcad\b', s):
+        return 'CAD'
+    if re.search(r'\ba\$|\baud\b', s):
+        return 'AUD'
+    for sym, code in FX_SYMBOLS:
+        if sym in str(amount):
+            return code
+    for code in FX_RATES:
+        if re.search(r'\b' + code.lower() + r'\b', s):
+            return code
+    return 'USD'
+
+
+def parse_amount(amount, convert=True):
+    """Parse a deal-amount string into USD dollars (float), or None.
 
     Handles "$28,500,000", "$2M", "$1.3B", "250,000,000", "£19M", "€110M".
-    Currency symbol is ignored (magnitude only) — an FX-converted figure may
-    not match its source-currency twin, which surfaces as a near-miss to judge.
+    Non-USD amounts are converted to USD using the fixed FX_RATES table above
+    (approximate, not live). Pass convert=False to get the raw magnitude
+    without FX conversion (e.g. if you only care about order of magnitude).
     """
     if not amount:
         return None
@@ -65,6 +104,10 @@ def parse_amount(amount):
         val *= 1_000_000
     elif unit in ('k', 'thousand'):
         val *= 1_000
+    if convert:
+        code = detect_currency(amount)
+        if code != 'USD':
+            val *= FX_RATES[code]
     return val
 
 
