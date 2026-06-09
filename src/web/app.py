@@ -1251,27 +1251,14 @@ async def investor_detail(request: Request, slug: str, session=Depends(get_db)):
 
 
 def _parse_amount(amount_str):
-    """Parse investment amount string to a float for aggregation.
+    """Parse investment amount string to a USD float for aggregation.
 
-    Handles: "$15,300,000", "$300M", "$4.7B", "$500K", None
-    Returns None if unparseable.
+    Delegates to the shared dedup.parse_amount so currency conversion (non-USD
+    -> USD via fixed rates) and parsing logic live in ONE place. Kept as a thin
+    wrapper so existing call sites are unchanged.
     """
-    if not amount_str:
-        return None
-    clean = amount_str.replace('$', '').replace(',', '').strip()
-    if not clean:
-        return None
-    import re
-    match = re.match(r'^([\d.]+)\s*([KMBT])', clean, re.IGNORECASE)
-    if match:
-        num = float(match.group(1))
-        suffix = match.group(2).upper()
-        multipliers = {'K': 1e3, 'M': 1e6, 'B': 1e9, 'T': 1e12}
-        return num * multipliers.get(suffix, 1)
-    try:
-        return float(clean)
-    except ValueError:
-        return None
+    from src.utils.dedup import parse_amount
+    return parse_amount(amount_str)
 
 
 def _format_amount(value):

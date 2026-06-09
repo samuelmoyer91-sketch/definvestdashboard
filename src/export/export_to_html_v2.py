@@ -63,12 +63,11 @@ _UNKNOWN_VALUES = {'unknown', 'n/a', 'none', 'null', '-', ''}
 
 
 def display_amount(amount):
-    """Render a deal amount for the public site, converted to USD.
+    """Render a deal amount for the public site as USD.
 
-    If the source figure is already USD (or no currency detected), show it
-    as-is. If it's a non-USD currency we can convert, show the USD value with
-    the original in parentheses for transparency, e.g. "~$119M (€110M)".
-    Falls back to the raw string if it can't be parsed.
+    Non-USD amounts are converted to USD (fixed rates) and shown as a clean
+    dollar figure, e.g. "€110M" -> "$119M". USD amounts pass through as-is.
+    Unparseable / "Not disclosed" text is returned unchanged.
     """
     if not is_known(amount):
         return amount
@@ -78,7 +77,7 @@ def display_amount(amount):
     usd = parse_amount(amount)  # already converted to USD by parse_amount
     if not usd:
         return amount  # unparseable currency amount — show original untouched
-    return f"~{fmt_amount(usd)} ({amount.strip()})"
+    return fmt_amount(usd)
 
 def is_known(val):
     """Return True if val is a non-empty, non-placeholder string."""
