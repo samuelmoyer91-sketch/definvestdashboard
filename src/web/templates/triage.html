@@ -359,6 +359,60 @@
                             Electronic Warfare
                         </label>
                         <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                            <input type="checkbox" name="sectors" value="Quantum"
+                                   {% if 'Quantum' in ai_sectors_new or 'Quantum' in ai_sector %}checked{% endif %}
+                                   style="margin-right: 5px; width: 14px; height: 14px;">
+                            Quantum
+                        </label>
+                        <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                            <input type="checkbox" name="sectors" value="Sensors/ISR"
+                                   {% if 'Sensors/ISR' in ai_sectors_new or 'Sensor' in ai_sector or 'Radar' in ai_sector or 'ISR' in ai_sector %}checked{% endif %}
+                                   style="margin-right: 5px; width: 14px; height: 14px;">
+                            Sensors/ISR
+                        </label>
+                        <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                            <input type="checkbox" name="sectors" value="Propulsion/Engines"
+                                   {% if 'Propulsion/Engines' in ai_sectors_new or 'Propulsion' in ai_sector or 'Engine' in ai_sector %}checked{% endif %}
+                                   style="margin-right: 5px; width: 14px; height: 14px;">
+                            Propulsion/Engines
+                        </label>
+                        <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                            <input type="checkbox" name="sectors" value="Maritime/Naval"
+                                   {% if 'Maritime/Naval' in ai_sectors_new or 'Maritime' in ai_sector or 'Naval' in ai_sector or 'Ship' in ai_sector %}checked{% endif %}
+                                   style="margin-right: 5px; width: 14px; height: 14px;">
+                            Maritime/Naval
+                        </label>
+                        <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                            <input type="checkbox" name="sectors" value="Ground Vehicles"
+                                   {% if 'Ground Vehicles' in ai_sectors_new or 'Vehicle' in ai_sector or 'Armored' in ai_sector %}checked{% endif %}
+                                   style="margin-right: 5px; width: 14px; height: 14px;">
+                            Ground Vehicles
+                        </label>
+                        <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                            <input type="checkbox" name="sectors" value="Critical Minerals"
+                                   {% if 'Critical Minerals' in ai_sectors_new or 'Mineral' in ai_sector or 'Rare Earth' in ai_sector %}checked{% endif %}
+                                   style="margin-right: 5px; width: 14px; height: 14px;">
+                            Critical Minerals
+                        </label>
+                        <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                            <input type="checkbox" name="sectors" value="Energy/Power"
+                                   {% if 'Energy/Power' in ai_sectors_new or 'Energy' in ai_sector or 'Nuclear' in ai_sector or 'Battery' in ai_sector %}checked{% endif %}
+                                   style="margin-right: 5px; width: 14px; height: 14px;">
+                            Energy/Power
+                        </label>
+                        <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                            <input type="checkbox" name="sectors" value="Logistics/Sustainment"
+                                   {% if 'Logistics/Sustainment' in ai_sectors_new or 'Logistics' in ai_sector or 'Sustainment' in ai_sector or 'MRO' in ai_sector %}checked{% endif %}
+                                   style="margin-right: 5px; width: 14px; height: 14px;">
+                            Logistics/Sustainment
+                        </label>
+                        <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                            <input type="checkbox" name="sectors" value="Biotech/Medical"
+                                   {% if 'Biotech/Medical' in ai_sectors_new or 'Biotech' in ai_sector or 'Medical' in ai_sector %}checked{% endif %}
+                                   style="margin-right: 5px; width: 14px; height: 14px;">
+                            Biotech/Medical
+                        </label>
+                        <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
                             <input type="checkbox" name="sectors" value="Other"
                                    style="margin-right: 5px; width: 14px; height: 14px;">
                             Other

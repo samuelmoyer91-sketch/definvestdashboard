@@ -322,21 +322,30 @@ def generate_html_page(deals, deals_per_page=10):
 
         // Populate filter dropdowns from card data attributes
         (function populateFilters() {{
-            // Canonical labels for display
+            // Canonical labels for display (slug -> label; missing slugs fall back to the slug)
             const sectorLabels = {{
-                'advanced-materials': 'Advanced Materials',
-                'aerospace': 'Aerospace',
-                'ai-ml': 'AI/ML',
                 'autonomous-systems-drones': 'Autonomous Systems/Drones',
-                'communications': 'Communications',
+                'ai-ml': 'AI/ML',
+                'quantum': 'Quantum',
+                'software-it': 'Software/IT',
                 'cybersecurity': 'Cybersecurity',
+                'communications': 'Communications',
+                'sensors-isr': 'Sensors/ISR',
                 'electronic-warfare': 'Electronic Warfare',
-                'intelligence': 'Intelligence',
-                'manufacturing-production': 'Manufacturing/Production',
+                'space-satellites': 'Space/Satellites',
+                'aerospace': 'Aerospace',
+                'propulsion-engines': 'Propulsion/Engines',
+                'maritime-naval': 'Maritime/Naval',
+                'ground-vehicles': 'Ground Vehicles',
                 'munitions-weapons': 'Munitions/Weapons',
                 'semiconductors-electronics': 'Semiconductors/Electronics',
-                'software-it': 'Software/IT',
-                'space-satellites': 'Space/Satellites'
+                'advanced-materials': 'Advanced Materials',
+                'critical-minerals': 'Critical Minerals',
+                'energy-power': 'Energy/Power',
+                'manufacturing-production': 'Manufacturing/Production',
+                'logistics-sustainment': 'Logistics/Sustainment',
+                'biotech-medical': 'Biotech/Medical',
+                'other': 'Other'
             }};
             const capitalLabels = {{
                 'seed': 'Seed',
