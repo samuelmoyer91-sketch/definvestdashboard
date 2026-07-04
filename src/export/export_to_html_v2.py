@@ -62,6 +62,21 @@ from utils.dedup import parse_amount, detect_currency, fmt_amount
 _UNKNOWN_VALUES = {'unknown', 'n/a', 'none', 'null', '-', ''}
 
 
+def hero_amount(amount):
+    """Compact USD figure for the card's headline slot: $2.5B, $144M, $28.5M.
+
+    Parses (and FX-converts) via the shared parser, then trims trailing
+    zeros from fmt_amount's output. Falls back to display_amount for
+    unparseable values.
+    """
+    usd = parse_amount(amount)
+    if not usd:
+        return display_amount(amount)
+    s = fmt_amount(usd)          # e.g. $2.50B / $144.0M
+    s = re.sub(r'\.(\d*?)0+(?=[BMK]?$)', lambda m: '.' + m.group(1) if m.group(1) else '', s)
+    return s
+
+
 def display_amount(amount):
     """Render a deal amount for the public site as USD.
 
@@ -115,6 +130,13 @@ def extract_domain(url):
         # Remove 'www.' prefix if present
         if domain.startswith('www.'):
             domain = domain[4:]
+
+        # Collapse deep subdomain chains to the registrable root for display
+        # (keeps short second-level TLDs like co.uk intact: a.b.co.uk -> b.co.uk)
+        parts = domain.split('.')
+        if len(parts) > 2:
+            keep = 3 if (len(parts[-2]) <= 3 and len(parts[-1]) <= 3) else 2
+            domain = '.'.join(parts[-keep:])
 
         return domain if domain else 'source'
     except:
@@ -219,6 +241,7 @@ def generate_html_page(deals, deals_per_page=10):
             <ul>
                 <li><a href="../index.html">Home</a></li>
                 <li><a href="index.html" class="active">Deal Tracker</a></li>
+                <li><a href="map.html">Deal Map</a></li>
                 <li><a href="../charts/indicators.html">Indicators</a></li>
             </ul>
         </div>
@@ -515,26 +538,27 @@ def generate_deal_card(master, raw, ai):
     # Strip any HTML tags leaked from RSS (e.g., <b> from Google News)
     if title_display:
         title_display = re.sub(r'</?[^>]+>', '', title_display)
-    if title_display:
+
+    # Amount is the headline number for a capital tracker: render it as a
+    # visual hero beside the title, not as one more metadata row.
+    amount = master.investment_amount if master and master.investment_amount else (ai.deal_amount if ai else None)
+    amount_hero = f"""
+                <span class="deal-amount-hero">{e(hero_amount(amount))}</span>""" if is_known(amount) else ''
+
+    heading = title_display or company_name
+    if heading:
         card_html += f"""
-            <h3 class="deal-company-name">{e(title_display)}</h3>"""
-    elif company_name:
-        # Fallback to company name if no title at all
+            <div class="deal-title-row">
+                <h3 class="deal-company-name">{e(heading)}</h3>{amount_hero}
+            </div>"""
+    elif amount_hero:
         card_html += f"""
-            <h3 class="deal-company-name">{e(company_name)}</h3>"""
+            <div class="deal-title-row">{amount_hero}
+            </div>"""
 
     # Start metadata section
     card_html += """
             <div class="deal-metadata">"""
-
-    # Amount: prioritize master.investment_amount; convert non-USD to USD for display
-    amount = master.investment_amount if master and master.investment_amount else (ai.deal_amount if ai else None)
-    if is_known(amount):
-        card_html += f"""
-                <div class="deal-meta-line">
-                    <span class="meta-label">Amount</span>
-                    <span>{e(display_amount(amount))}</span>
-                </div>"""
 
     # Investors: prioritize master.investors
     investors = master.investors if master and master.investors else (ai.investors if ai else None)
@@ -554,13 +578,16 @@ def generate_deal_card(master, raw, ai):
                     <span>{e(capital_display)}</span>
                 </div>"""
 
-    # Sectors (already extracted above for data attributes)
+    # Sectors (already extracted above for data attributes) — rendered as chips
     if is_known(sectors):
-        sectors_display = sectors.replace(',', ', ')
+        chips = ''.join(
+            f'<span class="sector-chip">{e(s.strip())}</span>'
+            for s in re.split(r',\s*', sectors) if s.strip()
+        )
         card_html += f"""
                 <div class="deal-meta-line">
                     <span class="meta-label">Sectors</span>
-                    <span>{e(sectors_display)}</span>
+                    <span class="sector-chips">{chips}</span>
                 </div>"""
 
     # Location: from master_list (curated in triage), fallback to AI extraction

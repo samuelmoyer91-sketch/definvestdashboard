@@ -484,11 +484,20 @@ def generate_indicators_page():
                                 scales: {{
                                     x: {{
                                         display: true,
-                                        grid: {{ display: true, color: '#e0e0e0' }},
-                                        ticks: {{ maxRotation: 45, minRotation: 45, maxTicksLimit: 12 }}
+                                        grid: {{ display: true, color: '#eef1f4' }},
+                                        ticks: {{
+                                            maxRotation: 0, minRotation: 0, maxTicksLimit: 12,
+                                            callback: function(value, index, ticks) {{
+                                                // Labels are per-point years; blank consecutive duplicates
+                                                // so the axis reads "2019  2020  2021" not "2020 2020 2021 2021"
+                                                const lbl = this.getLabelForValue(value);
+                                                if (index > 0 && this.getLabelForValue(ticks[index-1].value) === lbl) return '';
+                                                return lbl;
+                                            }}
+                                        }}
                                     }},
                                     y: {{
-                                        grid: {{ color: '#e0e0e0' }},
+                                        grid: {{ color: '#eef1f4' }},
                                         beginAtZero: {str(cid in ['public_defense_companies', 'vc_defense', 'ma_defense', 'dgorder', 'fdefx', 'pnfi', 'gpdi', 'prmfgcons', 'adefno', 'adapno']).lower()},
                                         ticks: {{
                                             callback: function(value) {{
