@@ -26,7 +26,20 @@
 <body>
     <nav>
         <div class="container">
-            <a href="index.html" class="logo" style="display: none;"></a>
+            <a href="index.html" class="logo" style="display: flex; align-items: center; gap: 10px; font-size: 1.05rem;">
+                <svg width="22" height="22" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+                    <rect x="4" y="4" width="16" height="16" rx="2" stroke="#88c540" stroke-width="3" opacity="0.25"/>
+                    <rect x="24" y="4" width="16" height="16" rx="2" stroke="#88c540" stroke-width="3" opacity="0.25"/>
+                    <rect x="44" y="4" width="16" height="16" rx="2" stroke="#88c540" stroke-width="3" opacity="0.35"/>
+                    <rect x="4" y="24" width="16" height="16" rx="2" stroke="#88c540" stroke-width="3" opacity="0.25"/>
+                    <rect x="24" y="24" width="16" height="16" rx="2" stroke="#88c540" stroke-width="3" opacity="0.5"/>
+                    <rect x="44" y="24" width="16" height="16" rx="2" fill="#88c540" opacity="0.65"/>
+                    <rect x="4" y="44" width="16" height="16" rx="2" stroke="#88c540" stroke-width="3" opacity="0.35"/>
+                    <rect x="24" y="44" width="16" height="16" rx="2" fill="#88c540" opacity="0.65"/>
+                    <rect x="44" y="44" width="16" height="16" rx="2" fill="#88c540"/>
+                </svg>
+                <span>Defense Capital Dashboard</span>
+            </a>
             <button class="mobile-menu-toggle" aria-label="Toggle navigation">☰</button>
             <ul>
                 <li><a href="index.html" class="active">Home</a></li>
@@ -62,7 +75,7 @@
             </div>
             <div>
                 <h1 style="color: white; font-size: 34px; font-weight: 700; margin: 0 0 10px 0; letter-spacing: -0.5px;">Defense Capital Dashboard</h1>
-                <p style="color: rgba(255,255,255,0.7); font-size: 16px; margin: 0; max-width: 600px; line-height: 1.5;">A real-time view of capital flows and industrial capacity across the U.S. defense sector</p>
+                <p style="color: rgba(255,255,255,0.7); font-size: 16px; margin: 0; max-width: 600px; line-height: 1.5; text-wrap: balance;">A real-time view of capital flows and industrial capacity across the U.S. defense sector</p>
             </div>
         </div>
     </div>
@@ -108,7 +121,7 @@
         <div class="card">
             <h2>About This Project</h2>
             <p>A personal research tool tracking the business environment for the U.S. defense sector. Built to surface data that is publicly available but rarely aggregated in one place.</p>
-            <div class="grid grid-2" style="margin: 1.5rem 0;">
+            <div class="grid grid-4" style="margin: 1.5rem 0;">
                 <div>
                     <h3 style="color: var(--primary-blue); font-size: 1.125rem;">Sources</h3>
                     <p>Federal Reserve Economic Data (FRED), Yahoo Finance, U.S. Census Bureau, and curated news intelligence from defense-sector publications.</p>

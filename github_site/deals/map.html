@@ -8,6 +8,9 @@
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-CS5MJEVNGN"></script>
     <script>
@@ -17,6 +20,12 @@
       gtag('config', 'G-CS5MJEVNGN');
     </script>
     <style>
+        /* Brand-colored cluster bubbles (override markercluster defaults) */
+        .marker-cluster-small, .marker-cluster-medium, .marker-cluster-large { background-color: rgba(136, 197, 64, 0.35); }
+        .marker-cluster-small div, .marker-cluster-medium div, .marker-cluster-large div {
+            background-color: rgba(136, 197, 64, 0.85);
+            color: #0f1d30; font-weight: 700;
+        }
         .map-filters {
             display: flex;
             align-items: center;
@@ -171,12 +180,15 @@
                 return html;
             }
 
+            // Cluster overlapping pins (DC/Northeast corridor is unreadable without this)
+            const clusterGroup = L.markerClusterGroup({ maxClusterRadius: 40, showCoverageOnHover: false });
             const entries = features.map(f => ({
                 feature: f,
                 marker: L.marker([f.lat, f.lng], { icon: markerIcon })
-                    .addTo(map)
                     .bindPopup(buildPopup(f), { maxWidth: 280 }),
             }));
+            clusterGroup.addLayers(entries.map(e => e.marker));
+            map.addLayer(clusterGroup);
 
             // Populate state dropdown
             const states = [...new Set(features.map(f => f.district ? f.district.split('-')[0] : '').filter(Boolean))].sort();
@@ -225,13 +237,14 @@
                 const district = districtSelect.value;
                 const visible = [];
 
+                clusterGroup.clearLayers();
                 entries.forEach(({ marker, feature }) => {
                     const d = feature.district || '';
                     const match = (!state || d.startsWith(state + '-') || d === state) &&
                                   (!district || d === district);
-                    if (match) { marker.addTo(map); visible.push(marker); }
-                    else { marker.remove(); }
+                    if (match) { visible.push(marker); }
                 });
+                clusterGroup.addLayers(visible);
 
                 if (state || district) {
                     countEl.textContent = `${visible.length} of ${totalCount} deal${totalCount !== 1 ? 's' : ''}`;
