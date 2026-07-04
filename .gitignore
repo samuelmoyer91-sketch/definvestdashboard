@@ -55,3 +55,4 @@ temp/
 
 # Wrangler (Cloudflare CLI)
 .wrangler/
+step_failures.log

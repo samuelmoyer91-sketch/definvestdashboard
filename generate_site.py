@@ -16,6 +16,11 @@ def print_header(text):
     print(f"  {text}")
     print("=" * 60 + "\n")
 
+# Names of steps that failed this run. Written to step_failures.log at the end
+# so CI can flag partial failures (deploy still happens; the workflow then fails
+# loudly and opens an issue instead of silently shipping stale data for months).
+FAILED_STEPS = []
+
 def run_step(description, command, required=True):
     """
     Run a command and report success/failure
@@ -42,6 +47,7 @@ def run_step(description, command, required=True):
             return True
         else:
             print(f"  ✗ Failed")
+            FAILED_STEPS.append(description)
             if result.stderr:
                 for line in result.stderr.strip().split('\n')[:5]:  # Show first 5 lines
                     if line.strip():
@@ -205,6 +211,16 @@ def main():
 
     print("  Live site:")
     print("     https://capitalfordefense.com\n")
+
+    # Record partial failures for CI. The workflow checks this file AFTER the
+    # deploy step, so the site still ships but the run is marked failed and the
+    # existing notify-on-failure step opens a GitHub issue.
+    failures_log = project_root / 'step_failures.log'
+    if FAILED_STEPS:
+        failures_log.write_text('\n'.join(FAILED_STEPS) + '\n')
+        print(f"⚠️  {len(FAILED_STEPS)} step(s) failed this run: {', '.join(FAILED_STEPS)}")
+    elif failures_log.exists():
+        failures_log.unlink()
 
     print(f"Completed at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 

@@ -46,6 +46,17 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy github_site --project-name capitalfordefense --branch main
 
+      # Runs AFTER deploy so the site still ships, but partial data-step
+      # failures (e.g. a fetcher silently failing for months) mark the run
+      # failed and trigger the issue notification below.
+      - name: Fail on partial step failures
+        run: |
+          if [ -s step_failures.log ]; then
+            echo "::error::generate_site.py reported failed steps:"
+            cat step_failures.log
+            exit 1
+          fi
+
       - name: Notify on failure
         if: failure()
         env:
