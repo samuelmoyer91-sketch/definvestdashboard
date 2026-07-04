@@ -56,3 +56,4 @@ temp/
 # Wrangler (Cloudflare CLI)
 .wrangler/
 step_failures.log
+sector_retag_review_*.csv
