@@ -114,9 +114,29 @@ def main():
         if bad:
             print(f"Unknown --only tags: {bad}\nValid: {list(NEW_PATTERNS)}"); sys.exit(1)
 
-    from src.database.models import get_session, MasterItem
-    session = get_session()
-    rows = session.query(MasterItem).all()
+    # Connect directly via libsql (embedded replica → write-through to the live
+    # primary). Raw SQL on only the columns we need avoids ORM schema-drift
+    # issues (the replica's master_list can lag the model's columns).
+    import os
+    try:
+        from dotenv import load_dotenv
+        load_dotenv(ROOT / '.env')
+    except Exception:
+        pass
+    url = os.environ.get('TURSO_DATABASE_URL')
+    token = os.environ.get('TURSO_AUTH_TOKEN')
+    if not (url and token):
+        print("ERROR: TURSO_DATABASE_URL + TURSO_AUTH_TOKEN required (in .env)."); sys.exit(1)
+    try:
+        import libsql
+    except ImportError:
+        import libsql_experimental as libsql
+    conn = libsql.connect(str(ROOT / 'turso_replica.db'), sync_url=url, auth_token=token)
+    conn.sync()
+    cur = conn.cursor()
+    rows = cur.execute(
+        "SELECT id, company, title, summary, investors, sectors FROM master_list"
+    ).fetchall()
 
     from collections import Counter, defaultdict
     add_counts = Counter()
@@ -124,27 +144,27 @@ def main():
     samples = defaultdict(list)
     changes = []   # (id, company, old, new)
 
-    for m in rows:
-        existing = [t for t in (m.sectors or '').split(',') if t.strip()]
+    for rid, company, title, summary, investors, sectors in rows:
+        existing = [t for t in (sectors or '').split(',') if t.strip()]
         normalized, norm_changed = normalize_existing(existing)
-        text = ' '.join(filter(None, [m.title, m.company, m.summary, m.investors]))
+        text = ' '.join(filter(None, [title, company, summary, investors]))
         adds = suggest_additions(text, normalized, only)
 
         if not adds and not norm_changed:
             continue
         new_tags = canon_sort(list(dict.fromkeys(normalized + list(adds))))
         new_str = ','.join(new_tags)
-        if new_str == (m.sectors or ''):
+        if new_str == (sectors or ''):
             continue
         for t in adds:
             add_counts[t] += 1
             if len(samples[t]) < 6:
-                samples[t].append(m.title or m.company or f'#{m.id}')
+                samples[t].append(title or company or f'#{rid}')
         if norm_changed:
             norm_count += 1
-        changes.append((m.id, m.company or '', m.sectors or '', new_str))
+        changes.append((rid, company or '', sectors or '', new_str))
         if args.apply:
-            m.sectors = new_str
+            cur.execute("UPDATE master_list SET sectors = ? WHERE id = ?", (new_str, rid))
 
     print('=' * 74)
     print(f"SECTOR RETAG {'(APPLYING)' if args.apply else '(DRY RUN — no writes)'}"
@@ -169,16 +189,14 @@ def main():
     print(f"\nFull change list written to: {review.name}")
 
     if args.apply:
-        session.commit()
+        conn.commit()
         try:
-            from src.database.models import sync_turso
-            sync_turso()
+            conn.sync()
         except Exception:
             pass
-        print(f"\n✓ APPLIED {len(changes)} changes to the database.")
+        print(f"\n✓ APPLIED {len(changes)} changes to the live database.")
     else:
         print("\nDry run only — nothing written to the DB. Re-run with --apply to commit.")
-    session.close()
 
 
 if __name__ == '__main__':
