@@ -536,13 +536,24 @@ function acceptItem(id, formEl) {
 function rejectItem(id) {
     document.getElementById('reject-modal-item-id').value = id;
     document.getElementById('reject-modal-custom').value = '';
+    // reset all reason checkboxes
+    document.querySelectorAll('#reject-modal input[name="reject-reason"]').forEach(cb => cb.checked = false);
     document.getElementById('reject-modal').style.display = 'flex';
 }
 
-function submitReject(reason) {
+function submitReject() {
     const id = document.getElementById('reject-modal-item-id').value;
     const custom = document.getElementById('reject-modal-custom').value.trim();
-    const finalReason = reason === '__custom__' ? (custom || 'Other') : reason;
+    // Collect all checked reasons (multi-select) + optional custom text
+    const reasons = Array.from(
+        document.querySelectorAll('#reject-modal input[name="reject-reason"]:checked')
+    ).map(cb => cb.value);
+    if (custom) reasons.push(custom);
+    if (reasons.length === 0) {
+        alert('Pick at least one reason (or type one).');
+        return;
+    }
+    const finalReason = reasons.join('; ');
     document.getElementById('reject-modal').style.display = 'none';
 
     const body = new URLSearchParams();
@@ -635,21 +646,36 @@ function formatCurrencyInput(input) {
 
 <!-- Reject reason modal -->
 <div id="reject-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:1000; align-items:center; justify-content:center;">
-    <div style="background:#fff; border-radius:8px; padding:24px; max-width:380px; width:90%; box-shadow:0 4px 20px rgba(0,0,0,0.2);">
-        <h3 style="margin:0 0 16px; font-size:16px;">Why are you rejecting this?</h3>
+    <div style="background:#fff; border-radius:8px; padding:24px; max-width:420px; width:90%; box-shadow:0 4px 20px rgba(0,0,0,0.2);">
+        <h3 style="margin:0 0 4px; font-size:16px;">Why are you rejecting this?</h3>
+        <p style="margin:0 0 14px; font-size:12px; color:#888;">Check all that apply.</p>
         <input type="hidden" id="reject-modal-item-id">
-        <div style="display:flex; flex-direction:column; gap:8px;">
-            <button onclick="submitReject('Not relevant / out of scope')" class="btn btn-secondary" style="text-align:left;">Not relevant / out of scope</button>
-            <button onclick="submitReject('Commentary or analysis, not a deal')" class="btn btn-secondary" style="text-align:left;">Commentary or analysis, not a deal</button>
-            <button onclick="submitReject('Duplicate')" class="btn btn-secondary" style="text-align:left;">Duplicate</button>
-            <button onclick="submitReject('International company')" class="btn btn-secondary" style="text-align:left;">International company</button>
-            <button onclick="submitReject('Contract / government award')" class="btn btn-secondary" style="text-align:left;">Contract / government award</button>
-            <div style="display:flex; gap:8px; margin-top:4px;">
-                <input type="text" id="reject-modal-custom" placeholder="Other reason…" style="flex:1; padding:6px 10px; border:1px solid #ccc; border-radius:4px; font-size:14px;">
-                <button onclick="submitReject('__custom__')" class="btn btn-secondary">Submit</button>
-            </div>
+        <div style="display:flex; flex-direction:column; gap:9px;">
+            {% set reject_reasons = [
+                ('Out of scope', 'Not a defense / national-security subject'),
+                ('Not a capital event', 'Commentary, analysis, MOU/partnership with no money, routine contract/award, stock moves'),
+                ('Below threshold', 'A defense capital event, but too weak to include (no/tiny $, not compelling)'),
+                ('Speculative / not closed', 'Rumored, "in talks", planned — not announced/committed'),
+                ('Insufficient detail', 'The article itself is too thin to build a card'),
+                ('Pipeline failure', "Scrape/source broke — you'd have kept it if it worked"),
+                ('Duplicate', 'Already tracked')
+            ] %}
+            {% for value, hint in reject_reasons %}
+            <label style="display:flex; align-items:flex-start; gap:8px; cursor:pointer; font-size:14px;">
+                <input type="checkbox" name="reject-reason" value="{{ value }}" style="margin-top:3px; width:15px; height:15px; flex-shrink:0;">
+                <span><strong>{{ value }}</strong><br><span style="font-size:11px; color:#999;">{{ hint }}</span></span>
+            </label>
+            {% endfor %}
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:14px; padding:7px 8px; background:#f4f7fb; border-radius:5px; border:1px solid #dce4ef;">
+                <input type="checkbox" name="reject-reason" value="International (higher bar)" style="width:15px; height:15px; flex-shrink:0;">
+                <span>🌐 <strong>International</strong> <span style="font-size:11px; color:#999;">— stricter bar (killed here, might keep if US)</span></span>
+            </label>
+            <input type="text" id="reject-modal-custom" placeholder="Other / note (optional)…" style="padding:7px 10px; border:1px solid #ccc; border-radius:4px; font-size:14px; margin-top:2px;">
         </div>
-        <button onclick="document.getElementById('reject-modal').style.display='none'" style="margin-top:14px; background:none; border:none; color:#888; cursor:pointer; font-size:13px;">Cancel</button>
+        <div style="display:flex; gap:10px; margin-top:18px; align-items:center;">
+            <button onclick="submitReject()" class="btn btn-danger">Reject</button>
+            <button onclick="document.getElementById('reject-modal').style.display='none'" style="background:none; border:none; color:#888; cursor:pointer; font-size:13px;">Cancel</button>
+        </div>
     </div>
 </div>
 
