@@ -2,8 +2,8 @@
 """
 AI-powered title screener for defense investment articles.
 
-Uses Claude Haiku to do a cheap, fast relevance check on article titles
-and RSS summaries BEFORE scraping or full AI extraction. Filters out
+Uses Claude to do a relevance check on article titles and RSS summaries
+BEFORE scraping or full AI extraction. Filters out
 articles that match keywords but aren't actually about defense business deals.
 
 Inserted in pipeline between RSS fetch and article scraping.
@@ -19,7 +19,7 @@ BATCH_SIZE = 25  # Titles per API call
 
 def screen_title_batch(items):
     """
-    Screen a batch of article titles for relevance using Claude Haiku.
+    Screen a batch of article titles for relevance using Claude.
 
     Args:
         items: list of dicts with 'id', 'title', 'summary', 'feed_source'
@@ -83,7 +83,7 @@ Default to relevant=true when uncertain. The human triage step is fast and they 
 
     try:
         message = client.messages.create(
-            model="claude-haiku-4-5-20251001",
+            model="claude-sonnet-5",
             max_tokens=2048,
             messages=[{"role": "user", "content": prompt}]
         )

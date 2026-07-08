@@ -117,7 +117,7 @@ Special handling for EARNINGS CALLS, ANNUAL REPORTS, and INVESTOR PRESENTATIONS:
     try:
         # Call Claude API
         message = client.messages.create(
-            model="claude-sonnet-4-6",  # Latest Sonnet model
+            model="claude-sonnet-5",  # Latest Sonnet model
             max_tokens=2048,
             messages=[
                 {"role": "user", "content": prompt}
@@ -142,7 +142,7 @@ Special handling for EARNINGS CALLS, ANNUAL REPORTS, and INVESTOR PRESENTATIONS:
 
         # Add metadata
         summary_data['summary_complete'] = True
-        summary_data['model_used'] = 'claude-sonnet-4-6'
+        summary_data['model_used'] = 'claude-sonnet-5'
         summary_data['input_tokens'] = message.usage.input_tokens
         summary_data['output_tokens'] = message.usage.output_tokens
 

@@ -18,7 +18,7 @@ from src.database.models import _reset_turso_connection
 from src.utils.ai_summarizer import summarize_deal_article, format_summary_for_display
 from src.utils.pricing import calculate_cost
 
-SONNET_MODEL = "claude-sonnet-4-6"
+SONNET_MODEL = "claude-sonnet-5"
 
 
 def generate_summaries(limit=5, force_regenerate=False):

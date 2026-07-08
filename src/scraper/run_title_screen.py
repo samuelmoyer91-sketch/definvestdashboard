@@ -22,7 +22,7 @@ from src.database.models import _reset_turso_connection
 from src.utils.title_screener import screen_titles
 from src.utils.pricing import calculate_cost
 
-HAIKU_MODEL = "claude-haiku-4-5-20251001"
+SCREENER_MODEL = "claude-sonnet-5"
 
 
 def run_title_screen(dry_run=False):
@@ -101,11 +101,11 @@ def run_title_screen(dry_run=False):
 
         # Log API usage
         try:
-            cost = calculate_cost(HAIKU_MODEL, total_input, total_output)
+            cost = calculate_cost(SCREENER_MODEL, total_input, total_output)
             log = ApiUsageLog(
                 logged_at=datetime.utcnow(),
                 run_type='title_screen',
-                model=HAIKU_MODEL,
+                model=SCREENER_MODEL,
                 items_processed=len(items),  # items attempted (consistent with summarizer)
                 input_tokens=total_input,
                 output_tokens=total_output,
