@@ -84,11 +84,12 @@ Default to relevant=true when uncertain. The human triage step is fast and they 
     try:
         message = client.messages.create(
             model="claude-sonnet-5",
-            max_tokens=2048,
+            max_tokens=4096,
+            thinking={"type": "adaptive"},
             messages=[{"role": "user", "content": prompt}]
         )
 
-        response_text = message.content[0].text
+        response_text = next(block.text for block in message.content if block.type == "text")
 
         # Parse JSON from response (handle markdown code blocks)
         if "```json" in response_text:

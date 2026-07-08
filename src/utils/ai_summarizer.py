@@ -118,14 +118,15 @@ Special handling for EARNINGS CALLS, ANNUAL REPORTS, and INVESTOR PRESENTATIONS:
         # Call Claude API
         message = client.messages.create(
             model="claude-sonnet-5",  # Latest Sonnet model
-            max_tokens=2048,
+            max_tokens=4096,
+            thinking={"type": "adaptive"},
             messages=[
                 {"role": "user", "content": prompt}
             ]
         )
 
         # Extract response
-        response_text = message.content[0].text
+        response_text = next(block.text for block in message.content if block.type == "text")
 
         # Parse JSON from response
         # Claude sometimes wraps JSON in markdown code blocks
