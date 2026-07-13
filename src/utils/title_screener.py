@@ -17,6 +17,60 @@ from anthropic import Anthropic
 BATCH_SIZE = 25  # Titles per API call
 
 
+def _parse_screen_response(response_text, items):
+    """Turn the model's raw text into {id: {"relevant", "reason"}}.
+
+    Robust to the shapes the model occasionally returns instead of a clean
+    JSON array of objects: markdown-fenced JSON, an object wrapping the array
+    (e.g. {"results": [...]}), a bare object, a short array, or a stray
+    non-object element. Fails OPEN — any item without a usable verdict is
+    passed through (relevant=True), because the human triage step prefers
+    false positives to false negatives. A formatting hiccup must never crash
+    the daily pipeline.
+    """
+    results = []
+    try:
+        text = response_text or ""
+        # Strip markdown code fences if present
+        if "```json" in text:
+            start = text.find("```json") + 7
+            end = text.find("```", start)
+            text = text[start:end].strip()
+        elif "```" in text:
+            start = text.find("```") + 3
+            end = text.find("```", start)
+            text = text[start:end].strip()
+
+        parsed = json.loads(text)
+
+        # Normalize to a list of result objects. If the model wrapped the
+        # array in an object, pull the first list value out; if it returned a
+        # bare object, treat it as a single-element list.
+        if isinstance(parsed, dict):
+            list_vals = [v for v in parsed.values() if isinstance(v, list)]
+            parsed = list_vals[0] if list_vals else [parsed]
+        if isinstance(parsed, list):
+            results = parsed
+    except Exception as e:
+        print(f"  Warning: could not parse screening response ({e}); passing this batch through.")
+
+    # Map results back to items by position; anything unusable defaults to relevant.
+    output = {}
+    for i, item in enumerate(items):
+        result = results[i] if i < len(results) else None
+        if isinstance(result, dict):
+            output[item['id']] = {
+                "relevant": bool(result.get("relevant", True)),
+                "reason": str(result.get("reason", "") or ""),
+            }
+        else:
+            output[item['id']] = {
+                "relevant": True,
+                "reason": "No usable screening verdict (defaulting to relevant)",
+            }
+    return output
+
+
 def screen_title_batch(items):
     """
     Screen a batch of article titles for relevance using Claude.
@@ -88,41 +142,15 @@ Default to relevant=true when uncertain. The human triage step is fast and they 
             thinking={"type": "adaptive"},
             messages=[{"role": "user", "content": prompt}]
         )
-
-        response_text = next(block.text for block in message.content if block.type == "text")
-
-        # Parse JSON from response (handle markdown code blocks)
-        if "```json" in response_text:
-            json_start = response_text.find("```json") + 7
-            json_end = response_text.find("```", json_start)
-            response_text = response_text[json_start:json_end].strip()
-        elif "```" in response_text:
-            json_start = response_text.find("```") + 3
-            json_end = response_text.find("```", json_start)
-            response_text = response_text[json_start:json_end].strip()
-
-        results = json.loads(response_text)
-
-        # Map back to item IDs
-        output = {}
-        for i, result in enumerate(results):
-            if i < len(items):
-                item_id = items[i]['id']
-                output[item_id] = {
-                    "relevant": result.get("relevant", True),
-                    "reason": result.get("reason", "")
-                }
-
-        # Any items not in response default to relevant (safe fallback)
-        for item in items:
-            if item['id'] not in output:
-                output[item['id']] = {"relevant": True, "reason": "Not in AI response (defaulting to relevant)"}
-
-        return output, {"input_tokens": message.usage.input_tokens, "output_tokens": message.usage.output_tokens}
-
     except Exception as e:
-        print(f"  Error in title screening: {e}")
+        # A genuine API/network failure — let the pipeline surface it (and
+        # fire the failure notification). Format issues are handled below.
+        print(f"  Error calling Claude for title screening: {e}")
         raise
+
+    response_text = next((block.text for block in message.content if block.type == "text"), "")
+    output = _parse_screen_response(response_text, items)
+    return output, {"input_tokens": message.usage.input_tokens, "output_tokens": message.usage.output_tokens}
 
 
 def screen_titles(items):
