@@ -139,7 +139,10 @@ Default to relevant=true when uncertain. The human triage step is fast and they 
         message = client.messages.create(
             model="claude-sonnet-5",
             max_tokens=4096,
-            thinking={"type": "adaptive"},
+            # Thinking disabled: this is a coarse relevance filter, not a
+            # reasoning task. Disabling it is cheaper/faster and reduces the
+            # output-format variance that caused earlier parse failures.
+            thinking={"type": "disabled"},
             messages=[{"role": "user", "content": prompt}]
         )
     except Exception as e:
