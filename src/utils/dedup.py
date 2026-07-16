@@ -44,7 +44,87 @@ FX_RATES = {
 }
 # Symbol -> currency code. Order matters for C$/A$ before plain $.
 FX_SYMBOLS = [('€', 'EUR'), ('£', 'GBP'), ('₪', 'ILS'), ('₹', 'INR'), ('¥', 'JPY')]
+
+_SYM_TO_CODE = {'€': 'EUR', '£': 'GBP', '¥': 'JPY', '₹': 'INR', '₪': 'ILS'}
+# Spelled-out currency names (the AI sometimes writes "110 million euros").
+_WORD_TO_CODE = {
+    'euro': 'EUR', 'euros': 'EUR',
+    'pound': 'GBP', 'pounds': 'GBP', 'sterling': 'GBP',
+    'yen': 'JPY',
+    'shekel': 'ILS', 'shekels': 'ILS',
+    'rupee': 'INR', 'rupees': 'INR',
+}
+# Magnitude words. 'crore' (10M) and 'lakh' (100k) show up in Indian coverage.
+_UNITS = {
+    'trillion': 1e12, 't': 1e12,
+    'billion': 1e9, 'bn': 1e9, 'b': 1e9,
+    'million': 1e6, 'mm': 1e6, 'm': 1e6,
+    'thousand': 1e3, 'k': 1e3,
+    'crore': 1e7, 'lakh': 1e5,
+}
+_CODES = 'USD|EUR|GBP|CAD|AUD|JPY|INR|ILS'
+
+# One "money mention": optional currency prefix, a number, optional magnitude,
+# optional trailing code/word. Deliberately finds EVERY mention in the string so
+# dual-currency text ("€450M ($530M)") can be resolved properly rather than
+# having the first number blindly paired with whatever symbol appears anywhere.
+# Note the prefix code has no trailing \b so glued forms ("EUR1.6B") match.
+# The unit and trailing-code groups each carry their own \b INSIDE the optional
+# group: a bare \b after an optional group forces the engine to backtrack into
+# the number when the next token isn't a known unit, silently truncating it
+# ("$1.25T" -> 1.0). Longest alternatives come first so "million" isn't matched
+# as "m" with "illion" left over.
+_MONEY_RE = re.compile(
+    r'(?P<pre>US\$|C\$|A\$|[€£¥₹₪$]|\b(?:' + _CODES + r'))?'
+    r'\s*(?P<num>\d[\d,]*(?:\.\d+)?)'
+    r'(?:\s*(?P<unit>trillion|billion|million|thousand|crore|lakh|bn|mm|b|m|k|t)\b)?'
+    r'(?:\s*(?P<post>\b(?:' + _CODES + r')\b|euros?|pounds?|sterling|yen|shekels?|rupees?))?',
+    re.I,
+)
 # -------------------------------------------------------------------------
+
+
+def _code_from_match(m):
+    """Resolve the currency of a single money mention."""
+    pre = (m.group('pre') or '').strip()
+    post = (m.group('post') or '').strip().lower()
+    # A trailing code or word wins: "$21M CAD" is Canadian, "110 million euros"
+    # is euros, regardless of what the prefix looked like.
+    if post:
+        if post.upper() == 'USD' or post.upper() in FX_RATES:
+            return post.upper()
+        if post in _WORD_TO_CODE:
+            return _WORD_TO_CODE[post]
+    if pre:
+        up = pre.upper()
+        if up == 'US$':
+            return 'USD'
+        if up == 'C$':
+            return 'CAD'
+        if up == 'A$':
+            return 'AUD'
+        if pre in _SYM_TO_CODE:
+            return _SYM_TO_CODE[pre]
+        if pre == '$':
+            return 'USD'
+        if up == 'USD' or up in FX_RATES:
+            return up
+    return 'USD'
+
+
+def _money_mentions(text):
+    """Every (currency_code, native_value) money mention in the text, in order."""
+    out = []
+    for m in _MONEY_RE.finditer(str(text)):
+        try:
+            val = float(m.group('num').replace(',', ''))
+        except ValueError:
+            continue
+        unit = (m.group('unit') or '').lower()
+        if unit:
+            val *= _UNITS[unit]
+        out.append((_code_from_match(m), val))
+    return out
 
 
 def normalize_company(name):
@@ -58,57 +138,53 @@ def normalize_company(name):
 
 
 def detect_currency(amount):
-    """Return a 3-letter currency code for an amount string, defaulting to USD.
+    """Return the currency the amount is WRITTEN in, defaulting to USD.
 
-    Checks symbols (€ £ ₪ ₹ ¥), C$/A$ prefixes, and 3-letter codes (EUR, GBP,
-    CAD, AUD, JPY, INR, ILS) anywhere in the text. Plain '$' / no marker = USD.
+    This is the currency of the first money mention, i.e. how the deal is
+    denominated -- "€450M ($530M)" is a euro amount with a dollar gloss, so
+    this returns EUR. Handles symbols (€ £ ₪ ₹ ¥), US$/C$/A$, 3-letter codes
+    both spaced and glued ("EUR 6M", "EUR1.6B"), and spelled-out names
+    ("110 million euros"). Plain '$' / no marker = USD.
     """
     if not amount:
         return 'USD'
-    s = str(amount).lower()
-    if re.search(r'\bc\$|\bcad\b', s):
-        return 'CAD'
-    if re.search(r'\ba\$|\baud\b', s):
-        return 'AUD'
-    for sym, code in FX_SYMBOLS:
-        if sym in str(amount):
-            return code
-    for code in FX_RATES:
-        if re.search(r'\b' + code.lower() + r'\b', s):
-            return code
-    return 'USD'
+    mentions = _money_mentions(amount)
+    return mentions[0][0] if mentions else 'USD'
 
 
 def parse_amount(amount, convert=True):
     """Parse a deal-amount string into USD dollars (float), or None.
 
-    Handles "$28,500,000", "$2M", "$1.3B", "250,000,000", "£19M", "€110M".
-    Non-USD amounts are converted to USD using the fixed FX_RATES table above
-    (approximate, not live). Pass convert=False to get the raw magnitude
-    without FX conversion (e.g. if you only care about order of magnitude).
+    Handles "$28,500,000", "$2M", "$1.3B", "250,000,000", "£19M", "€110M",
+    "EUR1.6B", "110 million euros", "₹100 crore", and dual-currency strings
+    like "€450M ($530M)" or "$21M CAD ($15.2M USD)".
+
+    Non-USD amounts are converted using the fixed FX_RATES table, EXCEPT when
+    the text states its own USD equivalent -- see below. Pass convert=False to
+    get the raw magnitude as written, without FX conversion.
     """
     if not amount:
         return None
-    s = str(amount).strip().lower().replace(',', '')
-    m = re.search(r'([\d.]+)\s*(b|billion|m|million|k|thousand)?', s)
-    if not m:
+    mentions = _money_mentions(amount)
+    if not mentions:
         return None
-    try:
-        val = float(m.group(1))
-    except ValueError:
-        return None
-    unit = m.group(2)
-    if unit in ('b', 'billion'):
-        val *= 1_000_000_000
-    elif unit in ('m', 'million'):
-        val *= 1_000_000
-    elif unit in ('k', 'thousand'):
-        val *= 1_000
-    if convert:
-        code = detect_currency(amount)
-        if code != 'USD':
-            val *= FX_RATES[code]
-    return val
+
+    code, val = mentions[0]
+    if not convert or code == 'USD':
+        return val
+
+    converted = val * FX_RATES.get(code, 1.0)
+
+    # If the text also quotes its own USD figure for the same amount (e.g.
+    # "€450M ($530M)"), prefer it: that's the real rate on the deal date, which
+    # beats our fixed table. Only trust it when it's in the same ballpark as our
+    # own conversion, so an unrelated dollar figure quoted alongside (say, a
+    # valuation next to a euro round) can't hijack the amount.
+    if converted:
+        for other_code, other_val in mentions[1:]:
+            if other_code == 'USD' and abs(other_val - converted) / converted <= 0.5:
+                return other_val
+    return converted
 
 
 def amounts_match(a, b, tolerance=AMOUNT_TOLERANCE):
@@ -125,6 +201,8 @@ def amounts_match(a, b, tolerance=AMOUNT_TOLERANCE):
 def fmt_amount(val):
     if val is None:
         return '(no $)'
+    if val >= 1_000_000_000_000:
+        return f'${val/1_000_000_000_000:.2f}T'
     if val >= 1_000_000_000:
         return f'${val/1_000_000_000:.2f}B'
     if val >= 1_000_000:
