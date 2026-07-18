@@ -56,10 +56,11 @@
         <span style="color:#555;">Keep best source:</span>
         <select name="keep_id" style="padding:3px 6px; margin:0 6px;">
             {% for q in g.queue %}
-            <option value="{{ q.id }}">{{ q.source }} — {{ q.title[:50] }}</option>
+            <option value="{{ q.id }}">{{ q.source }} — {{ q.title[:50] }}{% if loop.first %}  ✓ recommended{% endif %}</option>
             {% endfor %}
         </select>
         <button type="submit" class="btn btn-primary" style="padding:4px 12px;">Keep this, reject the rest</button>
+        <div style="color:#999; font-size:11px; margin-top:4px;">Ranked: direct publisher &gt; has $ amount &gt; trade press &gt; earliest to report. Override with the dropdown.</div>
     </form>
     {% endif %}
 

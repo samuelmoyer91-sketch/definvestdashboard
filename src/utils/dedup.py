@@ -295,6 +295,50 @@ def _match_reason(group_entries, max_gap):
     return ' · '.join(parts)
 
 
+# --- Source ranking: pick the "best" item to keep in a duplicate cluster ----
+# A "Direct:"-prefixed feed pulls straight from a publisher's own RSS, so the
+# article scrapes cleanly; everything else is a Google News keyword/entity
+# search that arrives via a Google redirect (often a poor scrape). Among
+# sources, editorial trade press usually carries a fuller writeup than a raw
+# press-release wire. This is the same feed-quality logic behind the direct-
+# feed migration, applied to choose which duplicate to keep.
+_TRADE_PRESS = (
+    'spacenews', 'breaking defense', 'defense news', 'defensescoop',
+    'defense one', 'war zone', 'pulse 2.0', 'techcrunch', 'axios',
+    'bloomberg', 'reuters', 'wall street journal', 'financial times',
+)
+
+
+def _is_direct_source(source):
+    """True if the item came from a direct-publisher feed (vs a Google search)."""
+    return str(source or '').strip().lower().startswith('direct:')
+
+
+def _is_trade_press(source):
+    """True if the feed source names an editorial outlet (vs a newswire)."""
+    s = str(source or '').lower()
+    return any(name in s for name in _TRADE_PRESS)
+
+
+def _source_sort_key(item):
+    """Sort key that ranks a cluster's items best-first.
+
+    Priority (each tier breaks ties for the previous one):
+      1. Direct-publisher feed over Google News
+      2. Has a dollar amount extracted
+      3. Trade press / major outlet over raw newswire
+      4. Earliest date (first to report); undated items last
+    Smaller tuple sorts first, so each field is 0 for the preferred case.
+    """
+    return (
+        0 if _is_direct_source(item.get('source')) else 1,
+        0 if item.get('amount_num') is not None else 1,
+        0 if _is_trade_press(item.get('source')) else 1,
+        item.get('date') or datetime.max,
+    )
+# ----------------------------------------------------------------------------
+
+
 def find_queue_duplicates(queue_items, published_items,
                           window_days=WINDOW_DAYS, tolerance=AMOUNT_TOLERANCE):
     """Flag triage-queue items that look like duplicates of an already-published
@@ -399,7 +443,10 @@ def find_queue_duplicates(queue_items, published_items,
                 + (1.0 if has_amount else 0.0)
                 + (1.0 if tight else 0.0)
             )
-            q.sort(key=lambda x: x['date'] or datetime.min)
+            # Rank the queue items best-source-first so the group's default
+            # "keep" pick (and the table order) is a real recommendation, not
+            # just the oldest item. See _source_sort_key.
+            q.sort(key=_source_sort_key)
             pub.sort(key=lambda x: x['date'] or datetime.min)
             for m in q:
                 flagged_ids.add(m['id'])
