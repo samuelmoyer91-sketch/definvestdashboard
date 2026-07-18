@@ -1,0 +1,10 @@
+/* IST Demo Site Stylesheet — navy #0B2545 + magenta #D6217E */
+
+h1 { font-size: 32px; color: #0B2545; margin-bottom: 16px; font-weight: 800; }
+h2 { font-size: 20px; color: #0B2545; margin-top: 24px; margin-bottom: 12px; font-weight: 700; }
+p { font-size: 15px; line-height: 1.6; color: #4b5563; margin-bottom: 12px; }
+
+/* Utilities */
+.text-center { text-align: center; }
+.mt-24 { margin-top: 24px; }
+.mb-32 { margin-bottom: 32px; }

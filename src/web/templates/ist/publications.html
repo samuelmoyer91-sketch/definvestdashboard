@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Publications — IST{% endblock %}
+
+{% block extra_css %}
+<style>
+    .filters { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 32px; }
+    .filter-pill { padding: 8px 16px; border: 2px solid #d0d7e1; border-radius: 20px; background: #fff; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.2s; }
+    .filter-pill:hover, .filter-pill.active { border-color: #D6217E; color: #D6217E; }
+    .pub-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; }
+    .pub-card { background: #f9fafb; border-radius: 8px; padding: 20px; }
+    .pub-type { font-size: 11px; color: #fff; background: #D6217E; padding: 4px 10px; border-radius: 12px; display: inline-block; margin-bottom: 8px; font-weight: 700; }
+    .pub-title { font-size: 16px; font-weight: 700; color: #0B2545; margin-bottom: 8px; }
+    .pub-meta { font-size: 13px; color: #6b7580; margin-bottom: 8px; }
+    .pub-abstract { font-size: 14px; color: #4b5563; line-height: 1.5; }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1>Publications</h1>
+
+<div class="filters">
+    <button class="filter-pill active" data-filter="all">All</button>
+    {% for type in types %}
+    <button class="filter-pill" data-filter="type-{{ type }}">{{ type }}</button>
+    {% endfor %}
+</div>
+
+<div class="pub-list">
+    {% for pub in publications %}
+    <div class="pub-card" data-type="{{ pub.type }}" data-topic="{{ pub.topic }}">
+        <div class="pub-type">{{ pub.type }}</div>
+        <div class="pub-title">{{ pub.title }}</div>
+        <div class="pub-meta">{{ pub.author }} · {{ pub.date }}</div>
+        <div class="pub-abstract">{{ pub.abstract }}</div>
+        {% if pub.pdf %}<p style="margin-top: 12px;"><a href="{{ root }}/static/ist/publications/{{ pub.pdf }}">Download PDF</a></p>{% endif %}
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+    document.querySelectorAll('.filter-pill').forEach(btn => {
+        btn.addEventListener('click', e => {
+            document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
+            e.target.classList.add('active');
+            const filter = e.target.dataset.filter;
+            document.querySelectorAll('.pub-card').forEach(card => {
+                if (filter === 'all' || card.dataset.type === filter.replace('type-', '')) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

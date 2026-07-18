@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}People — IST{% endblock %}
+
+{% block extra_css %}
+<style>
+    h2 { font-size: 18px; color: #0B2545; margin-top: 32px; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 3px solid #D6217E; }
+    h2:first-of-type { margin-top: 0; }
+    .people-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 24px; margin-bottom: 32px; }
+    .person-card { text-align: center; }
+    .person-card img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; margin-bottom: 12px; }
+    .person-name { font-size: 16px; font-weight: 700; color: #0B2545; }
+    .person-title { font-size: 13px; color: #6b7580; line-height: 1.4; }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1>Leadership & Team</h1>
+
+<h2>Leadership</h2>
+<div class="people-grid">
+    {% for person in people.leadership %}
+    <div class="person-card">
+        <img src="{{ root }}/static/ist/headshots/{{ person.image }}" alt="{{ person.name }}">
+        <div class="person-name">{{ person.name }}</div>
+        <div class="person-title">{{ person.title }}</div>
+    </div>
+    {% endfor %}
+</div>
+
+<h2>Research Fellows</h2>
+<div class="people-grid">
+    {% for person in people.fellows %}
+    <div class="person-card">
+        <img src="{{ root }}/static/ist/headshots/{{ person.image }}" alt="{{ person.name }}">
+        <div class="person-name">{{ person.name }}</div>
+        <div class="person-title">{{ person.title }}<br>{{ person.area }}</div>
+    </div>
+    {% endfor %}
+</div>
+
+<h2>Visiting Scholars</h2>
+<div class="people-grid">
+    {% for person in people.visiting %}
+    <div class="person-card">
+        <img src="{{ root }}/static/ist/headshots/{{ person.image }}" alt="{{ person.name }}">
+        <div class="person-name">{{ person.name }}</div>
+        <div class="person-title">{{ person.title }}</div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

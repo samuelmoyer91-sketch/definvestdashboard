@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}About — IST{% endblock %}
+
+{% block extra_css %}
+<style>
+    .mission { background: #F5F6F8; padding: 24px; border-radius: 8px; border-left: 4px solid #D6217E; margin-bottom: 32px; }
+    .mission p { font-size: 15px; line-height: 1.6; color: #2b3440; }
+    .focus-areas { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px; }
+    .focus-area { background: #f9fafb; padding: 16px; border-radius: 8px; border-top: 3px solid #D6217E; text-align: center; }
+    .focus-area-name { font-weight: 700; color: #0B2545; }
+    h2 { font-size: 18px; color: #0B2545; margin-top: 32px; margin-bottom: 16px; }
+    h2:first-of-type { margin-top: 0; }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1>About IST</h1>
+
+<div class="mission">
+    <p>{{ mission }}</p>
+</div>
+
+<h2>Focus Areas</h2>
+<div class="focus-areas">
+    {% for area in focus_areas %}
+    <div class="focus-area"><div class="focus-area-name">{{ area }}</div></div>
+    {% endfor %}
+</div>
+
+<h2>Sponsors & Partners</h2>
+<p>IST is supported by leading defense and technology organizations committed to advancing national security through innovation.</p>
+{% endblock %}

@@ -1376,6 +1376,27 @@ async def map_view(request: Request, session=Depends(get_db)):
     })
 
 
+# =============================================================================
+# IST Demo App Dispatcher (by Host header + fallback path)
+# =============================================================================
+
+from starlette.applications import Starlette
+from starlette.routing import Host, Mount
+from src.web.ist import ist_app
+
+# Dispatch by host or path:
+# - thinktankpreview.capitalfordefense.com → ist_app
+# - /thinktank/* (local dev) → ist_app
+# - everything else → triage app (default)
+application = Starlette(
+    routes=[
+        Host("thinktankpreview.capitalfordefense.com", app=ist_app),
+        Mount("/thinktank", app=ist_app),
+        Mount("/", app=app),
+    ]
+)
+
+
 if __name__ == "__main__":
     import uvicorn
 

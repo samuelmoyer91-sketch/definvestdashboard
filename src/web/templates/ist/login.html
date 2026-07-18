@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IST Login</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
+        body {
+            background: linear-gradient(135deg, #0B2545 0%, #1a3a5c 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .login-box {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(11, 37, 69, 0.3);
+            padding: 48px 40px;
+            max-width: 400px;
+            width: 100%;
+        }
+        .logo-section {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        .logo-section img {
+            height: 60px;
+            margin-bottom: 20px;
+        }
+        .logo-section h1 {
+            font-size: 28px;
+            color: #0B2545;
+            font-weight: 800;
+            line-height: 1.2;
+        }
+        .logo-section h1 .mag { color: #D6217E; }
+        .tagline {
+            font-size: 14px;
+            color: #6b7580;
+            margin-top: 12px;
+            line-height: 1.4;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        input[type="password"] {
+            padding: 12px 14px;
+            border: 1px solid #d0d7e1;
+            border-radius: 6px;
+            font-size: 15px;
+            transition: border-color 0.2s;
+        }
+        input[type="password"]:focus {
+            outline: none;
+            border-color: #D6217E;
+            box-shadow: 0 0 0 3px rgba(214, 33, 126, 0.1);
+        }
+        button {
+            padding: 12px 16px;
+            background: #D6217E;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 15px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: #c71a6f;
+        }
+        .error {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #991b1b;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        @media (max-width: 600px) {
+            .login-box { padding: 32px 24px; }
+            .logo-section h1 { font-size: 24px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-box">
+        <div class="logo-section">
+            <img src="{{ root }}/static/ist/logos/ist-logo.png" alt="IST">
+            <h1>INSTITUTE FOR<br>STRATEGIC<br><span class="mag">TECHNOLOGIES</span></h1>
+            <p class="tagline">Where government, industry, and capital shape the technologies that matter.</p>
+        </div>
+
+        {% if error %}
+        <div class="error">{{ error }}</div>
+        {% endif %}
+
+        <form method="post" action="{{ root }}/login">
+            <input type="password" name="password" placeholder="Demo password" required autofocus>
+            <button type="submit">Enter</button>
+        </form>
+    </div>
+</body>
+</html>

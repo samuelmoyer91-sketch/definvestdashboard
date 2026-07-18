@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Home — IST{% endblock %}
+
+{% block extra_css %}
+<style>
+  .hero { margin: -40px -20px 40px -20px; width: calc(100% + 40px); }
+  .hero img { width: 100%; height: auto; display: block; max-height: 400px; object-fit: cover; }
+  .hero-overlay { position: relative; }
+  .hero-text { position: absolute; bottom: 40px; left: 40px; right: 40px; color: #fff; text-shadow: 0 2px 8px rgba(0,0,0,0.5); }
+  .hero-text h1 { font-size: 48px; margin: 0; }
+  .hero-text p { font-size: 18px; margin: 12px 0 0 0; max-width: 600px; }
+  @media (max-width: 768px) {
+    .hero-text { bottom: 24px; left: 20px; right: 20px; }
+    .hero-text h1 { font-size: 32px; }
+    .hero-text p { font-size: 14px; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="hero">
+  <img src="{{ root }}/static/ist/events/pexels-rdne-7467858.jpg" alt="IST events">
+</div>
+
+<div class="hero-text">
+  <h1>Institute for Strategic Technologies</h1>
+  <p>{{ tagline }}</p>
+</div>
+
+<p style="margin-top: 40px; color: #6b7580;">Sponsor trust strip and featured publications coming in Phase 2.</p>
+{% endblock %}
