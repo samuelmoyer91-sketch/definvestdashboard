@@ -4,9 +4,8 @@
 
 {% block extra_css %}
 <style>
-    h2 { font-size: 18px; color: #0B2545; margin-top: 32px; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 3px solid #D6217E; }
-    h2:first-of-type { margin-top: 0; }
-    .people-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 24px; margin-bottom: 32px; }
+    h2 { font-size: 18px; color: #0B2545; margin-top: 40px; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 3px solid #D6217E; }
+    .people-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 24px; margin-bottom: 8px; }
     .person-card { text-align: center; }
     .person-card img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; margin-bottom: 12px; }
     .person-name { font-size: 16px; font-weight: 700; color: #0B2545; }
@@ -15,7 +14,13 @@
 {% endblock %}
 
 {% block content %}
-<h1>Leadership & Team</h1>
+<div class="pagehead">
+  <img src="{{ root }}/static/ist/events/pexels-henri-mathieu-8344905.jpg" alt="">
+  <div class="ph-text">
+    <h1>People</h1>
+    <p>The researchers and practitioners behind IST.</p>
+  </div>
+</div>
 
 <h2>Leadership</h2>
 <div class="people-grid">

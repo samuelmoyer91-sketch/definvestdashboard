@@ -2,7 +2,46 @@
 
 {% block title %}Podcast — IST{% endblock %}
 
+{% block extra_css %}
+<style>
+    .intro { font-size: 17px; color: #4b5563; line-height: 1.6; max-width: 720px; margin-bottom: 32px; }
+    .episode { display: flex; gap: 16px; align-items: center; padding: 18px 0; border-bottom: 1px solid #e2e6ea; }
+    .ep-num { font-size: 22px; font-weight: 800; color: #D6217E; min-width: 48px; }
+    .ep-body h3 { font-size: 16px; color: #0B2545; margin: 0 0 4px; }
+    .ep-body p { font-size: 13px; color: #6b7580; margin: 0; }
+    .ep-play { margin-left: auto; background: #0B2545; color: #fff; border: none; border-radius: 20px; padding: 8px 18px; font-weight: 700; font-size: 13px; cursor: pointer; }
+</style>
+{% endblock %}
+
 {% block content %}
-<h1>IST Podcast</h1>
-<p>Coming soon: insights, interviews, and analysis on emerging defense technologies.</p>
+<div class="pagehead">
+  <img src="{{ root }}/static/ist/events/pexels-bertellifotografia-34774345.jpg" alt="">
+  <div class="ph-text">
+    <h1>The IST Podcast</h1>
+    <p>Conversations on the technologies redefining national security.</p>
+  </div>
+</div>
+
+<p class="intro">Every other week, IST fellows sit down with the operators, engineers, and investors driving the frontier of defense technology — unpacking what's real, what's hype, and what it means for national security.</p>
+
+<div class="episode">
+  <div class="ep-num">04</div>
+  <div class="ep-body"><h3>The Coming Fight Over Advanced Packaging</h3><p>With Dr. Raymond Okafor · 38 min</p></div>
+  <button class="ep-play">▶ Play</button>
+</div>
+<div class="episode">
+  <div class="ep-num">03</div>
+  <div class="ep-body"><h3>Quantum's Near-Term Payoffs</h3><p>With Dr. Priya Nair · 41 min</p></div>
+  <button class="ep-play">▶ Play</button>
+</div>
+<div class="episode">
+  <div class="ep-num">02</div>
+  <div class="ep-body"><h3>Why the Hypersonics Gap Is Really a Testing Gap</h3><p>With Dr. Marcus Feld · 35 min</p></div>
+  <button class="ep-play">▶ Play</button>
+</div>
+<div class="episode">
+  <div class="ep-num">01</div>
+  <div class="ep-body"><h3>Life After GPS</h3><p>With Dr. Sofia Reyes · 44 min</p></div>
+  <button class="ep-play">▶ Play</button>
+</div>
 {% endblock %}

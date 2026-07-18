@@ -2,8 +2,52 @@
 
 {% block title %}Conference — IST{% endblock %}
 
+{% block extra_css %}
+<style>
+    .conf-hero { position: relative; margin: -40px -20px 36px -20px; height: 420px; overflow: hidden; }
+    .conf-hero img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .conf-hero::after { content:''; position:absolute; inset:0; background: linear-gradient(to top, rgba(11,37,69,0.92) 0%, rgba(11,37,69,0.4) 60%, rgba(11,37,69,0.2) 100%); }
+    .conf-hero .ch-text { position: absolute; bottom: 40px; left: 40px; right: 40px; z-index: 2; }
+    .conf-hero h1 { color: #fff; font-size: 46px; margin: 0; }
+    .conf-hero p { color: #e3ebf5; font-size: 18px; margin: 12px 0 0; max-width: 640px; }
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin: 0 0 40px; }
+    .stat { text-align: center; padding: 24px; background: #F5F6F8; border-radius: 8px; }
+    .stat .num { font-size: 40px; font-weight: 800; color: #D6217E; }
+    .stat .lbl { font-size: 14px; color: #6b7580; margin-top: 4px; }
+    .cta { display: inline-block; background: #D6217E; color: #fff; padding: 14px 28px; border-radius: 6px; font-weight: 700; font-size: 15px; margin-top: 8px; }
+    .cta:hover { background: #c71a6f; text-decoration: none; }
+    @media (max-width: 768px) {
+      .conf-hero { height: 300px; }
+      .conf-hero h1 { font-size: 30px; }
+      .stats { grid-template-columns: 1fr; }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<h1>IST Annual Conference</h1>
-<p>Our flagship event bringing together government, industry, and investors to advance defense technology.</p>
-<p><a href="#">Learn more about the conference →</a></p>
+<div class="conf-hero">
+  <img src="{{ root }}/static/ist/events/pexels-freestockpro-9275222.jpg" alt="">
+  <div class="ch-text">
+    <h1>IST Annual Conference</h1>
+    <p>The premier gathering where government, industry, and investors set the agenda for defense technology.</p>
+  </div>
+</div>
+
+<div class="stats">
+  <div class="stat"><div class="num">800+</div><div class="lbl">Attendees</div></div>
+  <div class="stat"><div class="num">60+</div><div class="lbl">Speakers</div></div>
+  <div class="stat"><div class="num">30+</div><div class="lbl">Sessions</div></div>
+</div>
+
+<p style="font-size: 16px; color: #4b5563; line-height: 1.6; max-width: 720px;">Each year, the IST Annual Conference convenes the people shaping the future of national security technology — senior government leaders, prime and midmarket industry executives, and the investors backing the next generation of defense innovation.</p>
+
+<div class="section-title">From Last Year</div>
+<div class="gallery">
+  <img src="{{ root }}/static/ist/events/pexels-kerim-isazade-2148708032-31129059.jpg" alt="">
+  <img src="{{ root }}/static/ist/events/pexels-cherubs-26202153.jpg" alt="">
+  <img src="{{ root }}/static/ist/events/pexels-rezatavakoli-29335353.jpg" alt="">
+  <img src="{{ root }}/static/ist/events/pexels-bertellifotografia-34774345.jpg" alt="">
+</div>
+
+<p style="margin-top: 36px;"><a href="#" class="cta">Visit the conference site →</a></p>
 {% endblock %}

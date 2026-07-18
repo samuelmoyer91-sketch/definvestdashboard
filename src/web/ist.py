@@ -86,7 +86,7 @@ async def home(request: Request, _=Depends(require_auth)):
     """Home page — photo hero, tagline, sponsor strip, featured publications."""
     return templates.TemplateResponse(
         "home.html",
-        template_context(request, tagline=TAGLINE, sponsors=SPONSORS)
+        template_context(request, tagline=TAGLINE, sponsors=SPONSORS, featured=PUBLICATIONS[:3])
     )
 
 
