@@ -8,7 +8,7 @@
   .hero img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .hero::after { content:''; position:absolute; inset:0; background: linear-gradient(to top, rgba(11,37,69,0.92) 0%, rgba(11,37,69,0.45) 55%, rgba(11,37,69,0.2) 100%); }
   .hero-text { position:absolute; bottom: 44px; left: 44px; right: 44px; z-index: 2; }
-  .hero-text h1 { color:#fff; font-size: 52px; margin:0; line-height:1.05; max-width: 900px; }
+  .hero-text h1 { color:#fff; font-size: 52px; margin:0; line-height:1.05; max-width: 900px; letter-spacing: -1px; }
   .hero-text p { color:#e3ebf5; font-size: 20px; margin: 16px 0 0; max-width: 620px; }
   @media (max-width: 768px) {
     .hero { height: 340px; }
@@ -37,11 +37,11 @@
 <div class="section-title">Featured Research</div>
 <div class="feat-grid">
   {% for pub in featured %}
-  <div class="feat-card">
+  <a class="feat-card" href="{{ root }}/publications">
     <span class="ft">{{ pub.type }}</span>
     <h3>{{ pub.title }}</h3>
     <div class="fm">{{ pub.author }} · {{ pub.date }}</div>
-  </div>
+  </a>
   {% endfor %}
 </div>
 

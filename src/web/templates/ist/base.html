@@ -86,13 +86,16 @@
 
         /* Footer */
         footer {
-            background: #F5F6F8;
-            border-top: 1px solid #e2e6ea;
-            padding: 40px 20px;
+            background: #0B2545;
+            padding: 48px 20px 40px;
             text-align: center;
-            font-size: 13px;
-            color: #6b7580;
+            margin-top: 56px;
         }
+        footer .f-logo { height: 26px; opacity: 0.9; margin-bottom: 20px; }
+        .footer-nav { display: flex; gap: 10px 28px; justify-content: center; flex-wrap: wrap; margin-bottom: 22px; }
+        .footer-nav a { color: #c9d6e5; font-size: 13px; font-weight: 600; letter-spacing: 0.5px; }
+        .footer-nav a:hover { color: #D6217E; text-decoration: none; }
+        footer .f-copy { font-size: 12px; color: #66738a; margin: 0; }
 
         /* Responsive */
         @media (max-width: 768px) {
@@ -116,17 +119,18 @@
         .pagehead img { width: 100%; height: 100%; object-fit: cover; display: block; }
         .pagehead::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, rgba(11,37,69,0.9) 0%, rgba(11,37,69,0.35) 60%, rgba(11,37,69,0.15) 100%); }
         .pagehead .ph-text { position: absolute; bottom: 28px; left: 32px; right: 32px; z-index: 2; }
-        .pagehead .ph-text h1 { color: #fff; margin: 0; font-size: 40px; }
+        .pagehead .ph-text h1 { color: #fff; margin: 0; font-size: 40px; letter-spacing: -0.5px; }
         .pagehead .ph-text p { color: #dbe4ef; margin: 8px 0 0; font-size: 16px; max-width: 640px; }
 
         /* Section label */
         .section-title { font-size: 13px; letter-spacing: 2px; color: #6b7580; text-transform: uppercase; font-weight: 700; margin: 44px 0 18px; }
 
         /* Sponsor strip */
-        .sponsor-strip { display: flex; flex-wrap: wrap; gap: 20px; align-items: center; justify-content: flex-start; }
-        .sponsor-chip { border: 1px solid #d0d7e1; border-radius: 6px; padding: 12px 20px; font-weight: 700; color: #4a5568; font-size: 14px; background: #fff; }
-        .sponsor-logo { height: 60px; display: flex; align-items: center; }
-        .sponsor-logo img { max-height: 60px; max-width: 120px; }
+        .sponsor-strip { display: flex; flex-wrap: wrap; gap: 24px 44px; align-items: center; justify-content: flex-start; }
+        .sponsor-logo { height: 38px; display: flex; align-items: center; }
+        .sponsor-logo img { height: 100%; width: auto; opacity: 0.75; transition: opacity 0.2s; }
+        .sponsor-logo:hover img { opacity: 1; }
+        @media (max-width: 600px) { .sponsor-logo { height: 30px; } .sponsor-strip { gap: 18px 28px; } }
 
         /* Photo gallery band */
         .gallery { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
@@ -134,7 +138,8 @@
 
         /* Featured publications */
         .feat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-        .feat-card { background: #f9fafb; border-radius: 8px; padding: 20px; border-top: 3px solid #D6217E; }
+        .feat-card { display: block; background: #f9fafb; border-radius: 8px; padding: 20px; border-top: 3px solid #D6217E; color: inherit; transition: transform 0.18s, box-shadow 0.18s; }
+        .feat-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(11,37,69,0.10); text-decoration: none; }
         .feat-card .ft { font-size: 11px; color: #fff; background: #D6217E; padding: 3px 10px; border-radius: 12px; font-weight: 700; }
         .feat-card h3 { color: #0B2545; font-size: 16px; margin: 10px 0 6px; line-height: 1.3; }
         .feat-card .fm { font-size: 13px; color: #6b7580; }
@@ -177,7 +182,16 @@
     </main>
 
     <footer>
-        <p>&copy; 2026 Institute for Strategic Technologies. All rights reserved.</p>
+        <img class="f-logo" src="{{ root }}/static/ist/logos/ist-logo-white.png" alt="IST">
+        <div class="footer-nav">
+            <a href="{{ root }}/">Home</a>
+            <a href="{{ root }}/publications">Publications</a>
+            <a href="{{ root }}/people">People</a>
+            <a href="{{ root }}/podcast">Podcast</a>
+            <a href="{{ root }}/conference">Conference</a>
+            <a href="{{ root }}/about">About</a>
+        </div>
+        <p class="f-copy">&copy; 2026 Institute for Strategic Technologies. All fictional — demonstration site.</p>
     </footer>
 </body>
 </html>

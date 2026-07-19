@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 183 56" width="183" height="56">
+  <g transform="translate(0,8)"><path d="M8 33 L20 7 L32 33 Z" fill="none" stroke="#44506B" stroke-width="3" stroke-linejoin="round"/><path d="M20 7 L20 37" stroke="#44506B" stroke-width="3" stroke-linecap="round"/></g>
+  <text x="52" y="30" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="23" font-weight="800" letter-spacing="1" fill="#44506B">HALDEN</text>
+  <text x="52" y="46" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600" letter-spacing="2.2" fill="#66738a">DYNAMICS</text>
+</svg>

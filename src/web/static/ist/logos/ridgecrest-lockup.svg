@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 261 56" width="261" height="56">
+  <g transform="translate(0,8)"><rect x="11" y="11" width="18" height="18" rx="2" fill="none" stroke="#44506B" stroke-width="3"/><path d="M15 11 V5 M25 11 V5 M15 29 V35 M25 29 V35 M11 15 H5 M11 25 H5 M29 15 H35 M29 25 H35" stroke="#44506B" stroke-width="2.5"/></g>
+  <text x="52" y="30" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="23" font-weight="800" letter-spacing="1" fill="#44506B">RIDGECREST</text>
+  <text x="52" y="46" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600" letter-spacing="2.2" fill="#66738a">MICROSYSTEMS</text>
+</svg>

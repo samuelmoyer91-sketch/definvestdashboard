@@ -196,17 +196,17 @@ PUBLICATIONS = [
 
 SPONSORS = {
     "primes": [
-        {"name": "Vantris Aerospace & Defense", "logo": "vantris-logo.png"},
-        {"name": "Corven Systems", "logo": "corven-logo.png"},
-        {"name": "Halden Dynamics", "logo": "halden-logo.png"},
+        {"name": "Vantris Aerospace & Defense", "logo": "vantris-lockup.svg"},
+        {"name": "Corven Systems", "logo": "corven-lockup.svg"},
+        {"name": "Halden Dynamics", "logo": "halden-lockup.svg"},
     ],
     "midmarket": [
-        {"name": "Ridgecrest Microsystems", "focus_area": "Microelectronics", "logo": "ridgecrest-logo.png"},
-        {"name": "Cobalt Semiconductor", "focus_area": "Microelectronics", "logo": "cobalt-logo.png"},
-        {"name": "Lumary Photonics", "focus_area": "Quantum computing", "logo": "lumary-logo.png"},
-        {"name": "Ignis Hypersonics", "focus_area": "Hypersonics", "logo": "ignis-logo.png"},
-        {"name": "Northstar Navigation Systems", "focus_area": "Alt-PNT", "logo": "northstar-logo.png"},
-        {"name": "Verdant Biosystems", "focus_area": "Biomanufacturing", "logo": "verdant-logo.png"},
+        {"name": "Ridgecrest Microsystems", "focus_area": "Microelectronics", "logo": "ridgecrest-lockup.svg"},
+        {"name": "Cobalt Semiconductor", "focus_area": "Microelectronics", "logo": "cobalt-lockup.svg"},
+        {"name": "Lumary Photonics", "focus_area": "Quantum computing", "logo": "lumary-lockup.svg"},
+        {"name": "Ignis Hypersonics", "focus_area": "Hypersonics", "logo": "ignis-lockup.svg"},
+        {"name": "Northstar Navigation Systems", "focus_area": "Alt-PNT", "logo": "northstar-lockup.svg"},
+        {"name": "Verdant Biosystems", "focus_area": "Biomanufacturing", "logo": "verdant-lockup.svg"},
     ],
 }
 

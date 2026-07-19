@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 205 56" width="205" height="56">
+  <g transform="translate(0,8)"><path d="M20 8 L9 26 M20 8 L31 26 M9 26 L31 26" stroke="#44506B" stroke-width="2.5"/><circle cx="20" cy="8" r="3.5" fill="#44506B"/><circle cx="9" cy="26" r="3.5" fill="#44506B"/><circle cx="31" cy="26" r="3.5" fill="#44506B"/></g>
+  <text x="52" y="30" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="23" font-weight="800" letter-spacing="1" fill="#44506B">COBALT</text>
+  <text x="52" y="46" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600" letter-spacing="2.2" fill="#66738a">SEMICONDUCTOR</text>
+</svg>
