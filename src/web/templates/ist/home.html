@@ -30,8 +30,8 @@
 
 <div class="section-title">Supported by</div>
 <div class="sponsor-strip">
-  {% for s in sponsors.primes %}<div class="sponsor-chip">{{ s.name }}</div>{% endfor %}
-  {% for s in sponsors.midmarket[:3] %}<div class="sponsor-chip">{{ s.name }}</div>{% endfor %}
+  {% for s in sponsors.primes %}<div class="sponsor-logo" title="{{ s.name }}"><img src="{{ root }}/static/ist/logos/{{ s.logo }}" alt="{{ s.name }}"></div>{% endfor %}
+  {% for s in sponsors.midmarket[:3] %}<div class="sponsor-logo" title="{{ s.name }}"><img src="{{ root }}/static/ist/logos/{{ s.logo }}" alt="{{ s.name }}"></div>{% endfor %}
 </div>
 
 <div class="section-title">Featured Research</div>

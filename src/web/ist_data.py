@@ -100,7 +100,7 @@ PUBLICATIONS = [
         "author": "Dr. Raymond Okafor",
         "date": "January 2026",
         "abstract": "Why packaging, not just fabrication, decides the edge.",
-        "pdf": None,  # placeholder
+        "pdf": "advanced-packaging-chip-war.pdf",
     },
     {
         "title": "Quantum Sensing for Contested Environments",
@@ -109,7 +109,7 @@ PUBLICATIONS = [
         "author": "Dr. Priya Nair",
         "date": "February 2026",
         "abstract": "Near-term military payoffs of quantum sensing.",
-        "pdf": None,
+        "pdf": "quantum-sensing-contested.pdf",
     },
     {
         "title": "The Cryptographic Cliff: Preparing for Q-Day",
@@ -118,7 +118,7 @@ PUBLICATIONS = [
         "author": "Dr. Priya Nair",
         "date": "April 2026",
         "abstract": "Post-quantum migration timelines for DoD.",
-        "pdf": None,
+        "pdf": "cryptographic-cliff-q-day.pdf",
     },
     {
         "title": "Hypersonic Test Infrastructure: The Real Bottleneck",
@@ -127,7 +127,7 @@ PUBLICATIONS = [
         "author": "Dr. Marcus Feld",
         "date": "December 2025",
         "abstract": "Ground/flight test capacity as the limiting factor.",
-        "pdf": None,
+        "pdf": "hypersonic-test-infrastructure.pdf",
     },
     {
         "title": "Closing the Hypersonics Gap",
@@ -136,7 +136,7 @@ PUBLICATIONS = [
         "author": "Dr. Marcus Feld",
         "date": "May 2026",
         "abstract": "Short take on production scale-up.",
-        "pdf": None,
+        "pdf": "closing-hypersonics-gap.pdf",
     },
     {
         "title": "Beyond GPS: Building Resilient Alt-PNT",
@@ -145,7 +145,7 @@ PUBLICATIONS = [
         "author": "Dr. Sofia Reyes",
         "date": "February 2026",
         "abstract": "A layered architecture for assured PNT.",
-        "pdf": None,
+        "pdf": "beyond-gps-alt-pnt.pdf",
     },
     {
         "title": "Jamming, Spoofing, and the Case for Alt-PNT",
@@ -154,7 +154,7 @@ PUBLICATIONS = [
         "author": "Dr. Sofia Reyes",
         "date": "June 2026",
         "abstract": "Why GPS dependence is a strategic liability.",
-        "pdf": None,
+        "pdf": "jamming-spoofing-alt-pnt.pdf",
     },
     {
         "title": "Biomanufacturing for Defense Resilience",
@@ -163,7 +163,7 @@ PUBLICATIONS = [
         "author": "Dr. Nathan Cole",
         "date": "January 2026",
         "abstract": "Distributed bioproduction for supply security.",
-        "pdf": None,
+        "pdf": "biomanufacturing-resilience.pdf",
     },
     {
         "title": "The Bioeconomy as a National Security Asset",
@@ -172,16 +172,16 @@ PUBLICATIONS = [
         "author": "Dr. Nathan Cole",
         "date": "March 2026",
         "abstract": "Framing biomanufacturing in strategic terms.",
-        "pdf": None,
+        "pdf": "bioeconomy-national-security.pdf",
     },
     {
         "title": "Financing the Defense Tech Transition",
         "type": "Brief",
-        "topic": "Microelectronics",  # cross-cutting; map to first area
+        "topic": "Microelectronics",
         "author": "Dr. Alan Whitfield",
         "date": "April 2026",
         "abstract": "How private capital reaches the valley of death.",
-        "pdf": None,
+        "pdf": "financing-defense-tech.pdf",
     },
     {
         "title": "Midmarket Defense: The Overlooked Engine",
@@ -190,23 +190,23 @@ PUBLICATIONS = [
         "author": "Dr. Alan Whitfield",
         "date": "June 2026",
         "abstract": "Why midmarket firms drive real innovation.",
-        "pdf": None,
+        "pdf": "midmarket-defense-engine.pdf",
     },
 ]
 
 SPONSORS = {
     "primes": [
-        {"name": "Vantris Aerospace & Defense", "logo": None},
-        {"name": "Corven Systems", "logo": None},
-        {"name": "Halden Dynamics", "logo": None},
+        {"name": "Vantris Aerospace & Defense", "logo": "vantris-logo.png"},
+        {"name": "Corven Systems", "logo": "corven-logo.png"},
+        {"name": "Halden Dynamics", "logo": "halden-logo.png"},
     ],
     "midmarket": [
-        {"name": "Ridgecrest Microsystems", "focus_area": "Microelectronics", "logo": None},
-        {"name": "Cobalt Semiconductor", "focus_area": "Microelectronics", "logo": None},
-        {"name": "Lumary Photonics", "focus_area": "Quantum computing", "logo": None},
-        {"name": "Ignis Hypersonics", "focus_area": "Hypersonics", "logo": None},
-        {"name": "Northstar Navigation Systems", "focus_area": "Alt-PNT", "logo": None},
-        {"name": "Verdant Biosystems", "focus_area": "Biomanufacturing", "logo": None},
+        {"name": "Ridgecrest Microsystems", "focus_area": "Microelectronics", "logo": "ridgecrest-logo.png"},
+        {"name": "Cobalt Semiconductor", "focus_area": "Microelectronics", "logo": "cobalt-logo.png"},
+        {"name": "Lumary Photonics", "focus_area": "Quantum computing", "logo": "lumary-logo.png"},
+        {"name": "Ignis Hypersonics", "focus_area": "Hypersonics", "logo": "ignis-logo.png"},
+        {"name": "Northstar Navigation Systems", "focus_area": "Alt-PNT", "logo": "northstar-logo.png"},
+        {"name": "Verdant Biosystems", "focus_area": "Biomanufacturing", "logo": "verdant-logo.png"},
     ],
 }
 

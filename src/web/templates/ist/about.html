@@ -38,11 +38,11 @@
 
 <div class="tier-label">Founding Partners</div>
 <div class="sponsor-strip">
-  {% for s in sponsors.primes %}<div class="sponsor-chip">{{ s.name }}</div>{% endfor %}
+  {% for s in sponsors.primes %}<div class="sponsor-logo" title="{{ s.name }}"><img src="{{ root }}/static/ist/logos/{{ s.logo }}" alt="{{ s.name }}"></div>{% endfor %}
 </div>
 
 <div class="tier-label">Industry Partners</div>
 <div class="sponsor-strip">
-  {% for s in sponsors.midmarket %}<div class="sponsor-chip">{{ s.name }}</div>{% endfor %}
+  {% for s in sponsors.midmarket %}<div class="sponsor-logo" title="{{ s.name }}"><img src="{{ root }}/static/ist/logos/{{ s.logo }}" alt="{{ s.name }}"></div>{% endfor %}
 </div>
 {% endblock %}
