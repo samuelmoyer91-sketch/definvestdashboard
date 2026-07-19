@@ -1,5 +1,7 @@
 """IST demo content — all fictional, transcribed from 03_Fake-Org/ bibles."""
 
+from datetime import datetime
+
 FOCUS_AREAS = [
     ("Microelectronics", "Securing the chip supply, from design to advanced packaging."),
     ("Quantum computing", "From battlefield sensing to post-quantum security."),
@@ -98,7 +100,7 @@ PUBLICATIONS = [
         "type": "Brief",
         "topic": "Microelectronics",
         "author": "Dr. Raymond Okafor",
-        "date": "January 2026",
+        "date": "November 2022",
         "abstract": "Why packaging, not just fabrication, decides the edge.",
         "pdf": "advanced-packaging-chip-war.pdf",
     },
@@ -107,7 +109,7 @@ PUBLICATIONS = [
         "type": "Report",
         "topic": "Quantum computing",
         "author": "Dr. Priya Nair",
-        "date": "February 2026",
+        "date": "February 2025",
         "abstract": "Near-term military payoffs of quantum sensing.",
         "pdf": "quantum-sensing-contested.pdf",
     },
@@ -116,7 +118,7 @@ PUBLICATIONS = [
         "type": "Brief",
         "topic": "Quantum computing",
         "author": "Dr. Priya Nair",
-        "date": "April 2026",
+        "date": "June 2021",
         "abstract": "Post-quantum migration timelines for DoD.",
         "pdf": "cryptographic-cliff-q-day.pdf",
     },
@@ -125,7 +127,7 @@ PUBLICATIONS = [
         "type": "Report",
         "topic": "Hypersonics",
         "author": "Dr. Marcus Feld",
-        "date": "December 2025",
+        "date": "September 2023",
         "abstract": "Ground/flight test capacity as the limiting factor.",
         "pdf": "hypersonic-test-infrastructure.pdf",
     },
@@ -143,7 +145,7 @@ PUBLICATIONS = [
         "type": "Report",
         "topic": "Alt-PNT",
         "author": "Dr. Sofia Reyes",
-        "date": "February 2026",
+        "date": "January 2024",
         "abstract": "A layered architecture for assured PNT.",
         "pdf": "beyond-gps-alt-pnt.pdf",
     },
@@ -152,7 +154,7 @@ PUBLICATIONS = [
         "type": "Insight",
         "topic": "Alt-PNT",
         "author": "Dr. Sofia Reyes",
-        "date": "June 2026",
+        "date": "August 2020",
         "abstract": "Why GPS dependence is a strategic liability.",
         "pdf": "jamming-spoofing-alt-pnt.pdf",
     },
@@ -161,7 +163,7 @@ PUBLICATIONS = [
         "type": "Report",
         "topic": "Biomanufacturing",
         "author": "Dr. Nathan Cole",
-        "date": "January 2026",
+        "date": "April 2022",
         "abstract": "Distributed bioproduction for supply security.",
         "pdf": "biomanufacturing-resilience.pdf",
     },
@@ -170,7 +172,7 @@ PUBLICATIONS = [
         "type": "Brief",
         "topic": "Biomanufacturing",
         "author": "Dr. Nathan Cole",
-        "date": "March 2026",
+        "date": "July 2025",
         "abstract": "Framing biomanufacturing in strategic terms.",
         "pdf": "bioeconomy-national-security.pdf",
     },
@@ -179,7 +181,7 @@ PUBLICATIONS = [
         "type": "Brief",
         "topic": "Defense capital",
         "author": "Dr. Alan Whitfield",
-        "date": "April 2026",
+        "date": "December 2023",
         "abstract": "How private capital reaches the valley of death.",
         "pdf": "financing-defense-tech.pdf",
     },
@@ -193,6 +195,9 @@ PUBLICATIONS = [
         "pdf": "midmarket-defense-engine.pdf",
     },
 ]
+
+# Always show publications newest-first, regardless of authoring order above.
+PUBLICATIONS.sort(key=lambda p: datetime.strptime(p["date"], "%B %Y"), reverse=True)
 
 SPONSORS = {
     "primes": [
