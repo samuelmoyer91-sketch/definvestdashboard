@@ -99,7 +99,7 @@ async def publications(request: Request, _=Depends(require_auth)):
             request,
             publications=PUBLICATIONS,
             focus_areas=FOCUS_AREAS,
-            types=list(set(p["type"] for p in PUBLICATIONS))
+            types=["Report", "Brief", "Insight"]
         )
     )
 

@@ -4,6 +4,9 @@
 
 {% block extra_css %}
 <style>
+    .pod-banner { background: linear-gradient(150deg, #0B2545 0%, #143a63 100%); }
+    .pod-banner .wave { position: absolute; right: 5%; top: 50%; transform: translateY(-50%); height: 55%; opacity: 0.5; }
+    @media (max-width: 600px) { .pod-banner .wave { right: -10%; opacity: 0.3; } }
     .intro { font-size: 17px; color: #4b5563; line-height: 1.6; max-width: 720px; margin-bottom: 32px; }
     .episode { display: flex; gap: 16px; align-items: center; padding: 18px 0; border-bottom: 1px solid #e2e6ea; }
     .ep-num { font-size: 22px; font-weight: 800; color: #D6217E; min-width: 48px; }
@@ -14,8 +17,17 @@
 {% endblock %}
 
 {% block content %}
-<div class="pagehead">
-  <img src="{{ root }}/static/ist/events/pexels-bertellifotografia-34774345.jpg" alt="">
+<div class="pagehead pod-banner">
+  <svg class="wave" viewBox="0 0 248 120" xmlns="http://www.w3.org/2000/svg" fill="#D6217E">
+    <rect x="0" y="45" width="8" height="30" rx="4"/><rect x="16" y="32" width="8" height="56" rx="4"/>
+    <rect x="32" y="20" width="8" height="80" rx="4"/><rect x="48" y="8" width="8" height="104" rx="4"/>
+    <rect x="64" y="25" width="8" height="70" rx="4"/><rect x="80" y="38" width="8" height="44" rx="4"/>
+    <rect x="96" y="15" width="8" height="90" rx="4"/><rect x="112" y="5" width="8" height="110" rx="4"/>
+    <rect x="128" y="30" width="8" height="60" rx="4"/><rect x="144" y="43" width="8" height="34" rx="4"/>
+    <rect x="160" y="23" width="8" height="74" rx="4"/><rect x="176" y="13" width="8" height="94" rx="4"/>
+    <rect x="192" y="35" width="8" height="50" rx="4"/><rect x="208" y="46" width="8" height="28" rx="4"/>
+    <rect x="224" y="28" width="8" height="64" rx="4"/><rect x="240" y="40" width="8" height="40" rx="4"/>
+  </svg>
   <div class="ph-text">
     <h1>The IST Podcast</h1>
     <p>Conversations on the technologies redefining national security.</p>

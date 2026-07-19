@@ -4,7 +4,13 @@
 
 {% block extra_css %}
 <style>
-    h2 { font-size: 18px; color: #0B2545; margin-top: 40px; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 3px solid #D6217E; }
+    h2 { font-size: 18px; color: #0B2545; margin-top: 40px; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #e2e6ea; position: relative; }
+    h2::after { content: ''; position: absolute; left: 0; bottom: -1px; width: 48px; height: 3px; background: #D6217E; }
+    .dir-card { display: flex; gap: 28px; align-items: center; background: #f9fafb; border-radius: 8px; padding: 28px; max-width: 760px; }
+    .dir-card img { width: 180px; height: 180px; object-fit: cover; border-radius: 8px; flex-shrink: 0; }
+    .dir-card .person-name { font-size: 20px; }
+    .dir-bio { font-size: 14.5px; color: #4b5563; line-height: 1.6; margin: 10px 0 0; }
+    @media (max-width: 600px) { .dir-card { flex-direction: column; text-align: center; } }
     .people-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 24px; margin-bottom: 8px; }
     .person-card { text-align: center; }
     .person-card img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; margin-bottom: 12px; }
@@ -23,15 +29,16 @@
 </div>
 
 <h2>Leadership</h2>
-<div class="people-grid">
-    {% for person in people.leadership %}
-    <div class="person-card">
-        <img src="{{ root }}/static/ist/headshots/{{ person.image }}" alt="{{ person.name }}">
+{% for person in people.leadership %}
+<div class="dir-card">
+    <img src="{{ root }}/static/ist/headshots/{{ person.image }}" alt="{{ person.name }}">
+    <div>
         <div class="person-name">{{ person.name }}</div>
         <div class="person-title">{{ person.title }}</div>
+        <p class="dir-bio">{{ person.bio }}</p>
     </div>
-    {% endfor %}
 </div>
+{% endfor %}
 
 <h2>Research Fellows</h2>
 <div class="people-grid">

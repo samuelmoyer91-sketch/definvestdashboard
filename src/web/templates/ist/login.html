@@ -7,6 +7,7 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
+        html { background: #0B2545; }
         body {
             background: linear-gradient(135deg, #0B2545 0%, #1a3a5c 100%);
             display: flex;
@@ -28,21 +29,15 @@
             margin-bottom: 32px;
         }
         .logo-section img {
-            height: 60px;
-            margin-bottom: 20px;
+            height: 72px;
         }
-        .logo-section h1 {
-            font-size: 28px;
-            color: #0B2545;
-            font-weight: 800;
-            line-height: 1.2;
-        }
-        .logo-section h1 .mag { color: #D6217E; }
         .tagline {
-            font-size: 14px;
-            color: #6b7580;
-            margin-top: 12px;
-            line-height: 1.4;
+            font-family: Georgia, "Times New Roman", serif;
+            font-style: italic;
+            font-size: 15px;
+            color: #4b5563;
+            margin-top: 18px;
+            line-height: 1.5;
         }
 
         form {
@@ -87,15 +82,13 @@
 
         @media (max-width: 600px) {
             .login-box { padding: 32px 24px; }
-            .logo-section h1 { font-size: 24px; }
         }
     </style>
 </head>
 <body>
     <div class="login-box">
         <div class="logo-section">
-            <img src="{{ root }}/static/ist/logos/ist-logo.png" alt="IST">
-            <h1>INSTITUTE FOR<br>STRATEGIC<br><span class="mag">TECHNOLOGIES</span></h1>
+            <img src="{{ root }}/static/ist/logos/ist-logo.png" alt="Institute for Strategic Technologies">
             <p class="tagline">Where government, industry, and capital shape the technologies that matter.</p>
         </div>
 

@@ -1,11 +1,11 @@
 """IST demo content — all fictional, transcribed from 03_Fake-Org/ bibles."""
 
 FOCUS_AREAS = [
-    "Microelectronics",
-    "Quantum computing",
-    "Hypersonics",
-    "Alt-PNT",
-    "Biomanufacturing",
+    ("Microelectronics", "Securing the chip supply, from design to advanced packaging."),
+    ("Quantum computing", "From battlefield sensing to post-quantum security."),
+    ("Hypersonics", "Closing the gap in testing, production, and defense."),
+    ("Alt-PNT", "Assured navigation for a world beyond GPS."),
+    ("Biomanufacturing", "Distributed production for a resilient industrial base."),
 ]
 
 PEOPLE = {
