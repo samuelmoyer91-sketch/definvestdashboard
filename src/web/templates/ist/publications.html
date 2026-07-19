@@ -4,25 +4,25 @@
 
 {% block extra_css %}
 <style>
-    .filter-row { margin-bottom: 18px; }
-    .filter-label { font-size: 11px; letter-spacing: 1.5px; color: #8a94a3; font-weight: 700; text-transform: uppercase; margin-bottom: 10px; }
+    .filter-row { margin-bottom: 16px; }
+    .filter-label { font-family: "Spline Sans Mono", monospace; font-size: 11px; letter-spacing: 2px; color: var(--sub); text-transform: uppercase; margin-bottom: 10px; }
     .filters { display: flex; gap: 10px; flex-wrap: wrap; }
-    .filter-pill { padding: 7px 15px; border: 2px solid #d0d7e1; border-radius: 20px; background: #fff; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.2s; color: #4a5568; }
-    .filter-pill:hover, .filter-pill.active { border-color: #D6217E; color: #D6217E; }
-    .filters.topics { margin-bottom: 32px; }
-    .pub-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(430px, 1fr)); gap: 20px; }
-    .pub-card { display: flex; gap: 18px; background: #f9fafb; border-radius: 8px; padding: 18px; transition: box-shadow 0.18s; }
-    .pub-card:hover { box-shadow: 0 8px 20px rgba(11,37,69,0.08); }
-    .pub-cover { flex-shrink: 0; width: 92px; }
-    .pub-cover img { width: 92px; height: 119px; object-fit: cover; border-radius: 4px; box-shadow: 0 2px 10px rgba(11,37,69,0.18); display: block; }
+    .filter-pill { font-family: "Spline Sans Mono", monospace; padding: 7px 15px; border: 1px solid var(--navy); background: transparent; cursor: pointer; font-size: 12px; letter-spacing: 0.5px; color: var(--navy); text-transform: uppercase; transition: all 0.18s; }
+    .filter-pill:hover, .filter-pill.active { background: var(--navy); color: var(--paper); }
+    .filters.topics { margin-bottom: 28px; }
+    .pub-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(430px, 1fr)); gap: 0; border-top: 1px solid var(--navy); border-left: 1px solid var(--navy); }
+    .pub-card { display: flex; gap: 18px; padding: 22px; border-right: 1px solid var(--navy); border-bottom: 1px solid var(--navy); background: var(--card); transition: background 0.2s; }
+    .pub-card:hover { background: #fdf3f8; }
+    .pub-cover { flex-shrink: 0; width: 88px; }
+    .pub-cover img { width: 88px; height: 114px; object-fit: cover; box-shadow: 4px 4px 0 rgba(11,37,69,0.15); display: block; }
     .pub-body { flex: 1; min-width: 0; }
-    @media (max-width: 480px) { .pub-list { grid-template-columns: 1fr; } .pub-cover { width: 72px; } .pub-cover img { width: 72px; height: 93px; } }
-    .dl { display: inline-block; margin-top: 12px; border: 1.5px solid #D6217E; color: #D6217E; padding: 6px 14px; border-radius: 16px; font-size: 13px; font-weight: 700; transition: all 0.15s; }
-    .dl:hover { background: #D6217E; color: #fff; text-decoration: none; }
-    .pub-type { font-size: 11px; color: #fff; background: #D6217E; padding: 4px 10px; border-radius: 12px; display: inline-block; margin-bottom: 8px; font-weight: 700; }
-    .pub-title { font-size: 16px; font-weight: 700; color: #0B2545; margin-bottom: 8px; }
-    .pub-meta { font-size: 13px; color: #6b7580; margin-bottom: 8px; }
-    .pub-abstract { font-size: 14px; color: #4b5563; line-height: 1.5; }
+    .pub-type { font-family: "Spline Sans Mono", monospace; font-size: 10.5px; color: var(--mag); letter-spacing: 2px; text-transform: uppercase; }
+    .pub-title { font-family: Fraunces, Georgia, serif; font-size: 18px; font-weight: 500; color: var(--navy); margin: 7px 0 6px; line-height: 1.25; }
+    .pub-meta { font-family: "Spline Sans Mono", monospace; font-size: 11.5px; color: var(--sub); margin-bottom: 9px; }
+    .pub-abstract { font-size: 13.5px; color: #4b5563; line-height: 1.5; }
+    .dl { display: inline-block; margin-top: 13px; font-family: "Spline Sans Mono", monospace; border: 1px solid var(--navy); color: var(--navy); padding: 7px 14px; font-size: 11.5px; letter-spacing: 1px; text-transform: uppercase; transition: all 0.15s; }
+    .dl:hover { background: var(--navy); color: var(--paper); text-decoration: none; }
+    @media (max-width: 480px) { .pub-list { grid-template-columns: 1fr; } }
 </style>
 {% endblock %}
 
@@ -30,27 +30,26 @@
 <div class="pagehead">
   <img src="{{ root }}/static/ist/events/pexels-pavel-danilyuk-8442887.jpg" alt="">
   <div class="ph-text">
+    <div class="ph-kicker">Reports · Briefs · Insights</div>
     <h1>Publications</h1>
-    <p>Reports, briefs, and insights across the technologies shaping national security.</p>
+    <p>Rigorous analysis across the technologies shaping national security.</p>
   </div>
 </div>
 
+<div class="sec-label"><span class="no">01</span><span class="nm">The library</span><span class="aside">{{ publications|length }} titles · filter below</span></div>
+
 <div class="filter-row">
-    <div class="filter-label">Form&nbsp;factor</div>
+    <div class="filter-label">Form factor</div>
     <div class="filters" data-group="type">
         <button class="filter-pill active" data-filter="all">All</button>
-        {% for type in types %}
-        <button class="filter-pill" data-filter="{{ type }}">{{ type }}</button>
-        {% endfor %}
+        {% for type in types %}<button class="filter-pill" data-filter="{{ type }}">{{ type }}</button>{% endfor %}
     </div>
 </div>
 <div class="filter-row">
     <div class="filter-label">Topic</div>
     <div class="filters topics" data-group="topic">
         <button class="filter-pill active" data-filter="all">All</button>
-        {% for topic in topics %}
-        <button class="filter-pill" data-filter="{{ topic }}">{{ topic }}</button>
-        {% endfor %}
+        {% for topic in topics %}<button class="filter-pill" data-filter="{{ topic }}">{{ topic }}</button>{% endfor %}
     </div>
 </div>
 
@@ -70,21 +69,19 @@
 </div>
 
 <script>
-    const active = { type: 'all', topic: 'all' };
-
+    var active = { type: 'all', topic: 'all' };
     function applyFilters() {
-        document.querySelectorAll('.pub-card').forEach(card => {
-            const typeOk = active.type === 'all' || card.dataset.type === active.type;
-            const topicOk = active.topic === 'all' || card.dataset.topic === active.topic;
-            card.style.display = (typeOk && topicOk) ? 'block' : 'none';
+        document.querySelectorAll('.pub-card').forEach(function (card) {
+            var typeOk = active.type === 'all' || card.dataset.type === active.type;
+            var topicOk = active.topic === 'all' || card.dataset.topic === active.topic;
+            card.style.display = (typeOk && topicOk) ? 'flex' : 'none';
         });
     }
-
-    document.querySelectorAll('.filters').forEach(group => {
-        const key = group.dataset.group;
-        group.querySelectorAll('.filter-pill').forEach(btn => {
-            btn.addEventListener('click', () => {
-                group.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.filters').forEach(function (group) {
+        var key = group.dataset.group;
+        group.querySelectorAll('.filter-pill').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                group.querySelectorAll('.filter-pill').forEach(function (b) { b.classList.remove('active'); });
                 btn.classList.add('active');
                 active[key] = btn.dataset.filter;
                 applyFilters();

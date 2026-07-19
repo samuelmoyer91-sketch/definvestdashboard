@@ -4,29 +4,22 @@
 
 {% block extra_css %}
 <style>
-    .conf-hero { position: relative; margin: -40px -20px 36px -20px; height: 420px; overflow: hidden; }
-    .conf-hero img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .conf-hero::after { content:''; position:absolute; inset:0; background: linear-gradient(to top, rgba(11,37,69,0.92) 0%, rgba(11,37,69,0.4) 60%, rgba(11,37,69,0.2) 100%); }
-    .conf-hero .ch-text { position: absolute; bottom: 40px; left: 40px; right: 40px; z-index: 2; }
-    .conf-hero h1 { color: #fff; font-size: 46px; margin: 0; }
-    .conf-hero p { color: #e3ebf5; font-size: 18px; margin: 12px 0 0; max-width: 640px; }
-    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin: 0 0 40px; }
-    .stat { text-align: center; padding: 24px; background: #F5F6F8; border-radius: 8px; }
-    .stat .num { font-size: 40px; font-weight: 800; color: #D6217E; }
-    .stat .lbl { font-size: 14px; color: #6b7580; margin-top: 4px; }
-    .cta { display: inline-block; background: #D6217E; color: #fff; padding: 14px 28px; border-radius: 6px; font-weight: 700; font-size: 15px; margin-top: 8px; cursor: default; }
-    .cta:hover { background: #c71a6f; text-decoration: none; }
-    .sessions { margin-bottom: 8px; }
-    .session { display: flex; align-items: center; gap: 16px; padding: 16px 0; border-bottom: 1px solid #e2e6ea; }
-    .s-body h3 { font-size: 16px; color: #0B2545; margin: 0 0 4px; }
-    .s-body p { font-size: 13px; color: #6b7580; margin: 0; }
-    .s-watch { margin-left: auto; display: inline-flex; align-items: center; gap: 7px; background: #0B2545; color: #fff; border-radius: 20px; padding: 8px 18px; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; }
-    .s-watch:hover { background: #143a63; }
-    @media (max-width: 768px) {
-      .conf-hero { height: 300px; }
-      .conf-hero h1 { font-size: 30px; }
-      .stats { grid-template-columns: 1fr; }
-    }
+    .conf-hero { position: relative; margin: 0 -28px 0; height: 460px; overflow: hidden; background: var(--navy); }
+    .conf-hero img { width: 100%; height: 100%; object-fit: cover; display: block; filter: grayscale(1) contrast(1.08); opacity: 0.5; }
+    .conf-hero .ch-text { position: absolute; bottom: 44px; left: 44px; right: 44px; z-index: 2; }
+    .conf-hero .ch-kicker { font-family: "Spline Sans Mono", monospace; font-size: 12px; letter-spacing: 3px; color: var(--mag); text-transform: uppercase; margin-bottom: 14px; }
+    .conf-hero h1 { font-family: Fraunces, Georgia, serif; font-weight: 460; color: #fff; font-size: 58px; margin: 0; letter-spacing: -0.5px; line-height: 1.02; }
+    .conf-hero p { font-family: Fraunces, Georgia, serif; font-style: italic; color: #dbe4ef; font-size: 20px; margin: 16px 0 0; max-width: 640px; line-height: 1.4; }
+    .conf-intro { font-size: 16px; color: #4b5563; line-height: 1.7; max-width: 720px; }
+    .sessions { border-top: 1px solid var(--navy); }
+    .session { display: flex; align-items: center; gap: 18px; padding: 20px 0; border-bottom: 1px solid var(--rule); }
+    .s-num { font-family: "Spline Sans Mono", monospace; font-size: 12px; color: var(--mag); min-width: 30px; }
+    .s-body h3 { font-family: Fraunces, Georgia, serif; font-size: 19px; font-weight: 500; color: var(--navy); margin: 0 0 4px; }
+    .s-body p { font-family: "Spline Sans Mono", monospace; font-size: 11.5px; color: var(--sub); margin: 0; }
+    .s-watch { margin-left: auto; display: inline-flex; align-items: center; gap: 7px; background: var(--navy); color: var(--paper); padding: 9px 20px; font-family: "Spline Sans Mono", monospace; font-size: 11.5px; letter-spacing: 1px; cursor: pointer; white-space: nowrap; text-transform: uppercase; }
+    .s-watch:hover { background: var(--mag); }
+    .cta { display: inline-block; margin-top: 8px; }
+    @media (max-width: 768px) { .conf-hero { height: 320px; } .conf-hero h1 { font-size: 34px; } }
 </style>
 {% endblock %}
 
@@ -34,42 +27,49 @@
 <div class="conf-hero">
   <img src="{{ root }}/static/ist/events/pexels-freestockpro-9275222.jpg" alt="">
   <div class="ch-text">
-    <h1>IST Annual Conference</h1>
-    <p>The premier gathering where government, industry, and investors set the agenda for defense technology.</p>
+    <div class="ch-kicker">The IST Annual Conference</div>
+    <h1>The room where the agenda gets set.</h1>
+    <p>One gathering, every year, where government, industry, and investors decide what defense technology does next.</p>
   </div>
 </div>
 
-<div class="stats">
-  <div class="stat"><div class="num">800+</div><div class="lbl">Attendees</div></div>
-  <div class="stat"><div class="num">60+</div><div class="lbl">Speakers</div></div>
-  <div class="stat"><div class="num">30+</div><div class="lbl">Sessions</div></div>
+<div class="sec-label"><span class="no">01</span><span class="nm">By the numbers</span></div>
+<div class="stats-ed">
+  <div class="stat-ed"><div class="n" data-count="800">0<sup>+</sup></div><div class="l">Attendees</div></div>
+  <div class="stat-ed"><div class="n" data-count="60">0<sup>+</sup></div><div class="l">Speakers</div></div>
+  <div class="stat-ed"><div class="n" data-count="30">0<sup>+</sup></div><div class="l">Sessions</div></div>
+  <div class="stat-ed"><div class="n" data-count="40">0<sup>+</sup></div><div class="l">Sponsors</div></div>
 </div>
 
-<p style="font-size: 16px; color: #4b5563; line-height: 1.6; max-width: 720px;">Each year, the IST Annual Conference convenes the people shaping the future of national security technology — senior government leaders, prime and midmarket industry executives, and the investors backing the next generation of defense innovation.</p>
+<div class="sec-label"><span class="no">02</span><span class="nm">Who's in the room</span></div>
+<p class="conf-intro">Each year, the IST Annual Conference convenes the people shaping the future of national security technology — senior government leaders and service-lab directors, prime and midmarket industry executives, and the venture and private-equity investors backing the next generation of defense innovation. It is, quite simply, the highest-signal room in the field.</p>
 
-<div class="section-title">Featured Sessions</div>
+<div class="sec-label"><span class="no">03</span><span class="nm">Featured sessions</span><span class="aside">On demand</span></div>
 <div class="sessions">
   <div class="session">
+    <div class="s-num">01</div>
     <div class="s-body"><h3>Keynote — The Coming Decade of Deterrence</h3><p>Dr. Katherine Voss with Lt. Gen. (Ret.) David Hargrove</p></div>
     <span class="s-watch">▶ Watch</span>
   </div>
   <div class="session">
+    <div class="s-num">02</div>
     <div class="s-body"><h3>Panel — Financing the Defense Tech Transition</h3><p>Dr. Alan Whitfield, with investors and prime-contractor executives</p></div>
     <span class="s-watch">▶ Watch</span>
   </div>
   <div class="session">
+    <div class="s-num">03</div>
     <div class="s-body"><h3>Fireside — Quantum, Hypersonics, and the Next Contest</h3><p>Dr. Priya Nair &amp; Dr. Marcus Feld</p></div>
     <span class="s-watch">▶ Watch</span>
   </div>
 </div>
 
-<div class="section-title">From Last Year</div>
+<div class="sec-label"><span class="no">04</span><span class="nm">From last year</span></div>
 <div class="gallery">
-  <img src="{{ root }}/static/ist/events/pexels-cherubs-26202153.jpg" alt="">
-  <img src="{{ root }}/static/ist/events/pexels-pixabay-66906.jpg" alt="">
-  <img src="{{ root }}/static/ist/events/pexels-rezatavakoli-29335353.jpg" alt="">
-  <img src="{{ root }}/static/ist/events/pexels-wijs-wise-136435282-29054364.jpg" alt="">
+  <figure><img src="{{ root }}/static/ist/events/pexels-cherubs-26202153.jpg" alt=""><figcaption>Plenary hall</figcaption></figure>
+  <figure><img src="{{ root }}/static/ist/events/pexels-pixabay-66906.jpg" alt=""><figcaption>Capability showcase</figcaption></figure>
+  <figure><img src="{{ root }}/static/ist/events/pexels-rezatavakoli-29335353.jpg" alt=""><figcaption>Evening reception</figcaption></figure>
+  <figure><img src="{{ root }}/static/ist/events/pexels-wijs-wise-136435282-29054364.jpg" alt=""><figcaption>Industry hall</figcaption></figure>
 </div>
 
-<p style="margin-top: 36px;"><span class="cta" title="The conference has its own standalone site — outside this demo">Visit the conference site →</span></p>
+<p style="margin-top: 40px;"><span class="btn cta" title="The conference has its own standalone site — outside this demo">Visit the conference site →</span></p>
 {% endblock %}

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>IST — Variant B: Industrial Dynamism</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  :root { --navy:#0A1420; --navy2:#0B2545; --mag:#D6217E; --cream:#F2EDE4; --ink:#141821; }
+  body { font-family:-apple-system,"Segoe UI",Helvetica,sans-serif; background:var(--cream); color:var(--ink); }
+  .container { max-width:1300px; margin:0 auto; padding:0 32px; }
+  .halftone { position:relative; }
+  .halftone::after { content:''; position:absolute; inset:0; background-image:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="5" height="5"><circle cx="1.2" cy="1.2" r="0.9" fill="%230A1420" opacity="0.28"/></svg>'); pointer-events:none; }
+
+  header { background:var(--navy); }
+  .hdr { display:flex; justify-content:space-between; align-items:center; padding:16px 32px; max-width:1300px; margin:0 auto; }
+  .wordmark { font-family:Anton,sans-serif; font-size:20px; color:#fff; letter-spacing:1.5px; }
+  .wordmark span { color:var(--mag); }
+  nav { display:flex; gap:24px; }
+  nav a { font-family:"IBM Plex Mono",monospace; font-size:12px; letter-spacing:1.5px; color:#c9d6e5; text-decoration:none; }
+  nav a:hover { color:var(--mag); }
+
+  .hero { position:relative; background:var(--navy); overflow:hidden; }
+  .hero .ph { position:absolute; inset:0; }
+  .hero .ph img { width:100%; height:100%; object-fit:cover; filter:grayscale(1) contrast(1.25) brightness(0.55); }
+  .hero .ph::before { content:''; position:absolute; inset:0; background:linear-gradient(100deg, rgba(10,20,32,0.96) 30%, rgba(214,33,126,0.28) 130%); z-index:1; }
+  .hero-in { position:relative; z-index:2; max-width:1300px; margin:0 auto; padding:110px 32px 90px; }
+  .hero .k { font-family:"IBM Plex Mono",monospace; color:var(--mag); font-size:13px; letter-spacing:4px; margin-bottom:18px; }
+  .hero h1 { font-family:Anton,sans-serif; font-size:96px; line-height:0.98; color:#fff; letter-spacing:1px; text-transform:uppercase; max-width:900px; }
+  .hero h1 em { font-style:normal; color:var(--mag); }
+  .hero p { font-family:"IBM Plex Mono",monospace; color:#b8c6d9; font-size:15px; margin-top:26px; max-width:560px; line-height:1.6; }
+
+  .ticker { background:var(--mag); border-top:3px solid var(--navy); border-bottom:3px solid var(--navy); overflow:hidden; white-space:nowrap; padding:12px 0; }
+  .ticker span { font-family:Anton,sans-serif; color:#fff; font-size:19px; letter-spacing:3px; text-transform:uppercase; }
+
+  .band { padding:64px 0 8px; }
+  .blabel { font-family:Anton,sans-serif; font-size:34px; text-transform:uppercase; color:var(--ink); letter-spacing:1px; margin-bottom:26px; }
+  .blabel span { color:var(--mag); }
+
+  .sponsors { display:flex; flex-wrap:wrap; gap:22px 48px; align-items:center; }
+  .sponsors img { height:36px; opacity:0.8; }
+
+  .feat { display:grid; grid-template-columns:repeat(3,1fr); gap:22px; }
+  .fcard { background:#fff; border:2px solid var(--ink); box-shadow:7px 7px 0 var(--ink); padding:22px; display:flex; gap:16px; }
+  .fcard img { width:82px; height:106px; object-fit:cover; border:1px solid var(--ink); }
+  .fcard .t { display:inline-block; background:var(--mag); color:#fff; font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:2px; padding:3px 9px; }
+  .fcard h3 { font-family:Anton,sans-serif; font-size:19px; font-weight:400; letter-spacing:0.5px; color:var(--ink); line-height:1.15; margin:10px 0 8px; text-transform:uppercase; }
+  .fcard .m { font-family:"IBM Plex Mono",monospace; font-size:11.5px; color:#6b7280; }
+
+  .dark { background:var(--navy); margin-top:64px; padding:64px 0; }
+  .dark .blabel { color:#fff; }
+  .stats { display:grid; grid-template-columns:repeat(3,1fr); gap:26px; margin-bottom:52px; }
+  .stat { border:2px solid rgba(255,255,255,0.25); padding:28px; text-align:center; }
+  .stat .n { font-family:Anton,sans-serif; font-size:84px; color:transparent; -webkit-text-stroke:2.5px var(--mag); line-height:1; }
+  .stat .l { font-family:"IBM Plex Mono",monospace; color:#b8c6d9; letter-spacing:3px; font-size:12px; margin-top:10px; text-transform:uppercase; }
+  .gallery { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
+  .gallery .halftone img { width:100%; height:200px; object-fit:cover; filter:grayscale(1) contrast(1.2); display:block; }
+
+  .quotes { display:grid; grid-template-columns:repeat(3,1fr); gap:22px; }
+  .q { background:#fff; border:2px solid var(--ink); padding:24px; box-shadow:7px 7px 0 var(--mag); }
+  .q p { font-size:15px; line-height:1.55; font-weight:600; }
+  .q .src { font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:2px; color:var(--mag); margin-top:14px; text-transform:uppercase; }
+
+  .nl { background:var(--navy); margin-top:70px; padding:50px 0; border-top:6px solid var(--mag); }
+  .nl-in { max-width:1300px; margin:0 auto; padding:0 32px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:26px; }
+  .nl h4 { font-family:Anton,sans-serif; color:#fff; font-size:36px; text-transform:uppercase; letter-spacing:1px; }
+  .nl form { display:flex; }
+  .nl input { border:2px solid #fff; background:transparent; color:#fff; padding:14px 18px; font-family:"IBM Plex Mono",monospace; font-size:13px; width:300px; }
+  .nl button { background:var(--mag); color:#fff; border:2px solid var(--mag); padding:14px 30px; font-family:Anton,sans-serif; letter-spacing:2px; font-size:16px; cursor:pointer; }
+  footer { background:var(--navy); color:#5d6b7d; text-align:center; padding:30px; font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:2px; border-top:1px solid rgba(255,255,255,0.12); }
+</style>
+</head>
+<body>
+<header>
+  <div class="hdr">
+    <div class="wordmark">IST<span>■</span> STRATEGIC TECHNOLOGIES</div>
+    <nav><a href="#">RESEARCH</a><a href="#">PEOPLE</a><a href="#">PODCAST</a><a href="#">CONFERENCE</a><a href="#">ABOUT</a></nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="ph halftone"><img src="../src/web/static/ist/events/pexels-kerim-isazade-2148708032-31129059.jpg"></div>
+  <div class="hero-in">
+    <div class="k">/// AN INDEPENDENT RESEARCH INSTITUTE</div>
+    <h1>Technology is <em>national power.</em></h1>
+    <p>Where government, industry, and capital shape the technologies that matter — turning technical insight into national advantage.</p>
+  </div>
+</section>
+
+<div class="ticker"><span>MICROELECTRONICS ★ QUANTUM ★ HYPERSONICS ★ ALT-PNT ★ BIOMANUFACTURING ★ DEFENSE CAPITAL ★ MICROELECTRONICS ★ QUANTUM ★ HYPERSONICS ★ ALT-PNT ★ BIOMANUFACTURING ★</span></div>
+
+<div class="container">
+  <section class="band">
+    <div class="blabel">Supported <span>by</span></div>
+    <div class="sponsors">
+      <img src="../src/web/static/ist/logos/vantris-lockup.svg"><img src="../src/web/static/ist/logos/corven-lockup.svg"><img src="../src/web/static/ist/logos/halden-lockup.svg"><img src="../src/web/static/ist/logos/ridgecrest-lockup.svg"><img src="../src/web/static/ist/logos/cobalt-lockup.svg"><img src="../src/web/static/ist/logos/lumary-lockup.svg">
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="blabel">Featured <span>research</span></div>
+    <div class="feat">
+      <div class="fcard"><img src="../src/web/static/ist/publications/thumbs/midmarket-defense-engine.png"><div><span class="t">INSIGHT</span><h3>Midmarket Defense: The Overlooked Engine</h3><div class="m">WHITFIELD · 06.2026</div></div></div>
+      <div class="fcard"><img src="../src/web/static/ist/publications/thumbs/closing-hypersonics-gap.png"><div><span class="t">INSIGHT</span><h3>Closing the Hypersonics Gap</h3><div class="m">FELD · 05.2026</div></div></div>
+      <div class="fcard"><img src="../src/web/static/ist/publications/thumbs/securing-the-chip-supply.png"><div><span class="t">REPORT</span><h3>Securing the Chip Supply</h3><div class="m">OKAFOR · 03.2026</div></div></div>
+    </div>
+  </section>
+</div>
+
+<div class="dark">
+  <div class="container">
+    <div class="stats">
+      <div class="stat"><div class="n">800+</div><div class="l">Attendees</div></div>
+      <div class="stat"><div class="n">60+</div><div class="l">Speakers</div></div>
+      <div class="stat"><div class="n">12</div><div class="l">Publications</div></div>
+    </div>
+    <div class="blabel" style="color:#fff">Inside the <span>network</span></div>
+    <div class="gallery">
+      <div class="halftone"><img src="../src/web/static/ist/events/pexels-cherubs-26202153.jpg"></div>
+      <div class="halftone"><img src="../src/web/static/ist/events/pexels-henri-mathieu-8344905.jpg"></div>
+      <div class="halftone"><img src="../src/web/static/ist/events/pexels-rezatavakoli-29335353.jpg"></div>
+      <div class="halftone"><img src="../src/web/static/ist/events/pexels-rdne-7467858.jpg"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <section class="band">
+    <div class="blabel">In the <span>news</span></div>
+    <div class="quotes">
+      <div class="q"><p>"IST has quietly become one of the most influential venues where defense-technology strategy actually gets made."</p><div class="src">The Strategic Signal</div></div>
+      <div class="q"><p>"Few institutions move as fluently between the lab, the Pentagon, and the capital markets."</p><div class="src">Defense Frontier Review</div></div>
+      <div class="q"><p>"When investors want to understand where national-security tech is heading, IST is the first stop."</p><div class="src">Capital &amp; Security Quarterly</div></div>
+    </div>
+  </section>
+</div>
+
+<div class="nl">
+  <div class="nl-in">
+    <h4>Stay ahead of the frontier</h4>
+    <form onsubmit="return false"><input placeholder="you@organization.gov"><button>SUBSCRIBE</button></form>
+  </div>
+</div>
+<footer>© 2026 INSTITUTE FOR STRATEGIC TECHNOLOGIES — ALL FICTIONAL, DEMONSTRATION SITE</footer>
+</body>
+</html>

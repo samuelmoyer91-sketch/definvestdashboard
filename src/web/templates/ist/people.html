@@ -4,18 +4,19 @@
 
 {% block extra_css %}
 <style>
-    h2 { font-size: 18px; color: #0B2545; margin-top: 40px; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #e2e6ea; position: relative; }
-    h2::after { content: ''; position: absolute; left: 0; bottom: -1px; width: 48px; height: 3px; background: #D6217E; }
-    .dir-card { display: flex; gap: 28px; align-items: center; background: #f9fafb; border-radius: 8px; padding: 28px; max-width: 760px; }
-    .dir-card img { width: 180px; height: 180px; object-fit: cover; border-radius: 8px; flex-shrink: 0; }
-    .dir-card .person-name { font-size: 20px; }
-    .dir-bio { font-size: 14.5px; color: #4b5563; line-height: 1.6; margin: 10px 0 0; }
+    .dir-card { display: flex; gap: 28px; align-items: center; background: var(--card); border: 1px solid var(--navy); padding: 28px; max-width: 780px; }
+    .dir-card img { width: 172px; height: 172px; object-fit: cover; flex-shrink: 0; filter: grayscale(1) contrast(1.05); box-shadow: 6px 6px 0 rgba(11,37,69,0.15); }
+    .dir-card .person-name { font-family: Fraunces, Georgia, serif; font-size: 22px; font-weight: 500; color: var(--navy); }
+    .dir-card .person-title { font-family: "Spline Sans Mono", monospace; font-size: 11.5px; letter-spacing: 1px; color: var(--mag); text-transform: uppercase; margin-top: 4px; }
+    .dir-bio { font-size: 14.5px; color: #4b5563; line-height: 1.6; margin: 12px 0 0; }
+    .people-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 26px; }
+    .person-card { text-align: left; }
+    .person-card img { width: 100%; aspect-ratio: 1; object-fit: cover; margin-bottom: 12px; filter: grayscale(1) contrast(1.05); transition: filter 0.4s; }
+    .person-card:hover img { filter: grayscale(0); }
+    .person-card .person-name { font-family: Fraunces, Georgia, serif; font-size: 17px; font-weight: 500; color: var(--navy); }
+    .person-card .person-title { font-family: "Spline Sans Mono", monospace; font-size: 10.5px; letter-spacing: 0.5px; color: var(--sub); line-height: 1.5; text-transform: uppercase; margin-top: 3px; }
+    .person-card .person-title b { color: var(--mag); font-weight: 400; }
     @media (max-width: 600px) { .dir-card { flex-direction: column; text-align: center; } }
-    .people-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 24px; margin-bottom: 8px; }
-    .person-card { text-align: center; }
-    .person-card img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; margin-bottom: 12px; }
-    .person-name { font-size: 16px; font-weight: 700; color: #0B2545; }
-    .person-title { font-size: 13px; color: #6b7580; line-height: 1.4; }
 </style>
 {% endblock %}
 
@@ -23,12 +24,13 @@
 <div class="pagehead">
   <img src="{{ root }}/static/ist/events/pexels-henri-mathieu-8344905.jpg" alt="">
   <div class="ph-text">
+    <div class="ph-kicker">Leadership · Fellows · Visiting Scholars</div>
     <h1>People</h1>
-    <p>The researchers and practitioners behind IST.</p>
+    <p>The researchers and practitioners who convene the network.</p>
   </div>
 </div>
 
-<h2>Leadership</h2>
+<div class="sec-label"><span class="no">01</span><span class="nm">Leadership</span></div>
 {% for person in people.leadership %}
 <div class="dir-card">
     <img src="{{ root }}/static/ist/headshots/{{ person.image }}" alt="{{ person.name }}">
@@ -40,18 +42,18 @@
 </div>
 {% endfor %}
 
-<h2>Research Fellows</h2>
+<div class="sec-label"><span class="no">02</span><span class="nm">Research Fellows</span></div>
 <div class="people-grid">
     {% for person in people.fellows %}
     <div class="person-card">
         <img src="{{ root }}/static/ist/headshots/{{ person.image }}" alt="{{ person.name }}">
         <div class="person-name">{{ person.name }}</div>
-        <div class="person-title">{{ person.title }}<br>{{ person.area }}</div>
+        <div class="person-title">{{ person.title }}<br><b>{{ person.area }}</b></div>
     </div>
     {% endfor %}
 </div>
 
-<h2>Visiting Scholars</h2>
+<div class="sec-label"><span class="no">03</span><span class="nm">Visiting Scholars</span></div>
 <div class="people-grid">
     {% for person in people.visiting %}
     <div class="person-card">

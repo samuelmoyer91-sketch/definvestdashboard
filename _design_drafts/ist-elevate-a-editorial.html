@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>IST — Variant A: Editorial Institution</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Spline+Sans+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  :root { --navy:#0B2545; --mag:#D6217E; --paper:#FAF7F2; --ink:#1a2432; --rule:#d8d2c6; }
+  body { font-family:-apple-system,"Segoe UI",Helvetica,sans-serif; background:var(--paper); color:var(--ink); }
+  .dotgrid { background-image:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26"><circle cx="2" cy="2" r="1.3" fill="%230B2545" opacity="0.14"/></svg>'); }
+  .container { max-width:1280px; margin:0 auto; padding:0 32px; }
+
+  header { border-bottom:1px solid var(--navy); background:var(--paper); }
+  .hdr { display:flex; justify-content:space-between; align-items:center; padding:18px 32px; max-width:1280px; margin:0 auto; }
+  .wordmark { font-family:Fraunces,serif; font-weight:600; font-size:19px; color:var(--navy); letter-spacing:0.2px; }
+  .wordmark em { font-style:italic; color:var(--mag); }
+  nav { display:flex; gap:26px; }
+  nav a { font-family:"Spline Sans Mono",monospace; font-size:12.5px; letter-spacing:1px; color:var(--navy); text-decoration:none; text-transform:uppercase; }
+  nav a:hover { color:var(--mag); }
+
+  /* Split editorial hero */
+  .hero { display:grid; grid-template-columns:1.05fr 1fr; gap:56px; align-items:center; padding:72px 32px 64px; max-width:1280px; margin:0 auto; }
+  .kicker { font-family:"Spline Sans Mono",monospace; font-size:12px; letter-spacing:3px; color:var(--mag); text-transform:uppercase; margin-bottom:22px; }
+  .hero h1 { font-family:Fraunces,serif; font-weight:420; font-size:62px; line-height:1.08; color:var(--navy); letter-spacing:-0.5px; }
+  .hero h1 em { font-style:italic; color:var(--mag); }
+  .hero .lede { margin-top:26px; font-size:17px; line-height:1.65; color:#4a5260; max-width:480px; }
+  .hero-rule { width:72px; height:2px; background:var(--navy); margin-top:34px; }
+  .hero-photo { position:relative; }
+  .hero-photo img { width:100%; height:520px; object-fit:cover; filter:grayscale(1) contrast(1.06); display:block; border:1px solid var(--navy); }
+  .hero-photo::after { content:''; position:absolute; top:16px; left:16px; right:-16px; bottom:-16px; border:1px solid var(--navy); z-index:-1; }
+  .hero-cap { font-family:"Spline Sans Mono",monospace; font-size:11px; letter-spacing:1px; color:#8a8578; margin-top:14px; }
+
+  /* Numbered section labels */
+  .sec { max-width:1280px; margin:0 auto; padding:54px 32px 0; }
+  .sec-label { display:flex; align-items:baseline; gap:14px; border-top:1px solid var(--navy); padding-top:14px; margin-bottom:30px; }
+  .sec-label .no { font-family:"Spline Sans Mono",monospace; font-size:13px; color:var(--mag); }
+  .sec-label .nm { font-family:Fraunces,serif; font-size:24px; font-weight:500; color:var(--navy); }
+
+  .sponsors { display:flex; flex-wrap:wrap; gap:22px 48px; align-items:center; padding-bottom:8px; }
+  .sponsors img { height:34px; opacity:0.72; filter:grayscale(1); }
+
+  .feat { display:grid; grid-template-columns:repeat(3,1fr); gap:0; border:1px solid var(--navy); }
+  .fcard { padding:26px; border-right:1px solid var(--navy); display:flex; gap:16px; background:#fff; }
+  .fcard:last-child { border-right:none; }
+  .fcard img { width:76px; height:99px; object-fit:cover; box-shadow:4px 4px 0 rgba(11,37,69,0.15); }
+  .fcard .t { font-family:"Spline Sans Mono",monospace; font-size:10.5px; letter-spacing:2px; color:var(--mag); text-transform:uppercase; }
+  .fcard h3 { font-family:Fraunces,serif; font-size:17.5px; font-weight:500; color:var(--navy); line-height:1.25; margin:8px 0 8px; }
+  .fcard .m { font-size:12.5px; color:#7a7264; }
+
+  .gallery { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+  .gallery figure { position:relative; }
+  .gallery img { width:100%; height:200px; object-fit:cover; filter:grayscale(1) contrast(1.05); display:block; }
+  .gallery figcaption { font-family:"Spline Sans Mono",monospace; font-size:10px; letter-spacing:1px; color:#8a8578; margin-top:8px; text-transform:uppercase; }
+
+  .quotes { display:grid; grid-template-columns:repeat(3,1fr); gap:40px; padding-bottom:10px; }
+  .q { border-top:2px solid var(--mag); padding-top:18px; }
+  .q p { font-family:Fraunces,serif; font-style:italic; font-size:16.5px; line-height:1.5; color:var(--ink); }
+  .q .src { font-family:"Spline Sans Mono",monospace; font-size:11px; letter-spacing:1.5px; color:var(--navy); margin-top:14px; text-transform:uppercase; }
+
+  .nl { margin-top:64px; border-top:1px solid var(--navy); }
+  .nl-in { max-width:1280px; margin:0 auto; padding:44px 32px; display:flex; justify-content:space-between; align-items:center; gap:30px; flex-wrap:wrap; }
+  .nl h4 { font-family:Fraunces,serif; font-size:26px; font-weight:500; color:var(--navy); }
+  .nl form { display:flex; gap:0; }
+  .nl input { border:1px solid var(--navy); background:transparent; padding:13px 16px; font-size:14px; width:300px; font-family:"Spline Sans Mono",monospace; }
+  .nl button { background:var(--navy); color:var(--paper); border:1px solid var(--navy); padding:13px 26px; font-weight:700; font-size:13px; letter-spacing:1px; cursor:pointer; }
+  .nl button:hover { background:var(--mag); border-color:var(--mag); }
+
+  footer { background:var(--navy); color:#9fb0c6; text-align:center; padding:38px; font-family:"Spline Sans Mono",monospace; font-size:11px; letter-spacing:1.5px; margin-top:0; }
+</style>
+</head>
+<body>
+<header>
+  <div class="hdr">
+    <div class="wordmark">Institute for <em>Strategic</em> Technologies</div>
+    <nav><a href="#">Research</a><a href="#">People</a><a href="#">Podcast</a><a href="#">Conference</a><a href="#">About</a></nav>
+  </div>
+</header>
+
+<div class="dotgrid">
+<section class="hero">
+  <div>
+    <div class="kicker">An Independent Research Institute · Washington</div>
+    <h1>Where government, industry, and <em>capital</em> shape the technologies that matter.</h1>
+    <p class="lede">We connect the people building frontier technology with the people who set national strategy — turning technical insight into national advantage.</p>
+    <div class="hero-rule"></div>
+  </div>
+  <div class="hero-photo">
+    <img src="../src/web/static/ist/events/pexels-kerim-isazade-2148708032-31129059.jpg" alt="">
+    <div class="hero-cap">FIG. 01 — KEYNOTE, IST ANNUAL CONFERENCE</div>
+  </div>
+</section>
+</div>
+
+<section class="sec">
+  <div class="sec-label"><span class="no">01</span><span class="nm">Supported by</span></div>
+  <div class="sponsors">
+    <img src="../src/web/static/ist/logos/vantris-lockup.svg"><img src="../src/web/static/ist/logos/corven-lockup.svg"><img src="../src/web/static/ist/logos/halden-lockup.svg"><img src="../src/web/static/ist/logos/ridgecrest-lockup.svg"><img src="../src/web/static/ist/logos/cobalt-lockup.svg"><img src="../src/web/static/ist/logos/lumary-lockup.svg">
+  </div>
+</section>
+
+<section class="sec">
+  <div class="sec-label"><span class="no">02</span><span class="nm">Featured research</span></div>
+  <div class="feat">
+    <div class="fcard"><img src="../src/web/static/ist/publications/thumbs/midmarket-defense-engine.png"><div><div class="t">Insight</div><h3>Midmarket Defense: The Overlooked Engine</h3><div class="m">Whitfield · June 2026</div></div></div>
+    <div class="fcard"><img src="../src/web/static/ist/publications/thumbs/closing-hypersonics-gap.png"><div><div class="t">Insight</div><h3>Closing the Hypersonics Gap</h3><div class="m">Feld · May 2026</div></div></div>
+    <div class="fcard"><img src="../src/web/static/ist/publications/thumbs/securing-the-chip-supply.png"><div><div class="t">Report</div><h3>Securing the Chip Supply</h3><div class="m">Okafor · March 2026</div></div></div>
+  </div>
+</section>
+
+<section class="sec">
+  <div class="sec-label"><span class="no">03</span><span class="nm">Inside the network</span></div>
+  <div class="gallery">
+    <figure><img src="../src/web/static/ist/events/pexels-cherubs-26202153.jpg"><figcaption>Annual conference</figcaption></figure>
+    <figure><img src="../src/web/static/ist/events/pexels-henri-mathieu-8344905.jpg"><figcaption>Fellows panel</figcaption></figure>
+    <figure><img src="../src/web/static/ist/events/pexels-rezatavakoli-29335353.jpg"><figcaption>Members reception</figcaption></figure>
+    <figure><img src="../src/web/static/ist/events/pexels-rdne-7467858.jpg"><figcaption>Service partners</figcaption></figure>
+  </div>
+</section>
+
+<section class="sec">
+  <div class="sec-label"><span class="no">04</span><span class="nm">In the news</span></div>
+  <div class="quotes">
+    <div class="q"><p>"IST has quietly become one of the most influential venues where defense-technology strategy actually gets made."</p><div class="src">The Strategic Signal</div></div>
+    <div class="q"><p>"Few institutions move as fluently between the lab, the Pentagon, and the capital markets."</p><div class="src">Defense Frontier Review</div></div>
+    <div class="q"><p>"When investors want to understand where national-security technology is heading, IST is the first stop."</p><div class="src">Capital &amp; Security Quarterly</div></div>
+  </div>
+</section>
+
+<div class="nl">
+  <div class="nl-in">
+    <h4>Stay ahead of the frontier.</h4>
+    <form onsubmit="return false"><input placeholder="you@organization.gov"><button>SUBSCRIBE</button></form>
+  </div>
+</div>
+<footer>© 2026 INSTITUTE FOR STRATEGIC TECHNOLOGIES — ALL FICTIONAL, DEMONSTRATION SITE</footer>
+</body>
+</html>

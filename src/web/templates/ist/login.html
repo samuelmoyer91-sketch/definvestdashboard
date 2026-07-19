@@ -4,93 +4,43 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IST Login</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Spline+Sans+Mono:wght@400;600&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { --navy:#0B2545; --mag:#D6217E; --paper:#FAF7F2; --ink:#1a2432; --sub:#6f6a5e; }
+        html { background: var(--paper); }
         html, body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
-        html { background: #0B2545; }
         body {
-            background: linear-gradient(135deg, #0B2545 0%, #1a3a5c 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            padding: 20px;
+            display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px;
+            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26"><circle cx="2" cy="2" r="1.3" fill="%230B2545" opacity="0.12"/></svg>');
         }
-        .login-box {
-            background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 20px 60px rgba(11, 37, 69, 0.3);
-            padding: 48px 40px;
-            max-width: 400px;
-            width: 100%;
-        }
-        .logo-section {
-            text-align: center;
-            margin-bottom: 32px;
-        }
-        .logo-section img {
-            height: 72px;
-        }
-        .tagline {
-            font-family: Georgia, "Times New Roman", serif;
-            font-style: italic;
-            font-size: 15px;
-            color: #4b5563;
-            margin-top: 18px;
-            line-height: 1.5;
-        }
-
-        form {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-        input[type="password"] {
-            padding: 12px 14px;
-            border: 1px solid #d0d7e1;
-            border-radius: 6px;
-            font-size: 15px;
-            transition: border-color 0.2s;
-        }
-        input[type="password"]:focus {
-            outline: none;
-            border-color: #D6217E;
-            box-shadow: 0 0 0 3px rgba(214, 33, 126, 0.1);
-        }
-        button {
-            padding: 12px 16px;
-            background: #D6217E;
-            color: #fff;
-            border: none;
-            border-radius: 6px;
-            font-weight: 700;
-            font-size: 15px;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        button:hover {
-            background: #c71a6f;
-        }
-        .error {
-            background: #fef2f2;
-            border: 1px solid #fecaca;
-            color: #991b1b;
-            padding: 12px;
-            border-radius: 6px;
-            font-size: 14px;
-        }
-
-        @media (max-width: 600px) {
-            .login-box { padding: 32px 24px; }
-        }
+        .login-box { background: #fff; border: 1px solid var(--navy); padding: 48px 42px; max-width: 420px; width: 100%; box-shadow: 10px 10px 0 rgba(11,37,69,0.12); }
+        .logo-section { text-align: center; margin-bottom: 30px; }
+        .logo-section img { height: 66px; }
+        .wm { font-family: Fraunces, Georgia, serif; font-size: 21px; color: var(--navy); margin-top: 18px; font-weight: 500; }
+        .wm em { font-style: italic; color: var(--mag); }
+        .tagline { font-family: Fraunces, Georgia, serif; font-style: italic; font-size: 15px; color: var(--sub); margin-top: 14px; line-height: 1.5; }
+        .kicker { font-family: "Spline Sans Mono", monospace; font-size: 11px; letter-spacing: 2.5px; color: var(--mag); text-transform: uppercase; margin-bottom: 20px; text-align: center; }
+        form { display: flex; flex-direction: column; gap: 16px; }
+        input[type="password"] { border: 1px solid var(--navy); background: transparent; padding: 13px 15px; font-size: 15px; font-family: "Spline Sans Mono", monospace; }
+        input[type="password"]:focus { outline: none; border-color: var(--mag); box-shadow: 0 0 0 3px rgba(214,33,126,0.12); }
+        button { background: var(--navy); color: var(--paper); border: 1px solid var(--navy); padding: 13px 16px; font-weight: 700; font-size: 13px; letter-spacing: 1.5px; cursor: pointer; text-transform: uppercase; transition: background 0.2s; }
+        button:hover { background: var(--mag); border-color: var(--mag); }
+        .error { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 12px; font-size: 14px; font-family: "Spline Sans Mono", monospace; }
+        @media (max-width: 600px) { .login-box { padding: 34px 26px; box-shadow: 6px 6px 0 rgba(11,37,69,0.12); } }
     </style>
 </head>
 <body>
     <div class="login-box">
         <div class="logo-section">
             <img src="{{ root }}/static/ist/logos/ist-logo.png" alt="Institute for Strategic Technologies">
+            <div class="wm">Institute for <em>Strategic</em> Technologies</div>
             <p class="tagline">Where government, industry, and capital shape the technologies that matter.</p>
         </div>
+
+        <div class="kicker">Preview Access</div>
 
         {% if error %}
         <div class="error">{{ error }}</div>
@@ -98,7 +48,7 @@
 
         <form method="post" action="{{ root }}/login">
             <input type="password" name="password" placeholder="Demo password" required autofocus>
-            <button type="submit">Enter</button>
+            <button type="submit">Enter →</button>
         </form>
     </div>
 </body>
