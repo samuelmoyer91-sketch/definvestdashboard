@@ -177,7 +177,7 @@ PUBLICATIONS = [
     {
         "title": "Financing the Defense Tech Transition",
         "type": "Brief",
-        "topic": "Microelectronics",
+        "topic": "Defense capital",
         "author": "Dr. Alan Whitfield",
         "date": "April 2026",
         "abstract": "How private capital reaches the valley of death.",
@@ -186,7 +186,7 @@ PUBLICATIONS = [
     {
         "title": "Midmarket Defense: The Overlooked Engine",
         "type": "Insight",
-        "topic": "Microelectronics",
+        "topic": "Defense capital",
         "author": "Dr. Alan Whitfield",
         "date": "June 2026",
         "abstract": "Why midmarket firms drive real innovation.",

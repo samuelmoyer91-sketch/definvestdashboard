@@ -4,9 +4,12 @@
 
 {% block extra_css %}
 <style>
-    .filters { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 32px; }
-    .filter-pill { padding: 8px 16px; border: 2px solid #d0d7e1; border-radius: 20px; background: #fff; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.2s; }
+    .filter-row { margin-bottom: 18px; }
+    .filter-label { font-size: 11px; letter-spacing: 1.5px; color: #8a94a3; font-weight: 700; text-transform: uppercase; margin-bottom: 10px; }
+    .filters { display: flex; gap: 10px; flex-wrap: wrap; }
+    .filter-pill { padding: 7px 15px; border: 2px solid #d0d7e1; border-radius: 20px; background: #fff; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.2s; color: #4a5568; }
     .filter-pill:hover, .filter-pill.active { border-color: #D6217E; color: #D6217E; }
+    .filters.topics { margin-bottom: 32px; }
     .pub-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; }
     .pub-card { background: #f9fafb; border-radius: 8px; padding: 20px; transition: box-shadow 0.18s; }
     .pub-card:hover { box-shadow: 0 8px 20px rgba(11,37,69,0.08); }
@@ -28,11 +31,23 @@
   </div>
 </div>
 
-<div class="filters">
-    <button class="filter-pill active" data-filter="all">All</button>
-    {% for type in types %}
-    <button class="filter-pill" data-filter="type-{{ type }}">{{ type }}</button>
-    {% endfor %}
+<div class="filter-row">
+    <div class="filter-label">Form&nbsp;factor</div>
+    <div class="filters" data-group="type">
+        <button class="filter-pill active" data-filter="all">All</button>
+        {% for type in types %}
+        <button class="filter-pill" data-filter="{{ type }}">{{ type }}</button>
+        {% endfor %}
+    </div>
+</div>
+<div class="filter-row">
+    <div class="filter-label">Topic</div>
+    <div class="filters topics" data-group="topic">
+        <button class="filter-pill active" data-filter="all">All</button>
+        {% for topic in topics %}
+        <button class="filter-pill" data-filter="{{ topic }}">{{ topic }}</button>
+        {% endfor %}
+    </div>
 </div>
 
 <div class="pub-list">
@@ -48,17 +63,24 @@
 </div>
 
 <script>
-    document.querySelectorAll('.filter-pill').forEach(btn => {
-        btn.addEventListener('click', e => {
-            document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
-            e.target.classList.add('active');
-            const filter = e.target.dataset.filter;
-            document.querySelectorAll('.pub-card').forEach(card => {
-                if (filter === 'all' || card.dataset.type === filter.replace('type-', '')) {
-                    card.style.display = 'block';
-                } else {
-                    card.style.display = 'none';
-                }
+    const active = { type: 'all', topic: 'all' };
+
+    function applyFilters() {
+        document.querySelectorAll('.pub-card').forEach(card => {
+            const typeOk = active.type === 'all' || card.dataset.type === active.type;
+            const topicOk = active.topic === 'all' || card.dataset.topic === active.topic;
+            card.style.display = (typeOk && topicOk) ? 'block' : 'none';
+        });
+    }
+
+    document.querySelectorAll('.filters').forEach(group => {
+        const key = group.dataset.group;
+        group.querySelectorAll('.filter-pill').forEach(btn => {
+            btn.addEventListener('click', () => {
+                group.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                active[key] = btn.dataset.filter;
+                applyFilters();
             });
         });
     });
