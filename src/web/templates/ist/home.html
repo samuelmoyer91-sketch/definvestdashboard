@@ -10,11 +10,25 @@
   .hero-text { position:absolute; bottom: 44px; left: 44px; right: 44px; z-index: 2; }
   .hero-text h1 { color:#fff; font-size: 52px; margin:0; line-height:1.05; max-width: 900px; letter-spacing: -1px; }
   .hero-text p { color:#e3ebf5; font-size: 20px; margin: 16px 0 0; max-width: 620px; }
+  /* Positioning statement under hero */
+  .statement { padding: 40px 0 12px; max-width: 880px; }
+  .statement p { font-size: 25px; line-height: 1.4; color: #0B2545; font-weight: 600; letter-spacing: -0.4px; margin: 0; }
+  /* Featured cards with cover (cover-left, like Publications) */
+  .feat-card { display: flex; gap: 16px; padding: 18px; overflow: hidden; align-items: flex-start; }
+  .feat-cover { width: 84px; height: 109px; object-fit: cover; border-radius: 4px; box-shadow: 0 2px 10px rgba(11,37,69,0.18); background: #0B2545; flex-shrink: 0; }
+  .fc-body { min-width: 0; }
+  /* In the News */
+  .news-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .news-card { background: #fff; border: 1px solid #e2e6ea; border-left: 3px solid #D6217E; border-radius: 8px; padding: 22px; }
+  .news-quote { font-family: Georgia, "Times New Roman", serif; font-size: 15px; line-height: 1.55; color: #2b3440; font-style: italic; }
+  .news-src { margin-top: 14px; font-size: 13px; font-weight: 700; color: #0B2545; letter-spacing: 0.3px; }
   @media (max-width: 768px) {
     .hero { height: 340px; }
     .hero-text { left:20px; right:20px; bottom:24px; }
     .hero-text h1 { font-size: 30px; }
     .hero-text p { font-size: 15px; }
+    .statement p { font-size: 20px; }
+    .news-grid { grid-template-columns: 1fr; }
   }
 </style>
 {% endblock %}
@@ -28,6 +42,10 @@
   </div>
 </div>
 
+<div class="statement">
+  <p>We connect the people building frontier technology with the people who set national strategy — turning technical insight into national advantage.</p>
+</div>
+
 <div class="section-title">Supported by</div>
 <div class="sponsor-strip">
   {% for s in sponsors.primes %}<div class="sponsor-logo" title="{{ s.name }}"><img src="{{ root }}/static/ist/logos/{{ s.logo }}" alt="{{ s.name }}"></div>{% endfor %}
@@ -38,9 +56,12 @@
 <div class="feat-grid">
   {% for pub in featured %}
   <a class="feat-card" href="{{ root }}/publications">
-    <span class="ft">{{ pub.type }}</span>
-    <h3>{{ pub.title }}</h3>
-    <div class="fm">{{ pub.author }} · {{ pub.date }}</div>
+    {% if pub.pdf %}<img class="feat-cover" src="{{ root }}/static/ist/publications/thumbs/{{ pub.pdf | replace('.pdf', '.png') }}" alt="">{% endif %}
+    <div class="fc-body">
+      <span class="ft">{{ pub.type }}</span>
+      <h3>{{ pub.title }}</h3>
+      <div class="fm">{{ pub.author }} · {{ pub.date }}</div>
+    </div>
   </a>
   {% endfor %}
 </div>
@@ -51,5 +72,21 @@
   <img src="{{ root }}/static/ist/events/pexels-henri-mathieu-8344905.jpg" alt="">
   <img src="{{ root }}/static/ist/events/pexels-rezatavakoli-29335353.jpg" alt="">
   <img src="{{ root }}/static/ist/events/pexels-rdne-7467858.jpg" alt="">
+</div>
+
+<div class="section-title">In the News</div>
+<div class="news-grid">
+  <div class="news-card">
+    <div class="news-quote">"IST has quietly become one of the most influential venues where defense-technology strategy actually gets made."</div>
+    <div class="news-src">— The Strategic Signal</div>
+  </div>
+  <div class="news-card">
+    <div class="news-quote">"Few institutions move as fluently between the lab, the Pentagon, and the capital markets as the Institute for Strategic Technologies."</div>
+    <div class="news-src">— Defense Frontier Review</div>
+  </div>
+  <div class="news-card">
+    <div class="news-quote">"When investors want to understand where national-security technology is heading, IST's research is increasingly the first stop."</div>
+    <div class="news-src">— Capital &amp; Security Quarterly</div>
+  </div>
 </div>
 {% endblock %}

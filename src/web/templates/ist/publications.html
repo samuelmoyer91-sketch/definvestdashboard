@@ -10,9 +10,13 @@
     .filter-pill { padding: 7px 15px; border: 2px solid #d0d7e1; border-radius: 20px; background: #fff; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.2s; color: #4a5568; }
     .filter-pill:hover, .filter-pill.active { border-color: #D6217E; color: #D6217E; }
     .filters.topics { margin-bottom: 32px; }
-    .pub-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; }
-    .pub-card { background: #f9fafb; border-radius: 8px; padding: 20px; transition: box-shadow 0.18s; }
+    .pub-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(430px, 1fr)); gap: 20px; }
+    .pub-card { display: flex; gap: 18px; background: #f9fafb; border-radius: 8px; padding: 18px; transition: box-shadow 0.18s; }
     .pub-card:hover { box-shadow: 0 8px 20px rgba(11,37,69,0.08); }
+    .pub-cover { flex-shrink: 0; width: 92px; }
+    .pub-cover img { width: 92px; height: 119px; object-fit: cover; border-radius: 4px; box-shadow: 0 2px 10px rgba(11,37,69,0.18); display: block; }
+    .pub-body { flex: 1; min-width: 0; }
+    @media (max-width: 480px) { .pub-list { grid-template-columns: 1fr; } .pub-cover { width: 72px; } .pub-cover img { width: 72px; height: 93px; } }
     .dl { display: inline-block; margin-top: 12px; border: 1.5px solid #D6217E; color: #D6217E; padding: 6px 14px; border-radius: 16px; font-size: 13px; font-weight: 700; transition: all 0.15s; }
     .dl:hover { background: #D6217E; color: #fff; text-decoration: none; }
     .pub-type { font-size: 11px; color: #fff; background: #D6217E; padding: 4px 10px; border-radius: 12px; display: inline-block; margin-bottom: 8px; font-weight: 700; }
@@ -53,11 +57,14 @@
 <div class="pub-list">
     {% for pub in publications %}
     <div class="pub-card" data-type="{{ pub.type }}" data-topic="{{ pub.topic }}">
-        <div class="pub-type">{{ pub.type }}</div>
-        <div class="pub-title">{{ pub.title }}</div>
-        <div class="pub-meta">{{ pub.author }} · {{ pub.date }}</div>
-        <div class="pub-abstract">{{ pub.abstract }}</div>
-        {% if pub.pdf %}<a class="dl" href="{{ root }}/static/ist/publications/{{ pub.pdf }}">Download PDF ↓</a>{% endif %}
+        {% if pub.pdf %}<div class="pub-cover"><img src="{{ root }}/static/ist/publications/thumbs/{{ pub.pdf | replace('.pdf', '.png') }}" alt="{{ pub.title }} cover" loading="lazy"></div>{% endif %}
+        <div class="pub-body">
+            <div class="pub-type">{{ pub.type }}</div>
+            <div class="pub-title">{{ pub.title }}</div>
+            <div class="pub-meta">{{ pub.author }} · {{ pub.date }}</div>
+            <div class="pub-abstract">{{ pub.abstract }}</div>
+            {% if pub.pdf %}<a class="dl" href="{{ root }}/static/ist/publications/{{ pub.pdf }}">Download PDF ↓</a>{% endif %}
+        </div>
     </div>
     {% endfor %}
 </div>

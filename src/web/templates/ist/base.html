@@ -154,6 +154,17 @@
             .pagehead .ph-text h1 { font-size: 26px; }
         }
 
+        /* Newsletter band (sitewide, above footer) */
+        .newsletter { background: #F5F6F8; border-top: 1px solid #e2e6ea; padding: 40px 0; }
+        .nl-inner { display: flex; align-items: center; justify-content: space-between; gap: 28px; flex-wrap: wrap; }
+        .nl-text strong { display: block; font-size: 21px; color: #0B2545; letter-spacing: -0.3px; }
+        .nl-text span { font-size: 14px; color: #6b7580; }
+        .nl-form { display: flex; gap: 10px; flex: 1; max-width: 480px; min-width: 260px; }
+        .nl-form input { flex: 1; padding: 12px 14px; border: 1px solid #d0d7e1; border-radius: 6px; font-size: 14px; }
+        .nl-form input:focus { outline: none; border-color: #D6217E; box-shadow: 0 0 0 3px rgba(214,33,126,0.1); }
+        .nl-form button { background: #D6217E; color: #fff; border: none; border-radius: 6px; padding: 12px 24px; font-weight: 700; font-size: 14px; cursor: pointer; transition: background 0.2s; white-space: nowrap; }
+        .nl-form button:hover { background: #c71a6f; }
+
     </style>
     {% block extra_css %}{% endblock %}
 </head>
@@ -180,6 +191,19 @@
             {% block content %}{% endblock %}
         </div>
     </main>
+
+    <div class="newsletter">
+        <div class="container nl-inner">
+            <div class="nl-text">
+                <strong>Stay ahead of the frontier.</strong>
+                <span>IST research and analysis, delivered to your inbox.</span>
+            </div>
+            <form class="nl-form" onsubmit="return false;">
+                <input type="email" placeholder="you@organization.gov" aria-label="Email address">
+                <button type="submit">Subscribe</button>
+            </form>
+        </div>
+    </div>
 
     <footer>
         <img class="f-logo" src="{{ root }}/static/ist/logos/ist-logo-white.png" alt="IST">

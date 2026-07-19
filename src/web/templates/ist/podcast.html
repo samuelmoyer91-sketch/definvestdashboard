@@ -7,12 +7,19 @@
     .pod-banner { background: linear-gradient(150deg, #0B2545 0%, #143a63 100%); }
     .pod-banner .wave { position: absolute; right: 5%; top: 50%; transform: translateY(-50%); height: 55%; opacity: 0.5; }
     @media (max-width: 600px) { .pod-banner .wave { right: -10%; opacity: 0.3; } }
-    .intro { font-size: 17px; color: #4b5563; line-height: 1.6; max-width: 720px; margin-bottom: 32px; }
-    .episode { display: flex; gap: 16px; align-items: center; padding: 18px 0; border-bottom: 1px solid #e2e6ea; }
-    .ep-num { font-size: 22px; font-weight: 800; color: #D6217E; min-width: 48px; }
+    .intro { font-size: 17px; color: #4b5563; line-height: 1.6; max-width: 720px; margin-bottom: 24px; }
+    .subscribe { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 40px; }
+    .sub-label { font-size: 12px; font-weight: 700; color: #6b7580; text-transform: uppercase; letter-spacing: 1.5px; }
+    .sub-btn { display: inline-flex; align-items: center; gap: 8px; border: 1px solid #d0d7e1; border-radius: 22px; padding: 8px 16px; font-size: 13px; font-weight: 600; color: #0B2545; cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s; }
+    .sub-btn:hover { border-color: #0B2545; box-shadow: 0 2px 8px rgba(11,37,69,0.08); }
+    .sub-btn .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .episode { display: flex; gap: 16px; align-items: center; padding: 16px 0; border-bottom: 1px solid #e2e6ea; }
+    .ep-num { font-size: 22px; font-weight: 800; color: #D6217E; min-width: 34px; }
+    .ep-guest { width: 54px; height: 54px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
     .ep-body h3 { font-size: 16px; color: #0B2545; margin: 0 0 4px; }
     .ep-body p { font-size: 13px; color: #6b7580; margin: 0; }
-    .ep-play { margin-left: auto; background: #0B2545; color: #fff; border: none; border-radius: 20px; padding: 8px 18px; font-weight: 700; font-size: 13px; cursor: pointer; }
+    .ep-play { margin-left: auto; background: #0B2545; color: #fff; border: none; border-radius: 20px; padding: 8px 18px; font-weight: 700; font-size: 13px; cursor: pointer; white-space: nowrap; }
+    .ep-play:hover { background: #143a63; }
 </style>
 {% endblock %}
 
@@ -36,23 +43,34 @@
 
 <p class="intro">Every other week, IST fellows sit down with the operators, engineers, and investors driving the frontier of defense technology — unpacking what's real, what's hype, and what it means for national security.</p>
 
+<div class="subscribe">
+  <span class="sub-label">Listen on</span>
+  <span class="sub-btn"><span class="dot" style="background:#8944e0;"></span>Apple Podcasts</span>
+  <span class="sub-btn"><span class="dot" style="background:#1db954;"></span>Spotify</span>
+  <span class="sub-btn"><span class="dot" style="background:#ff0000;"></span>YouTube</span>
+</div>
+
 <div class="episode">
   <div class="ep-num">04</div>
+  <img class="ep-guest" src="{{ root }}/static/ist/headshots/raymond-okafor.png" alt="Dr. Raymond Okafor">
   <div class="ep-body"><h3>The Coming Fight Over Advanced Packaging</h3><p>With Dr. Raymond Okafor · 38 min</p></div>
   <button class="ep-play">▶ Play</button>
 </div>
 <div class="episode">
   <div class="ep-num">03</div>
+  <img class="ep-guest" src="{{ root }}/static/ist/headshots/priya-nair.png" alt="Dr. Priya Nair">
   <div class="ep-body"><h3>Quantum's Near-Term Payoffs</h3><p>With Dr. Priya Nair · 41 min</p></div>
   <button class="ep-play">▶ Play</button>
 </div>
 <div class="episode">
   <div class="ep-num">02</div>
+  <img class="ep-guest" src="{{ root }}/static/ist/headshots/marcus-feld.png" alt="Dr. Marcus Feld">
   <div class="ep-body"><h3>Why the Hypersonics Gap Is Really a Testing Gap</h3><p>With Dr. Marcus Feld · 35 min</p></div>
   <button class="ep-play">▶ Play</button>
 </div>
 <div class="episode">
   <div class="ep-num">01</div>
+  <img class="ep-guest" src="{{ root }}/static/ist/headshots/sofia-reyes.png" alt="Dr. Sofia Reyes">
   <div class="ep-body"><h3>Life After GPS</h3><p>With Dr. Sofia Reyes · 44 min</p></div>
   <button class="ep-play">▶ Play</button>
 </div>
