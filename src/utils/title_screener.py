@@ -107,7 +107,8 @@ RELEVANT (pass through):
 - New factories, facilities, or manufacturing expansions for defense/aerospace
 - Corporate strategic partnerships, joint ventures, or major capex/R&D announcements in defense
 - Production capacity grants or industrial-base expansion programs
-- Reported but not-yet-closed deals from major outlets (TechCrunch, CNBC, Bloomberg, Reuters, WSJ, Financial Times, Defense News, Breaking Defense, DefenseScoop, SpaceNews, The Information, Axios, Fortune) when a SPECIFIC company and SPECIFIC dollar amount are named — even if hedged with "sources say," "reportedly," "is in talks to," etc. The human will decide.
+- European and other allied-nation deals count exactly the same as US ones — a German, French, UK, Nordic, Italian, Polish, Ukrainian or Israeli defense company raising capital, being acquired, or building a facility is fully in scope. The US-centric examples above are illustrative, not a geographic limit. EU capability-funding programmes (European Defence Fund, EDIRPA, EDIP, ASAP ammunition production) are the European equivalent of US industrial-base programs and count as such.
+- Reported but not-yet-closed deals from major outlets (TechCrunch, CNBC, Bloomberg, Reuters, WSJ, Financial Times, Defense News, Breaking Defense, DefenseScoop, SpaceNews, The Information, Axios, Fortune, Janes, Sifted, Euro Security & Defence, Politico Europe, Handelsblatt, Les Echos) when a SPECIFIC company and SPECIFIC dollar amount are named — even if hedged with "sources say," "reportedly," "is in talks to," etc. The human will decide.
 - Cybersecurity deals where any defense/government/IC angle is plausible — pass through and let the human decide. Only filter purely commercial cyber (consumer privacy, identity/access, SaaS security with no government angle).
 
 NOT RELEVANT (filter out):

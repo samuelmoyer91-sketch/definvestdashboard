@@ -129,23 +129,23 @@
     {
       "name": "Defense Private Credit",
       "url": "https://news.google.com/rss/search?q=%28%22venture%20debt%22%20OR%20%22private%20credit%22%20OR%20%22credit%20facility%22%20OR%20%22term%20loan%22%20OR%20%22debt%20financing%22%29%20%28defense%20OR%20aerospace%20OR%20%22defense%20tech%22%20OR%20military%20OR%20%22national%20security%22%29&hl=en-US&gl=US&ceid=US:en",
-      "enabled": true,
+      "enabled": false,
       "google_alert_query": "(\"venture debt\" OR \"private credit\" OR \"credit facility\" OR \"term loan\" OR \"debt financing\") (defense OR aerospace OR \"defense tech\" OR military OR \"national security\")",
-      "notes": "Added 2026-06-06 (gap-fill: private credit / venture debt), STAGED OFF. Returns items (75 in 6/6 test) but NOT YET ENABLED because the keyword scorer lacks debt vocabulary ('venture debt','private credit','credit facility') — enabling without those scorer additions risks items getting auto-rejected at stage 1. ENABLE TOGETHER WITH the matching scorer phrase additions (use multi-word phrases, not bare 'credit'/'debt', to avoid loosening existing feeds)."
+      "notes": "Added 2026-06-06 (gap-fill: private credit / venture debt), STAGED OFF. Returns items (75 in 6/6 test) but NOT YET ENABLED because the keyword scorer lacks debt vocabulary ('venture debt','private credit','credit facility') — enabling without those scorer additions risks items getting auto-rejected at stage 1. ENABLE TOGETHER WITH the matching scorer phrase additions (use multi-word phrases, not bare 'credit'/'debt', to avoid loosening existing feeds). DISABLED AGAIN 2026-07-26: Google News RSS links (news.google.com/rss/articles/...) now return an 11-char JavaScript stub with no meta-refresh, so the scraper cannot reach the article — measured 0 of 74 scraped on the 7/26 verification run. Items still pass scoring + AI screening, costing tokens for zero triage output. The scorer vocabulary added alongside them is kept (it is independently correct). Re-enable only if sourced from direct publisher RSS instead of Google News."
     },
     {
       "name": "Defense Critical Minerals",
       "url": "https://news.google.com/rss/search?q=%28%22rare%20earth%22%20OR%20%22rare%20earths%22%20OR%20%22critical%20minerals%22%20OR%20%22permanent%20magnets%22%29%20%28defense%20OR%20military%20OR%20Pentagon%20OR%20%22supply%20chain%22%20OR%20investment%20OR%20funding%20OR%20facility%29&hl=en-US&gl=US&ceid=US:en",
-      "enabled": true,
+      "enabled": false,
       "google_alert_query": "(\"rare earth\" OR \"rare earths\" OR \"critical minerals\" OR \"permanent magnets\") (defense OR military OR Pentagon OR \"supply chain\" OR investment OR funding OR facility)",
-      "notes": "Added 2026-06-06 (gap-fill: critical minerals / defense supply chain), STAGED OFF. Returns items (100 in 6/6 test). ENABLE TOGETHER WITH scorer phrase additions ('rare earth','critical minerals','permanent magnets') so items survive stage 1. Multi-word phrases keep noise low. Note partial overlap with Gov Strategic Capital (OSC/MP Materials surfaced in both — the Possible Dups bucket handles it)."
+      "notes": "Added 2026-06-06 (gap-fill: critical minerals / defense supply chain), STAGED OFF. Returns items (100 in 6/6 test). ENABLE TOGETHER WITH scorer phrase additions ('rare earth','critical minerals','permanent magnets') so items survive stage 1. Multi-word phrases keep noise low. Note partial overlap with Gov Strategic Capital (OSC/MP Materials surfaced in both — the Possible Dups bucket handles it). DISABLED AGAIN 2026-07-26: Google News RSS links (news.google.com/rss/articles/...) now return an 11-char JavaScript stub with no meta-refresh, so the scraper cannot reach the article — measured 0 of 74 scraped on the 7/26 verification run. Items still pass scoring + AI screening, costing tokens for zero triage output. The scorer vocabulary added alongside them is kept (it is independently correct). Re-enable only if sourced from direct publisher RSS instead of Google News."
     },
     {
       "name": "Defense Corporate Ventures v2",
       "url": "https://news.google.com/rss/search?q=%28%22Lockheed%20Martin%20Ventures%22%20OR%20%22RTX%20Ventures%22%20OR%20%22Booz%20Allen%20Ventures%22%20OR%20%22Boeing%20Ventures%22%20OR%20%22Honeywell%20Ventures%22%29%20%28invests%20OR%20investment%20OR%20backs%20OR%20funding%20OR%20portfolio%20OR%20round%29&hl=en-US&gl=US&ceid=US:en",
-      "enabled": true,
+      "enabled": false,
       "google_alert_query": "(\"Lockheed Martin Ventures\" OR \"RTX Ventures\" OR \"Booz Allen Ventures\" OR \"Boeing Ventures\" OR \"Honeywell Ventures\") (invests OR investment OR backs OR funding OR portfolio OR round)",
-      "notes": "Added 2026-06-06, STAGED OFF. Replaces the retired Defense Corporate Ventures (which used dead arms RTX/Northrop/L3Harris Ventures, 0% accept). Broader active-arm list + deal verb. Uses existing scorer words (no vocab change needed) — could be enabled independently. Named-entity = more brittle (per the lesson that named feeds underperform transaction-signal ones); watch accept rate, this segment may just be low-volume."
+      "notes": "Added 2026-06-06, STAGED OFF. Replaces the retired Defense Corporate Ventures (which used dead arms RTX/Northrop/L3Harris Ventures, 0% accept). Broader active-arm list + deal verb. Uses existing scorer words (no vocab change needed) — could be enabled independently. Named-entity = more brittle (per the lesson that named feeds underperform transaction-signal ones); watch accept rate, this segment may just be low-volume. DISABLED AGAIN 2026-07-26: Google News RSS links (news.google.com/rss/articles/...) now return an 11-char JavaScript stub with no meta-refresh, so the scraper cannot reach the article — measured 0 of 74 scraped on the 7/26 verification run. Items still pass scoring + AI screening, costing tokens for zero triage output. The scorer vocabulary added alongside them is kept (it is independently correct). Re-enable only if sourced from direct publisher RSS instead of Google News."
     },
     {
       "name": "a16z Defense",
@@ -190,7 +190,11 @@
       "rare earth",
       "rare earths",
       "critical minerals",
-      "permanent magnets"
+      "permanent magnets",
+      "defense",
+      "defence",
+      "nato",
+      "bundeswehr"
     ],
     "deal_indicators": [
       "million",
