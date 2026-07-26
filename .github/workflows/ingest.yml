@@ -52,14 +52,35 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: python src/scraper/generate_ai_summaries.py --limit 300
 
+      # Runs AFTER summarization so today's good scrapes still get summarized;
+      # a degraded feed fails this run (triggering the issue below) without
+      # blocking the data that DID come through. See article_scraper.py's
+      # FEED_HEALTH_MIN_RATE for the threshold and the incident that prompted it.
+      - name: Check feed health
+        run: |
+          if [ -s feed_health_alerts.log ]; then
+            echo "::error::Feed(s) below the scrape-health threshold:"
+            cat feed_health_alerts.log
+            exit 1
+          fi
+
       - name: Notify on failure
         if: failure()
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          FEED_ALERTS=""
+          if [ -s feed_health_alerts.log ]; then
+            FEED_ALERTS="
+
+          **Feed health alert:**
+          \`\`\`
+          $(cat feed_health_alerts.log)
+          \`\`\`"
+          fi
           gh issue create \
             --title "Ingest pipeline failed $(date -u '+%Y-%m-%d')" \
-            --body "The daily ingest pipeline failed on $(date -u '+%Y-%m-%d at %H:%M UTC').
+            --body "The daily ingest pipeline failed on $(date -u '+%Y-%m-%d at %H:%M UTC').${FEED_ALERTS}
 
           [View run logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})" \
             --label "bug"

@@ -15,6 +15,16 @@ from src.database.models import _reset_turso_connection
 
 PROJECT_ROOT = Path(__file__).parent.parent.parent
 
+# Feed-health canary. Google News RSS quietly went from ~70% to 0% scrape
+# success in March 2026 and nobody noticed for five months, because direct
+# feeds masked the drop in total deal flow. This flags a feed the same day
+# instead. Threshold picked from 60 days of real history: the two Alerts
+# feeds' worst single day (n>=5) was 43%; direct feeds are almost always
+# >=90%. 30% leaves real margin above normal variance while still catching
+# a collapse fast.
+FEED_HEALTH_MIN_SAMPLE = 5
+FEED_HEALTH_MIN_RATE = 0.30
+
 
 def load_config(config_path='config/feeds.json'):
     """Load scraping configuration."""
@@ -164,14 +174,20 @@ def scrape_pending_items(limit=None, delay=1.0):
 
     success_count = 0
     error_count = 0
+    per_feed = {}  # feed_source -> [attempted, succeeded]
 
     for i, item in enumerate(items, 1):
         print(f"[{i}/{len(items)}] Scraping: {item.title[:60]}...")
+
+        feed_name = item.feed_source or 'unknown'
+        per_feed.setdefault(feed_name, [0, 0])
+        per_feed[feed_name][0] += 1
 
         # Scrape the article
         result, error = scrape_article(item.url, config)
 
         if result:
+            per_feed[feed_name][1] += 1
             # Save to database
             article = ArticleContent(
                 item_id=item.id,
@@ -221,6 +237,31 @@ def scrape_pending_items(limit=None, delay=1.0):
     print("=" * 80)
     print(f"SUMMARY: {success_count} successful, {error_count} failed")
     print("=" * 80)
+
+    if per_feed:
+        print()
+        print("FEED HEALTH:")
+        alerts = []
+        for feed_name, (attempted, succeeded) in sorted(per_feed.items()):
+            rate = succeeded / attempted if attempted else 0.0
+            flag = ''
+            if attempted >= FEED_HEALTH_MIN_SAMPLE and rate < FEED_HEALTH_MIN_RATE:
+                flag = '  ⚠️  BELOW THRESHOLD'
+                alerts.append(
+                    f"{feed_name}: {succeeded}/{attempted} scraped ({rate*100:.0f}%), "
+                    f"below the {FEED_HEALTH_MIN_RATE*100:.0f}% floor"
+                )
+            print(f"  {succeeded}/{attempted} ({rate*100:.0f}%)  {feed_name}{flag}")
+
+        # Mirrors generate_site.py's step_failures.log pattern: write only when
+        # there's something to report, and let the WORKFLOW decide what to do
+        # with it (here, that's failing a later step so the rest of today's
+        # pipeline — summarizing what DID scrape — still runs uninterrupted).
+        alerts_log = PROJECT_ROOT / 'feed_health_alerts.log'
+        if alerts:
+            alerts_log.write_text('\n'.join(alerts) + '\n')
+        elif alerts_log.exists():
+            alerts_log.unlink()
 
     session.close()
 
