@@ -45,6 +45,7 @@ Data Priority:
 """
 
 import html as html_module
+import json
 import re
 import sys
 import os
@@ -93,6 +94,86 @@ def display_amount(amount):
     if not usd:
         return amount  # unparseable currency amount — show original untouched
     return fmt_amount(usd)
+
+# --- Region taxonomy for the deals-page region filter ----------------------
+# Deliberately coarse: the job is "let me see European deals", not exhaustive
+# geography. The US gets its own top-level region rather than sitting inside
+# North America, because it is ~85% of the dataset and burying it would make
+# the filter useless. Note this is a *taxonomy*, unlike the map's Europe view,
+# which is a viewport box and so also frames Israel and Turkey.
+_EUROPE = ('uk united kingdom england scotland wales northern ireland germany france italy spain '
+           'portugal netherlands belgium luxembourg ireland sweden norway finland denmark iceland '
+           'poland czechia slovakia hungary austria switzerland romania bulgaria greece croatia '
+           'slovenia serbia estonia latvia lithuania ukraine cyprus malta').split()
+_MIDEAST = 'israel turkey türkiye saudi arabia qatar jordan egypt lebanon'.split()
+_APAC = ('india china japan taiwan singapore australia vietnam malaysia philippines indonesia '
+         'thailand pakistan').split()
+
+_MULTIWORD = {
+    'united kingdom': 'Europe', 'northern ireland': 'Europe', 'czech republic': 'Europe',
+    'north macedonia': 'Europe', 'bosnia and herzegovina': 'Europe',
+    'saudi arabia': 'Middle East', 'united arab emirates': 'Middle East',
+    'south korea': 'Asia-Pacific', 'new zealand': 'Asia-Pacific', 'sri lanka': 'Asia-Pacific',
+    'south africa': 'Other', 'costa rica': 'Other',
+}
+_CANON = {'uk': 'United Kingdom', 'usa': 'United States', 'us': 'United States',
+          'u.s.': 'United States', 'u.s.a.': 'United States', 'united states': 'United States',
+          'england': 'United Kingdom', 'scotland': 'United Kingdom', 'wales': 'United Kingdom',
+          'northern ireland': 'United Kingdom', 'türkiye': 'Turkey', 'czechia': 'Czech Republic'}
+_US_STATE_NAMES = set(('alabama alaska arizona arkansas california colorado connecticut delaware florida '
+    'georgia hawaii idaho illinois indiana iowa kansas kentucky louisiana maine maryland massachusetts '
+    'michigan minnesota mississippi missouri montana nebraska nevada ohio oklahoma oregon pennsylvania '
+    'tennessee texas utah vermont virginia washington wisconsin wyoming').split()) | {
+    'new hampshire', 'new jersey', 'new mexico', 'new york', 'north carolina', 'north dakota',
+    'rhode island', 'south carolina', 'south dakota', 'west virginia', 'district of columbia'}
+
+# Explicit list, not "any two uppercase letters" — that heuristic reads the "UK"
+# in "London, UK" as a US state abbreviation and files Britain under the US.
+_US_STATE_ABBR = set(('AL AK AZ AR CA CO CT DE FL GA HI ID IL IN IA KS KY LA ME MD MA MI MN MS MO MT '
+                      'NE NV NH NJ NM NY NC ND OH OK OR PA RI SC SD TN TX UT VT VA WA WV WI WY DC').split())
+
+REGION_ORDER = ['United States', 'Europe', 'Middle East', 'Asia-Pacific', 'Other']
+
+
+def location_region(location):
+    """Map a deal location string to (region, country) for filtering.
+
+    Returns (None, None) for placeholders and multi-site strings, which should
+    not be filed under any region. "Georgia" resolves to the US state here
+    rather than the country, the opposite of the geocoder's choice — in this
+    dataset a bare US state name is the overwhelmingly likely reading, and the
+    geocoder only had to disambiguate because it was placing a map pin.
+    """
+    if not location:
+        return None, None
+    loc = location.strip()
+    low = loc.lower()
+    if low in _UNKNOWN_VALUES or low.startswith('multiple'):
+        return None, None
+    parts = [p.strip() for p in loc.split(',') if p.strip()]
+    if not parts:
+        return None, None
+    last = parts[-1]
+    ll = last.lower()
+
+    if ll in ('usa', 'u.s.a.', 'us', 'u.s.', 'united states'):
+        return 'United States', 'United States'
+    if last.upper() in _US_STATE_ABBR or ll in _US_STATE_NAMES:
+        return 'United States', 'United States'
+    # "Austin Tx" — state abbreviation trailing without a comma
+    toks = last.split()
+    if len(toks) > 1 and toks[-1].upper() in _US_STATE_ABBR:
+        return 'United States', 'United States'
+    if ll in _MULTIWORD:
+        return _MULTIWORD[ll], _CANON.get(ll, last.title())
+    if ll in _EUROPE:
+        return 'Europe', _CANON.get(ll, last.title())
+    if ll in _MIDEAST:
+        return 'Middle East', _CANON.get(ll, last.title())
+    if ll in _APAC:
+        return 'Asia-Pacific', _CANON.get(ll, last.title())
+    return 'Other', _CANON.get(ll, last.title())
+
 
 def is_known(val):
     """Return True if val is a non-empty, non-placeholder string."""
@@ -192,6 +273,9 @@ def generate_deals_html(output_file=None, deals_per_page=10):
 def generate_html_page(deals, deals_per_page=10):
     """Generate intelligence briefing-style HTML"""
 
+    # Fixed display order for the region filter (see REGION_ORDER)
+    region_order_js = json.dumps(REGION_ORDER)
+
     # Build deal cards
     deal_cards = []
     for master, raw, ai in deals:
@@ -264,6 +348,9 @@ def generate_html_page(deals, deals_per_page=10):
             <select id="capitalFilter" class="filter-select">
                 <option value="">All Capital Types</option>
             </select>
+            <select id="regionFilter" class="filter-select">
+                <option value="">All Regions</option>
+            </select>
         </div>
 
         <!-- Deal Feed -->
@@ -293,6 +380,7 @@ def generate_html_page(deals, deals_per_page=10):
         const searchBox = document.getElementById('searchBox');
         const sectorFilter = document.getElementById('sectorFilter');
         const capitalFilter = document.getElementById('capitalFilter');
+        const regionFilter = document.getElementById('regionFilter');
         const dealFeed = document.getElementById('dealFeed');
         const deals = Array.from(dealFeed.querySelectorAll('.deal-card'));
         const emptyState = document.getElementById('emptyState');
@@ -402,18 +490,58 @@ def generate_html_page(deals, deals_per_page=10):
                 opt.textContent = (capitalLabels[slug] || slug) + ' (' + capitalCounts[slug] + ')';
                 capitalFilter.appendChild(opt);
             }});
+
+            // Region filter: each region is selectable in its own right, with the
+            // countries present in the data nested beneath it. Values are prefixed
+            // r: / c: so filterDeals knows which attribute to match against.
+            const regionOrder = {region_order_js};
+            const regionCounts = {{}};
+            const countryCounts = {{}};
+            deals.forEach(deal => {{
+                const r = deal.dataset.region;
+                const c = deal.dataset.country;
+                if (!r) return;
+                regionCounts[r] = (regionCounts[r] || 0) + 1;
+                countryCounts[r] = countryCounts[r] || {{}};
+                if (c) countryCounts[r][c] = (countryCounts[r][c] || 0) + 1;
+            }});
+            regionOrder.forEach(region => {{
+                if (!regionCounts[region]) return;
+                const group = document.createElement('optgroup');
+                group.label = region;
+                const all = document.createElement('option');
+                all.value = 'r:' + region;
+                all.textContent = 'All ' + region + ' (' + regionCounts[region] + ')';
+                group.appendChild(all);
+                const countries = Object.keys(countryCounts[region] || {{}});
+                // A region whose only country label repeats the region name (the US)
+                // needs no sub-list.
+                if (!(countries.length === 1 && countries[0] === region)) {{
+                    countries.sort((a, b) => a.localeCompare(b)).forEach(c => {{
+                        const opt = document.createElement('option');
+                        opt.value = 'c:' + c;
+                        opt.textContent = '\\u00A0\\u00A0' + c + ' (' + countryCounts[region][c] + ')';
+                        group.appendChild(opt);
+                    }});
+                }}
+                regionFilter.appendChild(group);
+            }});
         }})();
 
         function filterDeals() {{
             const searchTerm = searchBox.value.toLowerCase();
             const sectorVal = sectorFilter.value;
             const capitalVal = capitalFilter.value;
+            const regionVal = regionFilter.value;
 
             filteredDeals = deals.filter(deal => {{
                 const matchesSearch = deal.textContent.toLowerCase().includes(searchTerm);
                 const matchesSector = !sectorVal || (deal.dataset.sectors && deal.dataset.sectors.split(',').map(normalizeSector).includes(sectorVal));
                 const matchesCapital = !capitalVal || (deal.dataset.capital && deal.dataset.capital.split(',').map(normalizeCapital).includes(capitalVal));
-                return matchesSearch && matchesSector && matchesCapital;
+                const matchesRegion = !regionVal || (regionVal.startsWith('r:')
+                    ? deal.dataset.region === regionVal.slice(2)
+                    : deal.dataset.country === regionVal.slice(2));
+                return matchesSearch && matchesSector && matchesCapital && matchesRegion;
             }});
 
             currentPage = 1;
@@ -476,6 +604,7 @@ def generate_html_page(deals, deals_per_page=10):
         searchBox.addEventListener('input', filterDeals);
         sectorFilter.addEventListener('change', filterDeals);
         capitalFilter.addEventListener('change', filterDeals);
+        regionFilter.addEventListener('change', filterDeals);
 
         // Initial render
         renderPage();
@@ -509,6 +638,12 @@ def generate_deal_card(master, raw, ai):
     elif master and master.sector:
         sectors = master.sector
 
+    # Location: from master_list (curated in triage), fallback to AI extraction.
+    # Resolved here rather than at its display site because the region filter
+    # needs it on the card's opening tag.
+    location = master.location if master and master.location else (ai.location if ai else None)
+    region, country = location_region(location)
+
     # Build data attributes for filtering
     def slugify(val):
         return re.sub(r'[\s/]+', '-', val.strip().lower())
@@ -523,9 +658,11 @@ def generate_deal_card(master, raw, ai):
         capital_slugs = ','.join(slugify(s) for s in re.split(r',\s*', capital_sources))
         capital_attr = f' data-capital="{capital_slugs}"'
 
+    region_attr = f' data-region="{e(region)}" data-country="{e(country)}"' if region else ''
+
     # Build card with clean text-based layout
     card_html = f"""
-    <div class="deal-card"{sectors_attr}{capital_attr}>
+    <div class="deal-card"{sectors_attr}{capital_attr}{region_attr}>
         <div class="deal-card-header">
             <div class="deal-header-line">
                 <span class="deal-date">{date_str}</span>
@@ -599,8 +736,7 @@ def generate_deal_card(master, raw, ai):
                     <span class="sector-chips">{chips}</span>
                 </div>"""
 
-    # Location: from master_list (curated in triage), fallback to AI extraction
-    location = master.location if master and master.location else (ai.location if ai else None)
+    # Location (resolved above, alongside the other data attributes)
     if is_known(location):
         card_html += f"""
                 <div class="deal-meta-line">
