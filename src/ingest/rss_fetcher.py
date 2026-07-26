@@ -60,8 +60,17 @@ def parse_feed(feed_url, feed_name):
 MAX_AGE_DAYS = 365
 
 
-def save_to_database(entries, session, config=None):
-    """Save RSS entries to database with relevance scoring (skip duplicates)."""
+def save_to_database(entries, session, config=None, skip_relevance_filter=False):
+    """Save RSS entries to database with relevance scoring (skip duplicates).
+
+    skip_relevance_filter is for feeds where the keyword scorer can't do its
+    job: it matches English word stems, so a German or French headline scores
+    ~0.00 and auto-rejects before the AI ever sees it (the same failure mode
+    that was silently rejecting the English word "defense" itself). For a
+    feed whose own search query already does the relevance filtering — a
+    narrowly-targeted non-English feed, same idea as In-Q-Tel's "any mention
+    is relevant" — skip the scorer and let every item through to AI screening.
+    """
     new_count = 0
     duplicate_count = 0
     auto_rejected_count = 0
@@ -89,23 +98,27 @@ def save_to_database(entries, session, config=None):
             duplicate_count += 1
             continue
 
-        # Calculate relevance score
-        score, matched_keywords, exclude_matched = calculate_relevance_score(
-            entry['title'],
-            entry['summary'],
-            config
-        )
-
-        # Check if should auto-reject
-        reject, reject_reason = should_auto_reject(score, matched_keywords, exclude_matched)
-
-        if reject:
-            status = 'auto_rejected'
-            auto_rejected_count += 1
-            print(f"  ⊘ Auto-rejected: {entry['title'][:50]}...")
-            print(f"    Reason: {reject_reason}")
-        else:
+        if skip_relevance_filter:
+            score, matched_keywords = None, ['SKIPPED_FILTER:non-english-feed']
             status = 'new'
+        else:
+            # Calculate relevance score
+            score, matched_keywords, exclude_matched = calculate_relevance_score(
+                entry['title'],
+                entry['summary'],
+                config
+            )
+
+            # Check if should auto-reject
+            reject, reject_reason = should_auto_reject(score, matched_keywords, exclude_matched)
+
+            if reject:
+                status = 'auto_rejected'
+                auto_rejected_count += 1
+                print(f"  ⊘ Auto-rejected: {entry['title'][:50]}...")
+                print(f"    Reason: {reject_reason}")
+            else:
+                status = 'new'
 
         # Create new item with relevance data
         raw_item = RawItem(
@@ -160,9 +173,10 @@ def fetch_all_feeds(config_path='config/feeds.json', db_path='databases/tracker.
             continue
 
         print()
+        skip_filter = feed_config.get('skip_relevance_filter', False)
         entries = parse_feed(feed_config['url'], feed_config['name'])
         try:
-            new, dupes, rejected, stale = save_to_database(entries, session, config)
+            new, dupes, rejected, stale = save_to_database(entries, session, config, skip_filter)
         except Exception as e:
             print(f"  ⚠ DB error saving {feed_config['name']} ({e}), resetting connection and retrying...")
             try:
@@ -172,7 +186,7 @@ def fetch_all_feeds(config_path='config/feeds.json', db_path='databases/tracker.
             _reset_turso_connection()
             session = get_session(db_path)
             try:
-                new, dupes, rejected, stale = save_to_database(entries, session, config)
+                new, dupes, rejected, stale = save_to_database(entries, session, config, skip_filter)
             except Exception as e2:
                 print(f"  ✗ Retry also failed for {feed_config['name']}: {e2}")
                 new, dupes, rejected, stale = 0, 0, 0, 0

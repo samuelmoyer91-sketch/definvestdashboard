@@ -174,6 +174,38 @@
       "enabled": true,
       "google_alert_query": "(direct publisher RSS — not a Google query)",
       "notes": "Added 2026-07-26 (Europe coverage). European startup/VC outlet (FT-backed) — where European defence-tech rounds like Helsing get covered before US trade press picks them up. Verified: 24 items, 2,585-char articles, scrapes clean. NOT defence-specific, so expect a high auto-reject rate like Pulse 2.0; WATCH noise and disable if it floods triage."
+    },
+    {
+      "name": "Direct: ESUT (DE)",
+      "url": "https://esut.de/feed/",
+      "enabled": true,
+      "google_alert_query": "(direct publisher RSS — not a Google query)",
+      "skip_relevance_filter": true,
+      "notes": "Added 2026-07-26 (Europe local-language coverage). German defence-industry magazine (Europäische Sicherheit & Technik). Verified: 6 items, 7,855-char articles, scrapes clean. skip_relevance_filter=true: the keyword scorer matches English word stems, so German headlines would score ~0 and auto-reject before the AI ever sees them — the whole point of this feed is content English trade press doesn't cover. Sonnet 5 reads German natively and will still produce an English summary; only the stage-1 keyword gate is bypassed."
+    },
+    {
+      "name": "Direct: Augen geradeaus (DE)",
+      "url": "https://augengeradeaus.net/feed/",
+      "enabled": true,
+      "google_alert_query": "(direct publisher RSS — not a Google query)",
+      "skip_relevance_filter": true,
+      "notes": "Added 2026-07-26 (Europe local-language coverage). Respected independent German defence/security journalist's blog — the closest German analogue to Breaking Defense. Verified: 10 items, 3,791-char articles, scrapes clean. skip_relevance_filter=true, same rationale as ESUT. General security-affairs coverage as well as industry, so WATCH accept rate — may need tightening if it surfaces mostly operational/policy news rather than deals."
+    },
+    {
+      "name": "Direct: Opex360 (FR)",
+      "url": "https://www.opex360.com/feed/",
+      "enabled": true,
+      "google_alert_query": "(direct publisher RSS — not a Google query)",
+      "skip_relevance_filter": true,
+      "notes": "Added 2026-07-26 (Europe local-language coverage). Zone Militaire / Opex360 — Ouest-France's defence correspondent, widely read French defence-affairs blog. Verified: 10 items, 5,693-char articles, scrapes clean. skip_relevance_filter=true, same rationale as ESUT. General security-affairs coverage as well as industry — WATCH accept rate."
+    },
+    {
+      "name": "Direct: Portail de l'IE (FR)",
+      "url": "https://portail-ie.fr/feed",
+      "enabled": true,
+      "google_alert_query": "(direct publisher RSS — not a Google query)",
+      "skip_relevance_filter": true,
+      "notes": "Added 2026-07-26 (Europe local-language coverage). French economic-intelligence portal with defence-industry and industrial-sovereignty coverage. Verified: 10 items, 2,898-char articles, scrapes clean. skip_relevance_filter=true, same rationale as ESUT. Broader economic-intelligence scope than pure defence — WATCH accept rate, disable if mostly noise."
     }
   ],
   "keywords": {
