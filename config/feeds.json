@@ -153,6 +153,27 @@
       "enabled": false,
       "google_alert_query": "\"Andreessen Horowitz\" (defense OR \"national security\")",
       "notes": "Disabled 2026-04-06. Merged into Defense VC Specialists feed with deal-language filter. 1% accept rate as standalone feed — too much commentary/analysis."
+    },
+    {
+      "name": "Direct: Defence Industry Europe",
+      "url": "https://defence-industry.eu/feed/",
+      "enabled": true,
+      "google_alert_query": "(direct publisher RSS — not a Google query)",
+      "notes": "Added 2026-07-26 (Europe coverage). European defence-industry trade press — the closest European analogue to Breaking Defense/Defense News. Verified before enabling: 10 items, 8,017-char articles, scrapes clean. Full-site feed; keyword scorer + AI screener narrow to deals, same as the other direct trade feeds."
+    },
+    {
+      "name": "Direct: Euro Security & Defence",
+      "url": "https://euro-sd.com/feed/",
+      "enabled": true,
+      "google_alert_query": "(direct publisher RSS — not a Google query)",
+      "notes": "Added 2026-07-26 (Europe coverage). English-language European defence magazine. Verified: 6 items, 7,406-char articles, scrapes clean. Low volume — that's expected, it's a magazine not a wire; value is European specificity, not throughput."
+    },
+    {
+      "name": "Direct: Sifted",
+      "url": "https://sifted.eu/feed",
+      "enabled": true,
+      "google_alert_query": "(direct publisher RSS — not a Google query)",
+      "notes": "Added 2026-07-26 (Europe coverage). European startup/VC outlet (FT-backed) — where European defence-tech rounds like Helsing get covered before US trade press picks them up. Verified: 24 items, 2,585-char articles, scrapes clean. NOT defence-specific, so expect a high auto-reject rate like Pulse 2.0; WATCH noise and disable if it floods triage."
     }
   ],
   "keywords": {
