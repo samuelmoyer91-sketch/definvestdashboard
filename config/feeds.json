@@ -73,16 +73,16 @@
     {
       "name": "Defense VC Specialists",
       "url": "https://news.google.com/rss/search?q=%28%22Shield+Capital%22+OR+%22Paladin+Capital%22+OR+%22Razor%27s+Edge+Ventures%22+OR+%22Alsop+Louie%22+OR+%22Harpoon+Ventures%22+OR+%22Andreessen+Horowitz%22+OR+%22a16z%22%29+%28invests+OR+investment+OR+raises+OR+raised+OR+funding+OR+acquisition+OR+acquires+OR+backs+OR+backed+OR+portfolio%29&hl=en-US&gl=US&ceid=US:en",
-      "enabled": true,
+      "enabled": false,
       "google_alert_query": "(\"Shield Capital\" OR \"Paladin Capital\" OR \"Razor's Edge Ventures\" OR \"Alsop Louie\" OR \"Harpoon Ventures\" OR \"Andreessen Horowitz\" OR \"a16z\") (invests OR investment OR raises OR raised OR funding OR acquisition OR acquires OR backs OR backed OR portfolio)",
-      "notes": "Named defense-specialist VCs filtered to transaction language. Added deal terms to filter out profiles, rankings, and commentary. Merged a16z Defense feed into this one 2026-04-06."
+      "notes": "Named defense-specialist VCs filtered to transaction language. Added deal terms to filter out profiles, rankings, and commentary. Merged a16z Defense feed into this one 2026-04-06. DISABLED 2026-07-26: Google News RSS links return an 11-char JavaScript stub with no meta-refresh, so the scraper cannot reach the article. Measured 0% scrape success since March 2026 and ZERO deals contributed since May 2026, while still consuming keyword-scoring and AI-screening budget every run. Re-enable only if re-sourced from direct publisher RSS, or if a working Google News URL resolver exists."
     },
     {
       "name": "In-Q-Tel",
       "url": "https://news.google.com/rss/search?q=%22In-Q-Tel%22&hl=en-US&gl=US&ceid=US:en",
-      "enabled": true,
+      "enabled": false,
       "google_alert_query": "\"In-Q-Tel\"",
-      "notes": "CIA's venture arm. Prolific enough to warrant its own feed. Any mention is relevant."
+      "notes": "CIA's venture arm. Prolific enough to warrant its own feed. Any mention is relevant. DISABLED 2026-07-26: Google News RSS links return an 11-char JavaScript stub with no meta-refresh, so the scraper cannot reach the article. Measured 0% scrape success since March 2026 and ZERO deals contributed since May 2026, while still consuming keyword-scoring and AI-screening budget every run. Re-enable only if re-sourced from direct publisher RSS, or if a working Google News URL resolver exists."
     },
     {
       "name": "Defense Corporate Ventures",
@@ -101,30 +101,30 @@
     {
       "name": "Defense M&A Transactions",
       "url": "https://news.google.com/rss/search?q=%28acquires+OR+acquired+OR+merger+OR+acquisition%29+%28defense+OR+aerospace+OR+%22defense+tech%22%29+%28million+OR+billion%29&hl=en-US&gl=US&ceid=US:en",
-      "enabled": true,
+      "enabled": false,
       "google_alert_query": "(acquires OR acquired OR merger OR acquisition) (defense OR aerospace OR \"defense tech\") (million OR billion)",
-      "notes": "Experimental feed added 2026-03-18. Transaction-signal design: requires acquisition verb + defense context + dollar amount. Intent: catch M&A deals from unexpected/unnamed acquirers. No named entities — should surface unknown players. Evaluate accept rate after 30 days."
+      "notes": "Experimental feed added 2026-03-18. Transaction-signal design: requires acquisition verb + defense context + dollar amount. Intent: catch M&A deals from unexpected/unnamed acquirers. No named entities — should surface unknown players. Evaluate accept rate after 30 days. DISABLED 2026-07-26: Google News RSS links return an 11-char JavaScript stub with no meta-refresh, so the scraper cannot reach the article. Measured 0% scrape success since March 2026 and ZERO deals contributed since May 2026, while still consuming keyword-scoring and AI-screening budget every run. Re-enable only if re-sourced from direct publisher RSS, or if a working Google News URL resolver exists."
     },
     {
       "name": "Defense Tech Funding",
       "url": "https://news.google.com/rss/search?q=%28%22defense+tech%22+OR+%22dual-use%22+OR+%22defense+startup%22%29+%28raises+OR+raised+OR+secures+OR+backed+OR+funded%29+%28million+OR+billion%29&hl=en-US&gl=US&ceid=US:en",
-      "enabled": true,
+      "enabled": false,
       "google_alert_query": "(\"defense tech\" OR \"dual-use\" OR \"defense startup\") (raises OR raised OR secures OR backed OR funded) (million OR billion)",
-      "notes": "Experimental feed added 2026-03-18. Transaction-signal design: targets journalist language for VC/growth investments in defense-adjacent startups. 'dual-use' is a specific term unlikely to appear outside defense context. Intent: catch funding rounds from non-traditional investors. No named entities. Evaluate accept rate after 30 days."
+      "notes": "Experimental feed added 2026-03-18. Transaction-signal design: targets journalist language for VC/growth investments in defense-adjacent startups. 'dual-use' is a specific term unlikely to appear outside defense context. Intent: catch funding rounds from non-traditional investors. No named entities. Evaluate accept rate after 30 days. DISABLED 2026-07-26: Google News RSS links return an 11-char JavaScript stub with no meta-refresh, so the scraper cannot reach the article. Measured 0% scrape success since March 2026 and ZERO deals contributed since May 2026, while still consuming keyword-scoring and AI-screening budget every run. Re-enable only if re-sourced from direct publisher RSS, or if a working Google News URL resolver exists."
     },
     {
       "name": "Generalist Defense Investors",
       "url": "https://news.google.com/rss/search?q=%28%22Founders%20Fund%22%20OR%20%22Thrive%20Capital%22%20OR%20%22General%20Catalyst%22%20OR%20%228VC%22%20OR%20%22Sequoia%20Capital%22%20OR%20%22Lux%20Capital%22%20OR%20%22Coatue%22%29%20%28defense%20OR%20%22national%20security%22%20OR%20military%20OR%20aerospace%20OR%20%22defense%20tech%22%20OR%20autonomy%20OR%20hypersonic%20OR%20munitions%29%20%28raises%20OR%20raised%20OR%20funding%20OR%20Series%20OR%20led%20OR%20invests%29&hl=en-US&gl=US&ceid=US:en",
-      "enabled": true,
+      "enabled": false,
       "google_alert_query": "(\"Founders Fund\" OR \"Thrive Capital\" OR \"General Catalyst\" OR \"8VC\" OR \"Sequoia Capital\" OR \"Lux Capital\" OR \"Coatue\") (defense OR \"national security\" OR military OR aerospace OR \"defense tech\" OR autonomy OR hypersonic OR munitions) (raises OR raised OR funding OR Series OR led OR invests)",
-      "notes": "Added 2026-06-06 (gap-fill: generalist/crossover investors). Catches megafund-led defense rounds the boutique-VC feed misses. Verified 6/6 — sample hits: Lux $1.5B defense fund, Hadrian $260M led by Founders Fund, General Catalyst Indian defense round, 8VC Israeli defense. Named megafunds + defense context + deal verb. Uses existing scorer words (no vocab change needed). The named-firm list will need periodic refresh as the crossover roster shifts."
+      "notes": "Added 2026-06-06 (gap-fill: generalist/crossover investors). Catches megafund-led defense rounds the boutique-VC feed misses. Verified 6/6 — sample hits: Lux $1.5B defense fund, Hadrian $260M led by Founders Fund, General Catalyst Indian defense round, 8VC Israeli defense. Named megafunds + defense context + deal verb. Uses existing scorer words (no vocab change needed). The named-firm list will need periodic refresh as the crossover roster shifts. DISABLED 2026-07-26: Google News RSS links return an 11-char JavaScript stub with no meta-refresh, so the scraper cannot reach the article. Measured 0% scrape success since March 2026 and ZERO deals contributed since May 2026, while still consuming keyword-scoring and AI-screening budget every run. Re-enable only if re-sourced from direct publisher RSS, or if a working Google News URL resolver exists."
     },
     {
       "name": "Gov Strategic Capital",
       "url": "https://news.google.com/rss/search?q=%28%22Office%20of%20Strategic%20Capital%22%20OR%20STRATFI%20OR%20TACFI%20OR%20%22Industrial%20Base%20Analysis%20and%20Sustainment%22%20OR%20%22Defense%20Industrial%20Base%20Fund%22%29%20%28loan%20OR%20investment%20OR%20award%20OR%20equity%20OR%20million%20OR%20billion%20OR%20funds%20OR%20financing%29&hl=en-US&gl=US&ceid=US:en",
-      "enabled": true,
+      "enabled": false,
       "google_alert_query": "(\"Office of Strategic Capital\" OR STRATFI OR TACFI OR \"Industrial Base Analysis and Sustainment\" OR \"Defense Industrial Base Fund\") (loan OR investment OR award OR equity OR million OR billion OR funds OR financing)",
-      "notes": "Added 2026-06-06 (gap-fill: government strategic capital — leading indicator of industrial expansion). IMPORTANT: deliberately does NOT use 'Defense Production Act' or bare 'Title III' — tested 6/6 and those terms returned almost entirely Trump/coal/energy DPA noise. Anchored on defense-specific program names (OSC, STRATFI/TACFI) + capital verb. Verified clean: OSC $700M Vulcan loan, OSC/MP Materials critical-minerals loan, $20B loan-program budget request. Precise terms = very low noise."
+      "notes": "Added 2026-06-06 (gap-fill: government strategic capital — leading indicator of industrial expansion). IMPORTANT: deliberately does NOT use 'Defense Production Act' or bare 'Title III' — tested 6/6 and those terms returned almost entirely Trump/coal/energy DPA noise. Anchored on defense-specific program names (OSC, STRATFI/TACFI) + capital verb. Verified clean: OSC $700M Vulcan loan, OSC/MP Materials critical-minerals loan, $20B loan-program budget request. Precise terms = very low noise. DISABLED 2026-07-26: Google News RSS links return an 11-char JavaScript stub with no meta-refresh, so the scraper cannot reach the article. Measured 0% scrape success since March 2026 and ZERO deals contributed since May 2026, while still consuming keyword-scoring and AI-screening budget every run. Re-enable only if re-sourced from direct publisher RSS, or if a working Google News URL resolver exists."
     },
     {
       "name": "Defense Private Credit",
