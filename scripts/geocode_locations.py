@@ -12,8 +12,11 @@ Usage:
     python3 scripts/geocode_locations.py --dry-run # Preview without saving
 
 Notes:
-- Only geocodes US locations; international deals are skipped (no district)
+- US locations get lat/lng + congressional district
+- International locations get lat/lng only (congressional district is US-only).
+  Country-only strings ("France") resolve to a country centroid.
 - State-only locations (e.g. "California, USA") get lat/lng but no district
+- Placeholder locations ("Unknown", "Multiple ...") are skipped
 - Rate-limited to ~1.2 req/sec to comply with Nominatim usage policy
 """
 
@@ -89,6 +92,17 @@ STATE_CAPITALS = {
     'DC': 'Washington',
 }
 
+# Country names that collide with a US state name. A bare "Georgia" is far more
+# likely the country in this dataset's context, and misreading it would drop a
+# Tbilisi deal onto Atlanta. Only applies to single-token locations — "Atlanta,
+# Georgia" still parses as US because it hits the city+state branch first.
+AMBIGUOUS_COUNTRY_NAMES = {'georgia'}
+
+# Placeholder values the summarizer emits when no location is present. Sending
+# these to a geocoder returns confident nonsense, so skip them outright.
+SKIP_LOCATIONS = {'unknown', 'n/a', 'na', 'none', 'tbd', 'various', 'global',
+                  'international', 'undisclosed', '-'}
+
 
 def parse_location(location_str):
     """
@@ -101,13 +115,20 @@ def parse_location(location_str):
         return None
 
     loc = location_str.strip()
-    # Strip trailing USA variants
-    loc = re.sub(r',?\s*(USA|U\.S\.A\.|United States)\s*$', '', loc, flags=re.IGNORECASE).strip()
+    # Strip trailing USA variants. Bare "US" / "U.S." are included: without them
+    # a string like "Rockford, IL, US" fell through as international.
+    loc = re.sub(r',?\s*(USA|U\.S\.A\.|U\.S\.|US|United States)\s*$', '', loc, flags=re.IGNORECASE).strip()
 
     parts = [p.strip() for p in loc.split(',')]
     parts = [p for p in parts if p]
 
     if not parts:
+        return None
+
+    # Country names that collide with a US state name (Georgia). Checked before
+    # any state branch, but only for a bare single-token location — "Atlanta,
+    # Georgia" still resolves as US because it names a city too.
+    if len(parts) == 1 and parts[0].lower() in AMBIGUOUS_COUNTRY_NAMES:
         return None
 
     last = parts[-1]
@@ -138,6 +159,23 @@ def parse_location(location_str):
     return None  # International or unrecognized
 
 
+def parse_international(location_str):
+    """Return a cleaned query string for a non-US location, or None to skip.
+
+    Called only after parse_location() has declined a string. Filters out the
+    placeholder values the summarizer emits when it can't find a location, plus
+    multi-site strings that name several places at once — geocoding those would
+    silently pin the deal to whichever one Nominatim happened to match first.
+    """
+    if not location_str:
+        return None
+    loc = location_str.strip()
+    low = loc.lower()
+    if low in SKIP_LOCATIONS or low.startswith('multiple '):
+        return None
+    return loc or None
+
+
 def nominatim_geocode(city, state_abbr):
     """Return (lat, lng) for a US city/state using Nominatim, or (None, None)."""
     query = f"{city}, {state_abbr}, USA" if city else f"{STATE_CAPITALS.get(state_abbr, state_abbr)}, {state_abbr}, USA"
@@ -154,6 +192,62 @@ def nominatim_geocode(city, state_abbr):
             return float(results[0]['lat']), float(results[0]['lon'])
     except Exception as e:
         print(f"    Nominatim error: {e}")
+    return None, None
+
+
+def _nominatim_lookup(params):
+    """Single Nominatim call. Returns (lat, lng) or (None, None)."""
+    try:
+        r = requests.get(
+            NOMINATIM_URL,
+            params={**params, 'format': 'json', 'limit': 1},
+            headers=NOMINATIM_HEADERS,
+            timeout=10
+        )
+        r.raise_for_status()
+        results = r.json()
+        if results:
+            return float(results[0]['lat']), float(results[0]['lon'])
+    except Exception as e:
+        print(f"    Nominatim error: {e}")
+    return None, None
+
+
+def nominatim_geocode_international(location_str):
+    """Return (lat, lng) for a non-US location, or (None, None).
+
+    Same endpoint as the US path but without the ", USA" suffix and without the
+    countrycodes='us' restriction, so the query resolves globally. Country-only
+    strings ("France") resolve to a country centroid, which is the best available
+    answer when the article names no city.
+
+    Tries up to three forms, stopping at the first hit:
+      1. Ambiguous country names go through the structured `country` field —
+         a free-text "Georgia" otherwise returns the US state, since Nominatim
+         has the same bias the parser did.
+      2. The location as written.
+      3. For 3+ part strings, the same minus the last part — rescues a
+         misspelled trailing country ("Yateley, Hampshire, United Kingdon")
+         by falling back to the city/region, which do resolve.
+    """
+    loc = (location_str or '').strip()
+    if not loc:
+        return None, None
+
+    attempts = []
+    if loc.lower() in AMBIGUOUS_COUNTRY_NAMES:
+        attempts.append({'country': loc})
+    attempts.append({'q': loc})
+    parts = [p.strip() for p in loc.split(',') if p.strip()]
+    if len(parts) >= 3:
+        attempts.append({'q': ', '.join(parts[:-1])})
+
+    for i, params in enumerate(attempts):
+        if i:
+            time.sleep(1.2)  # stay within Nominatim's 1 req/sec policy on retries
+        lat, lng = _nominatim_lookup(params)
+        if lat is not None:
+            return lat, lng
     return None, None
 
 
@@ -209,7 +303,8 @@ def run(geocode_all=False, dry_run=False):
     print("=" * 70)
     print()
 
-    stats = {'geocoded': 0, 'district': 0, 'international': 0, 'state_only': 0, 'failed': 0}
+    stats = {'geocoded': 0, 'district': 0, 'international': 0, 'state_only': 0,
+             'failed': 0, 'skipped': 0}
 
     for i, item in enumerate(items, 1):
         loc_str = item.location
@@ -217,8 +312,27 @@ def run(geocode_all=False, dry_run=False):
 
         parsed = parse_location(loc_str)
         if parsed is None:
-            print(f"  → International/unknown, skipping")
+            # Not a US location — geocode it globally (no congressional district,
+            # which is a US-only concept).
+            intl_query = parse_international(loc_str)
+            if not intl_query:
+                print(f"  → No usable location, skipping")
+                stats['skipped'] += 1
+                continue
+
+            lat, lng = nominatim_geocode_international(intl_query)
+            time.sleep(1.2)  # Nominatim rate limit: max 1 req/sec
+            if lat is None:
+                print(f"  ✗ Nominatim found no match (international)")
+                stats['failed'] += 1
+                continue
+
+            print(f"  ✓ ({lat:.4f}, {lng:.4f})  →  international, no district")
             stats['international'] += 1
+            if not dry_run:
+                item.latitude = lat
+                item.longitude = lng
+                session.commit()
             continue
 
         city, state_abbr = parsed
@@ -256,9 +370,9 @@ def run(geocode_all=False, dry_run=False):
 
     print()
     print("=" * 70)
-    print(f"DONE: {stats['geocoded']} geocoded  |  {stats['district']} with district  |  "
-          f"{stats['state_only']} state-only  |  {stats['international']} international  |  "
-          f"{stats['failed']} failed")
+    print(f"DONE: {stats['geocoded']} US geocoded  |  {stats['district']} with district  |  "
+          f"{stats['state_only']} state-only  |  {stats['international']} international geocoded  |  "
+          f"{stats['failed']} failed  |  {stats['skipped']} no usable location")
     if dry_run:
         print("(Dry run — no changes saved)")
     print("=" * 70)
