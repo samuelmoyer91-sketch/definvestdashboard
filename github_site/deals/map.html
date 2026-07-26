@@ -130,6 +130,11 @@
 
     <div class="container">
         <div class="map-filters">
+            <select id="regionFilter" aria-label="Jump to region" title="Moves the map view — every deal stays on the map">
+                <option value="us">View: United States</option>
+                <option value="europe">View: Europe</option>
+                <option value="all">View: All regions</option>
+            </select>
             <select id="stateFilter"><option value="">All States</option></select>
             <select id="districtFilter"><option value="">All Districts</option></select>
             <button class="btn-clear" id="clearFilters">Clear</button>
@@ -189,6 +194,34 @@
             }));
             clusterGroup.addLayers(entries.map(e => e.marker));
             map.addLayer(clusterGroup);
+
+            // Region views. These move the camera only — no pin is ever hidden,
+            // so a deal outside the chosen region is still there when you pan.
+            const REGION_VIEWS = {
+                us:     { center: [38.5, -96], zoom: 4 },
+                // Centre/zoom rather than fitBounds: Leaflet snaps to integer
+                // zoom, so fitting a Europe-shaped box into this wide container
+                // rounds down and the view balloons far past Europe. This centre
+                // was checked to hold the whole theatre — Portugal and Ireland in
+                // the west, the Nordics in the north, Israel and Turkey in the
+                // south-east (an EU-centred view cuts those last two off).
+                europe: { center: [48, 15], zoom: 4 },
+                all:    { fitAll: true },
+            };
+            const regionSelect = document.getElementById('regionFilter');
+
+            function applyRegionView() {
+                const view = REGION_VIEWS[regionSelect.value] || REGION_VIEWS.us;
+                if (view.fitAll) {
+                    const all = entries.map(e => e.marker);
+                    if (all.length) {
+                        map.fitBounds(L.featureGroup(all).getBounds(), { padding: [40, 40] });
+                    }
+                } else {
+                    map.setView(view.center, view.zoom);
+                }
+            }
+            regionSelect.addEventListener('change', applyRegionView);
 
             // Populate state dropdown
             const states = [...new Set(features.map(f => f.district ? f.district.split('-')[0] : '').filter(Boolean))].sort();
@@ -253,7 +286,7 @@
                     }
                 } else {
                     countEl.textContent = `${totalCount} geocoded deal${totalCount !== 1 ? 's' : ''}`;
-                    map.setView([38.5, -96], 4);
+                    applyRegionView();
                 }
             }
         })
