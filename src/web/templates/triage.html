@@ -521,6 +521,10 @@ function updateTriageCount(delta) {
 function acceptItem(id, formEl) {
     fetch('/accept/' + id, {
         method: 'POST',
+        // Tells the server to answer 204 instead of a 303 back to "/". Without
+        // this, fetch follows the redirect and downloads the entire queue page
+        // on every accept, just to discard it.
+        headers: {'X-Requested-With': 'XMLHttpRequest'},
         body: new FormData(formEl),
         redirect: 'follow'
     }).then(response => {
@@ -568,7 +572,12 @@ function submitReject() {
 
     fetch('/reject/' + id, {
         method: 'POST',
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            // See acceptItem: without this the server 303s to "/" and fetch
+            // downloads the whole queue page only to throw it away.
+            'X-Requested-With': 'XMLHttpRequest'
+        },
         body: body.toString(),
         redirect: 'follow'
     }).then(response => {

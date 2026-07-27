@@ -476,6 +476,20 @@ DEDUP_KEEP_MARKER = "dedup_keep"
 TRIAGE_PAGE_SIZE = 20
 
 
+def _triage_action_response(request: Request):
+    """Response for accept/reject.
+
+    The triage UI calls these with fetch() and removes the card itself, so the
+    body is discarded — but fetch follows redirects by default, which meant a
+    303 to "/" made the server render and ship the WHOLE queue page on every
+    click, only for the browser to throw it away. Return 204 to those callers
+    instead. item_detail.html posts a real <form> and still needs the redirect.
+    """
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return Response(status_code=204)
+    return RedirectResponse(url="/", status_code=303)
+
+
 def _triage_queue_items(session):
     """Base triage-queue query, shared by the main queue (/) and the
     Possible Duplicates page. Returns RawItem rows with .article_content and
@@ -743,6 +757,7 @@ async def view_item(request: Request, item_id: int, session=Depends(get_db)):
 @app.post("/accept/{item_id}")
 async def accept_item(
     item_id: int,
+    request: Request,
     background_tasks: BackgroundTasks,
     title: str = Form(""),
     company: str = Form(""),
@@ -833,11 +848,11 @@ async def accept_item(
         session.commit()
         background_tasks.add_task(sync_turso)
 
-    return RedirectResponse(url="/", status_code=303)
+    return _triage_action_response(request)
 
 
 @app.post("/reject/{item_id}")
-async def reject_item(item_id: int, background_tasks: BackgroundTasks, rejection_reason: str = Form(default=None), session=Depends(get_db)):
+async def reject_item(item_id: int, request: Request, background_tasks: BackgroundTasks, rejection_reason: str = Form(default=None), session=Depends(get_db)):
     """Reject item and remove from triage queue."""
     existing = session.query(RejectedItem).filter_by(item_id=item_id).first()
 
@@ -847,7 +862,7 @@ async def reject_item(item_id: int, background_tasks: BackgroundTasks, rejection
         session.commit()
         background_tasks.add_task(sync_turso)
 
-    return RedirectResponse(url="/", status_code=303)
+    return _triage_action_response(request)
 
 
 @app.get("/master", response_class=HTMLResponse)
