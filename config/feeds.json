@@ -206,6 +206,29 @@
       "google_alert_query": "(direct publisher RSS — not a Google query)",
       "skip_relevance_filter": true,
       "notes": "Added 2026-07-26 (Europe local-language coverage). French economic-intelligence portal with defence-industry and industrial-sovereignty coverage. Verified: 10 items, 2,898-char articles, scrapes clean. skip_relevance_filter=true, same rationale as ESUT. Broader economic-intelligence scope than pure defence — WATCH accept rate, disable if mostly noise."
+    },
+    {
+      "name": "Alert: German Defense Industry (DE)",
+      "url": "https://www.google.com/alerts/feeds/09025431128020683164/15398985734618585888",
+      "enabled": true,
+      "google_alert_query": "(\"Rüstungsindustrie\" OR \"Verteidigungsindustrie\" OR \"Rüstungskonzern\") AND (Investition OR Übernahme OR Finanzierung OR Kapitalrunde OR Millionen OR Milliarden)",
+      "skip_relevance_filter": true,
+      "notes": "Added 2026-07-27 (Europe build-out). Google Alerts gives web-wide search reach that direct publisher feeds cannot — this is the German-language analogue of the two US Alerts feeds that supply ~82% of deal flow. skip_relevance_filter=true: the stage-1 scorer matches English word stems and would auto-reject German at ~0.00. NOTE: the Alerts preview UI showed 'no recent results' for hours after creation and the feed returned 0 entries — it began populating later the same day, so an empty new Alerts feed is not evidence of a broken query. WATCH: first 2 items were noise (a Korean rare-earths story matching 'Milliarden', an OpenAI liveticker) — the two nested OR-groups may be matching on isolated money words. If accept rate stays near zero, retighten to '\"Rüstungsindustrie\" (Investition OR Übernahme OR Finanzierung)'."
+    },
+    {
+      "name": "Alert: French Defense Industry (FR)",
+      "url": "https://www.google.com/alerts/feeds/09025431128020683164/11888686562380965880",
+      "enabled": true,
+      "google_alert_query": "(\"industrie de défense\" OR \"industrie de la défense\" OR \"défense européenne\") AND (investissement OR acquisition OR rachat OR financement OR \"levée de fonds\" OR millions OR milliards)",
+      "skip_relevance_filter": true,
+      "notes": "Added 2026-07-27 (Europe build-out). French-language counterpart to the German alert; complements the Opex360 and Portail de l'IE direct feeds by searching the whole French-language web rather than two publishers. skip_relevance_filter=true, same rationale as the German alert. Returned 0 entries at creation (HTTP 200, valid feed) — expected, see the German alert's note. WATCH the same failure mode: bare 'millions'/'milliards' in the second OR-group can match non-defense money stories."
+    },
+    {
+      "name": "Alert: Central/Eastern European Defense",
+      "url": "https://www.google.com/alerts/feeds/09025431128020683164/15093781258916314757",
+      "enabled": true,
+      "google_alert_query": "(\"Central European defence\" OR \"Eastern European defence\" OR \"Baltic defence\" OR \"Polish defence industry\" OR \"Czech defence industry\") AND (investment OR funding OR acquisition OR raises OR million OR billion)",
+      "notes": "Added 2026-07-27 (Europe build-out). Covers the CEE/Baltic theater — the fastest-growing European defense-spending region and the biggest hole in current coverage, which skews to DE/FR/UK. English-language query, so the stage-1 scorer runs normally (NO skip_relevance_filter) — 'defence' and 'nato' were added to high_priority vocabulary on 2026-07-26, so these headlines will score. Returned 0 entries at creation (HTTP 200, valid feed); new alerts take hours to populate."
     }
   ],
   "keywords": {
