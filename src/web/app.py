@@ -24,6 +24,7 @@ logger = logging.getLogger(__name__)
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
 from src.database import RawItem, ArticleContent, AIExtraction, MasterItem, RejectedItem, Investor, DealInvestor, ApiUsageLog, get_session, sync_turso
+from src.database.models import _reset_turso_connection
 from src.utils.investor_parser import parse_investors, slugify
 
 _TOKEN_EXPIRY = 24 * 60 * 60  # 24 hours
@@ -262,6 +263,17 @@ async def run_startup_migrations():
 async def global_exception_handler(request: Request, exc: Exception):
     """Return a styled error page instead of raw 500."""
     logger.error(f"Unhandled error on {request.url.path}: {type(exc).__name__}: {exc}")
+
+    # Backstop for a Turso stream dying mid-request (get_session's idle probe
+    # handles the common overnight case, but a stream can also expire between
+    # the probe and the query). Drop the cached connection so the next request
+    # rebuilds it, instead of every subsequent request failing until redeploy.
+    if 'stream not found' in str(exc).lower() or 'hrana' in str(exc).lower():
+        logger.warning("Turso stream error — resetting connection so the next request reconnects.")
+        try:
+            _reset_turso_connection()
+        except Exception as reset_err:
+            logger.error(f"Failed to reset Turso connection: {reset_err}")
     return HTMLResponse(
         content=f"""
         <html>

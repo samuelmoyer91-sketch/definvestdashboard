@@ -371,9 +371,41 @@ def sync_turso():
             _session_factory = None
 
 
+# Turso expires an idle Hrana stream server-side, so a connection that sat
+# overnight is dead by morning ("stream not found"). The liveness check inside
+# get_engine's creator can't catch this: StaticPool calls the creator exactly
+# once, and get_engine returns the cached engine thereafter, so that check is
+# effectively dead code after startup. Probe here instead — but only after an
+# idle gap, so active use (triage clicking through items seconds apart) pays no
+# extra round-trip.
+_last_db_use: float = 0.0
+_LIVENESS_PROBE_AFTER_SECONDS = 60
+
+
 def get_session(db_path='databases/tracker.db'):
-    """Create and return database session."""
-    global _session_factory
+    """Create and return database session.
+
+    Reconnects transparently if the cached Turso connection went stale while
+    idle, so the first request after a quiet period doesn't 500.
+    """
+    global _session_factory, _last_db_use
+
+    now = time.time()
+    idle_for = now - _last_db_use
+    _last_db_use = now
+
+    if (_session_factory is not None and _libsql_conn is not None
+            and idle_for > _LIVENESS_PROBE_AFTER_SECONDS):
+        # Catch BaseException: a stale libsql connection raises
+        # pyo3_runtime.PanicException, which bypasses `except Exception`.
+        try:
+            _libsql_conn.execute("SELECT 1")
+        except BaseException as e:
+            logger.warning(
+                f"Turso connection stale after {idle_for:.0f}s idle ({e}); reconnecting."
+            )
+            _reset_turso_connection()
+
     if _session_factory is None:
         engine = get_engine(db_path)
         _session_factory = sessionmaker(bind=engine)
