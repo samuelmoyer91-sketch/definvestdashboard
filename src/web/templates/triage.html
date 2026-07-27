@@ -45,7 +45,14 @@
     </div>
 </div>
 
-<h2 style="margin-bottom: 20px;">Triage Queue</h2>
+<h2 style="margin-bottom: 20px;">
+    Triage Queue
+    {% if showing_count and total_items > showing_count %}
+    <span style="font-size:14px; font-weight:400; color:#666;">
+        — showing the {{ showing_count }} most recent of {{ total_items }}; the next ones load as you clear these
+    </span>
+    {% endif %}
+</h2>
 
 {% if dup_count and dup_count > 0 %}
 <div class="card" style="border-left:4px solid #bf616a; margin-bottom:16px; font-size:14px;">

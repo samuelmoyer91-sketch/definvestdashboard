@@ -471,6 +471,11 @@ templates = Jinja2Templates(directory=str(templates_dir))
 DEDUP_KEEP_MARKER = "dedup_keep"
 
 
+# How many triage cards to render per page load. Each card is a full form
+# (~40 inputs), so this is the main driver of how snappy triage feels.
+TRIAGE_PAGE_SIZE = 20
+
+
 def _triage_queue_items(session):
     """Base triage-queue query, shared by the main queue (/) and the
     Possible Duplicates page. Returns RawItem rows with .article_content and
@@ -583,10 +588,21 @@ async def home(request: Request, session=Depends(get_db)):
     total_items = len(items)
     master_count = session.query(MasterItem).count()
 
+    # Render only the top of the queue. Every accept/reject redirects back
+    # here, so the whole page is rebuilt on each click — and each card carries
+    # a full form (~40 inputs, incl. the 22 sector checkboxes). Rendering the
+    # entire queue meant ~8,000 inputs and 6MB of HTML per click, which is what
+    # made triage feel slow; the cost was in the browser, not the server
+    # (queries 0.09s, template 0.04s). Triage is worked top-down, so the rest
+    # was never looked at. The queue re-queries on each action, so the next
+    # items surface automatically as these are cleared.
+    visible = items[:TRIAGE_PAGE_SIZE]
+
     return templates.TemplateResponse("triage.html", {
         "request": request,
-        "items": items,
+        "items": visible,
         "total_items": total_items,
+        "showing_count": len(visible),
         "master_count": master_count,
         "dup_count": len(flagged),
     })
