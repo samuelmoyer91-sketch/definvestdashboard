@@ -122,15 +122,38 @@ def get_db():
 
 _last_sync_time: float = 0
 _SYNC_INTERVAL = 300  # seconds (5 minutes)
+_pending_sync: bool = False
+_last_sync_ms: float = 0.0
+
+
+def mark_dirty():
+    """Note that we wrote something, without paying for a sync right now.
+
+    Accept and reject used to call sync_turso() on every single click. That
+    is a network round trip to the Turso primary against a 100MB+ database,
+    and it sat on the critical path of every triage action — which is why
+    both buttons have always felt slow, accept worse than reject only
+    because it does more work on top. Nothing needs the replica refreshed
+    the instant a card is accepted: the UI removes the card client-side, and
+    the next page render calls sync_if_stale(), which now syncs immediately
+    when this flag is set. Reads therefore stay correct while clicks get out
+    of the sync business entirely.
+    """
+    global _pending_sync
+    _pending_sync = True
+
 
 def sync_if_stale():
-    """Sync Turso replica if more than 5 minutes have passed since last sync."""
-    global _last_sync_time
-    import time
+    """Sync the replica if we have unsynced writes, or it has gone stale."""
+    global _last_sync_time, _pending_sync, _last_sync_ms
     now = time.time()
-    if now - _last_sync_time > _SYNC_INTERVAL:
+    if _pending_sync or now - _last_sync_time > _SYNC_INTERVAL:
+        t0 = time.perf_counter()
         sync_turso()
-        _last_sync_time = now
+        _last_sync_ms = round((time.perf_counter() - t0) * 1000, 1)
+        _last_sync_time = time.time()
+        _pending_sync = False
+        logger.info("TIMING sync total=%sms", _last_sync_ms)
 
 # =============================================================================
 # Startup Migration — ensures schema is current on deploy
@@ -967,7 +990,8 @@ async def accept_item(
 
         session.commit()
         phases.mark("commit")
-        background_tasks.add_task(sync_turso)
+        # Deliberately NOT sync_turso() — see mark_dirty()
+        mark_dirty()
 
     phases.record("accept")
     return _triage_action_response(request, phases)
@@ -985,7 +1009,7 @@ async def reject_item(item_id: int, request: Request, background_tasks: Backgrou
         session.add(rejected)
         session.commit()
         phases.mark("commit")
-        background_tasks.add_task(sync_turso)
+        mark_dirty()
 
     phases.record("reject")
     return _triage_action_response(request, phases)
@@ -994,7 +1018,7 @@ async def reject_item(item_id: int, request: Request, background_tasks: Backgrou
 @app.get("/master", response_class=HTMLResponse)
 async def master_list(request: Request, session=Depends(get_db)):
     """View master list of accepted items."""
-    sync_turso()
+    sync_if_stale()
 
     master_items = active_master(session).join(
         RawItem, MasterItem.item_id == RawItem.id
@@ -1030,7 +1054,7 @@ async def duplicates(request: Request, session=Depends(get_db)):
     "keep this one" recommendation rather than just the oldest item.
     """
     from src.utils import dedup
-    sync_turso()
+    sync_if_stale()
 
     rows = active_master(session).all()
     deals = [{
@@ -1090,7 +1114,9 @@ async def remove_master_item(master_id: int, request: Request,
         master.removed_at = datetime.utcnow()
         master.removed_reason = reason or "duplicate"
         session.commit()
-        sync_turso()
+        # Clearing a dup cluster means many clicks in a row — keep the sync
+        # off the click path, same as accept/reject. See mark_dirty().
+        mark_dirty()
 
     # The report page removes the row client-side; a plain form gets a redirect.
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
@@ -1108,14 +1134,14 @@ async def restore_master_item(master_id: int, session=Depends(get_db)):
     master.removed_at = None
     master.removed_reason = None
     session.commit()
-    sync_turso()
+    mark_dirty()   # next page render syncs; see mark_dirty()
     return RedirectResponse(url="/removed", status_code=303)
 
 
 @app.get("/removed", response_class=HTMLResponse)
 async def removed_list(request: Request, session=Depends(get_db)):
     """Deals soft-deleted from the dashboard, newest first, with Restore."""
-    sync_turso()
+    sync_if_stale()
     items = session.query(MasterItem).filter(
         MasterItem.removed_at.isnot(None)
     ).order_by(MasterItem.removed_at.desc()).all()
@@ -1129,7 +1155,7 @@ async def removed_list(request: Request, session=Depends(get_db)):
 @app.get("/rejected", response_class=HTMLResponse)
 async def rejected_list(request: Request, session=Depends(get_db)):
     """View rejected items."""
-    sync_turso()
+    sync_if_stale()
 
     rejected_items = session.query(RejectedItem).join(
         RawItem, RejectedItem.item_id == RawItem.id
@@ -1153,7 +1179,7 @@ async def stats(request: Request, session=Depends(get_db)):
     """Show statistics."""
     from sqlalchemy import func
 
-    sync_turso()
+    sync_if_stale()
 
     total_raw = session.query(RawItem).count()
     total_scraped = session.query(ArticleContent).filter_by(scrape_success=True).count()
@@ -1181,7 +1207,7 @@ async def costs(request: Request, session=Depends(get_db)):
     from sqlalchemy import func
     from datetime import timedelta
 
-    sync_turso()
+    sync_if_stale()
 
     now = datetime.utcnow()
     month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
@@ -1246,7 +1272,7 @@ async def costs(request: Request, session=Depends(get_db)):
 @app.get("/excluded", response_class=HTMLResponse)
 async def excluded_list(request: Request, session=Depends(get_db)):
     """View items silently excluded from triage (title-screened out or Contract/Award)."""
-    sync_turso()
+    sync_if_stale()
 
     screened_out_items = session.query(RawItem).filter(
         RawItem.status == 'ai_screened_out',
@@ -1413,7 +1439,7 @@ async def save_edit(
     _sync_investor_links(session, master)
 
     session.commit()
-    sync_turso()
+    mark_dirty()   # next page render syncs; see mark_dirty()
 
     return RedirectResponse(url="/master", status_code=303)
 
@@ -1421,7 +1447,7 @@ async def save_edit(
 @app.get("/investors", response_class=HTMLResponse)
 async def investors_list(request: Request, session=Depends(get_db)):
     """View all investors sorted by deal count."""
-    sync_turso()
+    sync_if_stale()
 
     investors = session.query(Investor).order_by(
         Investor.deal_count.desc(),
@@ -1457,7 +1483,7 @@ async def delete_investor(investor_id: int, session=Depends(get_db)):
 @app.get("/investors/{slug}", response_class=HTMLResponse)
 async def investor_detail(request: Request, slug: str, session=Depends(get_db)):
     """Drill-down page for a single investor."""
-    sync_turso()
+    sync_if_stale()
 
     investor = session.query(Investor).filter_by(slug=slug).first()
     if not investor:
@@ -1587,7 +1613,7 @@ async def sector_deals(request: Request, sector_name: str, session=Depends(get_d
 @app.get("/map", response_class=HTMLResponse)
 async def map_view(request: Request, session=Depends(get_db)):
     """Interactive map of geocoded master list deals."""
-    sync_turso()
+    sync_if_stale()
     items = active_master(session).filter(
         MasterItem.latitude != None
     ).order_by(MasterItem.curated_at.desc()).all()
