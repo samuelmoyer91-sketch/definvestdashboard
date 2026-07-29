@@ -1,0 +1,49 @@
+name: Export Deals
+
+# Manual data pull for analysis work. Actions is the only place outside the
+# app with Turso credentials, and it is the only way to get the curated
+# `company` field: the local replica goes stale, and the published site
+# renders headlines rather than company names.
+
+on:
+  workflow_dispatch:
+    inputs:
+      sectors:
+        description: 'Comma-separated sector filter (blank = all deals)'
+        required: false
+        default: ''
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Export deals
+        env:
+          TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+        run: |
+          python scripts/export_deals.py \
+            --out exports/deals.csv \
+            --sectors "${{ inputs.sectors }}"
+
+      - name: Upload CSV
+        uses: actions/upload-artifact@v4
+        with:
+          name: deals-export
+          path: exports/deals.csv
+          retention-days: 7
