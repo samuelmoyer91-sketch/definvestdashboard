@@ -224,6 +224,16 @@ async def run_startup_migrations():
                 conn.commit()
                 logger.info(f"master_list.{col} column added successfully")
 
+        # Soft-delete columns on master_list (see MasterItem.removed_at)
+        for col, typedef in [("removed_at", "DATETIME"), ("removed_reason", "TEXT")]:
+            try:
+                conn.execute(sa_text(f"SELECT {col} FROM master_list LIMIT 1"))
+            except Exception:
+                logger.info(f"Adding {col} column to master_list...")
+                conn.execute(sa_text(f"ALTER TABLE master_list ADD COLUMN {col} {typedef}"))
+                conn.commit()
+                logger.info(f"master_list.{col} column added successfully")
+
         # Check if deal_status column exists on ai_extractions
         try:
             conn.execute(sa_text("SELECT deal_status FROM ai_extractions LIMIT 1"))
@@ -490,6 +500,17 @@ def _triage_action_response(request: Request):
     return RedirectResponse(url="/", status_code=303)
 
 
+def active_master(session):
+    """Master-list query excluding soft-deleted deals.
+
+    Every user-facing view of the master list must go through this, or removed
+    duplicates reappear somewhere. Deliberately NOT used for lookups by
+    item_id during accept — those must still see removed rows so re-accepting
+    an item updates the existing row instead of creating a second one.
+    """
+    return session.query(MasterItem).filter(MasterItem.removed_at.is_(None))
+
+
 def _triage_queue_items(session):
     """Base triage-queue query, shared by the main queue (/) and the
     Possible Duplicates page. Returns RawItem rows with .article_content and
@@ -580,7 +601,7 @@ def _queue_dup_flagged_ids(session, queue_items):
         'title': m.title or m.company,
         'source': m.source_url,
         'location': m.location,
-    } for m in session.query(MasterItem).all()]
+    } for m in active_master(session).all()]
 
     # Items Sam explicitly confirmed are NOT duplicates carry a marker in
     # relevance_flags; never re-flag them.
@@ -600,7 +621,7 @@ async def home(request: Request, session=Depends(get_db)):
     items = [i for i in all_items if i.id not in flagged]
 
     total_items = len(items)
-    master_count = session.query(MasterItem).count()
+    master_count = active_master(session).count()
 
     # Render only the top of the queue. Every accept/reject redirects back
     # here, so the whole page is rebuilt on each click — and each card carries
@@ -660,7 +681,7 @@ async def possible_duplicates(request: Request, session=Depends(get_db)):
         'title': m.title or m.company,
         'source': m.source_url,
         'location': m.location,
-    } for m in session.query(MasterItem).all()]
+    } for m in active_master(session).all()]
 
     result = dedup.find_queue_duplicates([q_dict(i) for i in eligible], published)
 
@@ -870,7 +891,7 @@ async def master_list(request: Request, session=Depends(get_db)):
     """View master list of accepted items."""
     sync_turso()
 
-    master_items = session.query(MasterItem).join(
+    master_items = active_master(session).join(
         RawItem, MasterItem.item_id == RawItem.id
     ).order_by(
         MasterItem.curated_at.desc()
@@ -890,17 +911,23 @@ async def master_list(request: Request, session=Depends(get_db)):
 
 @app.get("/duplicates", response_class=HTMLResponse)
 async def duplicates(request: Request, session=Depends(get_db)):
-    """Read-only duplicate-deal report over the master list.
+    """Duplicate-deal report over the master list, with in-place removal.
 
     Surfaces deals that look like the same underlying event (same company +
-    matching amount within a time window) so they can be merged/removed via
-    the edit UI. Does NOT modify anything — purely a report. Matching logic
-    and thresholds live in src/utils/dedup.py (shared with the CLI script).
+    matching amount within a time window). Each flagged row can be removed
+    right here via POST /master/{id}/remove — previously the only action was
+    an Edit link that bounced to /master with no way back to the row, and no
+    delete existed at all. Matching logic and thresholds live in
+    src/utils/dedup.py (shared with the CLI script).
+
+    Within each cluster, entries are ranked best-source-first by the same
+    _source_sort_key the triage dedup UI uses, so the top row is a real
+    "keep this one" recommendation rather than just the oldest item.
     """
     from src.utils import dedup
     sync_turso()
 
-    rows = session.query(MasterItem).all()
+    rows = active_master(session).all()
     deals = [{
         'id': r.id,
         'company': r.company or r.title,
@@ -915,10 +942,17 @@ async def duplicates(request: Request, session=Depends(get_db)):
     # Pre-format for the template (Jinja can't call our helpers easily)
     for bucket in (result['likely'], result['distinct']):
         for cluster in bucket:
-            for d in cluster['entries']:
+            cluster['entries'].sort(key=dedup._source_sort_key)
+            for i, d in enumerate(cluster['entries']):
                 d['amount_fmt'] = dedup.fmt_amount(d['amount_num'])
                 d['date_fmt'] = d['date'].strftime('%Y-%m-%d') if d['date'] else '—'
                 d['is_flagged'] = d['id'] in cluster['flagged_ids']
+                # Best-ranked entry in a genuine dup cluster is the keeper
+                d['is_keeper'] = (i == 0 and bool(cluster['flagged_ids']))
+
+    removed_count = session.query(MasterItem).filter(
+        MasterItem.removed_at.isnot(None)
+    ).count()
 
     return templates.TemplateResponse("duplicates.html", {
         "request": request,
@@ -926,8 +960,64 @@ async def duplicates(request: Request, session=Depends(get_db)):
         "distinct": result['distinct'],
         "overcount_fmt": dedup.fmt_amount(result['overcount']),
         "scanned": len(deals),
+        "removed_count": removed_count,
         "window_days": dedup.WINDOW_DAYS,
         "tolerance_pct": int(dedup.AMOUNT_TOLERANCE * 100),
+    })
+
+
+@app.post("/master/{master_id}/remove")
+async def remove_master_item(master_id: int, request: Request,
+                             reason: str = Form(default="duplicate"),
+                             session=Depends(get_db)):
+    """Soft-delete a published deal (default use: a duplicate).
+
+    Sets removed_at rather than deleting the row. Dedup matching is a
+    heuristic — 5% amount tolerance over a 30-day window will occasionally
+    flag two genuinely separate raises — so removal has to be reversible.
+    Undo lives at /removed.
+    """
+    master = session.query(MasterItem).filter_by(id=master_id).first()
+    if not master:
+        return HTMLResponse(content="<h1>Not Found</h1>", status_code=404)
+
+    if master.removed_at is None:
+        master.removed_at = datetime.utcnow()
+        master.removed_reason = reason or "duplicate"
+        session.commit()
+        sync_turso()
+
+    # The report page removes the row client-side; a plain form gets a redirect.
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return Response(status_code=204)
+    return RedirectResponse(url="/duplicates", status_code=303)
+
+
+@app.post("/master/{master_id}/restore")
+async def restore_master_item(master_id: int, session=Depends(get_db)):
+    """Undo a soft delete, putting the deal back on the dashboard."""
+    master = session.query(MasterItem).filter_by(id=master_id).first()
+    if not master:
+        return HTMLResponse(content="<h1>Not Found</h1>", status_code=404)
+
+    master.removed_at = None
+    master.removed_reason = None
+    session.commit()
+    sync_turso()
+    return RedirectResponse(url="/removed", status_code=303)
+
+
+@app.get("/removed", response_class=HTMLResponse)
+async def removed_list(request: Request, session=Depends(get_db)):
+    """Deals soft-deleted from the dashboard, newest first, with Restore."""
+    sync_turso()
+    items = session.query(MasterItem).filter(
+        MasterItem.removed_at.isnot(None)
+    ).order_by(MasterItem.removed_at.desc()).all()
+
+    return templates.TemplateResponse("removed.html", {
+        "request": request,
+        "items": items,
     })
 
 
@@ -962,7 +1052,7 @@ async def stats(request: Request, session=Depends(get_db)):
 
     total_raw = session.query(RawItem).count()
     total_scraped = session.query(ArticleContent).filter_by(scrape_success=True).count()
-    total_master = session.query(MasterItem).count()
+    total_master = active_master(session).count()
 
     feed_counts = session.query(
         RawItem.feed_source,
@@ -1234,7 +1324,7 @@ async def investors_list(request: Request, session=Depends(get_db)):
     ).all()
 
     total_investors = len(investors)
-    total_with_investors = session.query(MasterItem).filter(
+    total_with_investors = active_master(session).filter(
         MasterItem.investors != None,
         MasterItem.investors != ''
     ).count()
@@ -1320,7 +1410,7 @@ def _format_amount(value):
 @app.get("/sectors", response_class=HTMLResponse)
 async def sectors_list(request: Request, session=Depends(get_db)):
     """View deal activity by sector/technology."""
-    items = session.query(MasterItem).filter(
+    items = active_master(session).filter(
         MasterItem.sectors != None,
         MasterItem.sectors != ''
     ).order_by(MasterItem.curated_at.desc()).all()
@@ -1370,7 +1460,7 @@ async def sector_deals(request: Request, sector_name: str, session=Depends(get_d
     sector_name = unquote(sector_name)
 
     # Find master items containing this sector
-    all_items = session.query(MasterItem).filter(
+    all_items = active_master(session).filter(
         MasterItem.sectors != None
     ).order_by(MasterItem.curated_at.desc()).all()
 
@@ -1393,7 +1483,7 @@ async def sector_deals(request: Request, sector_name: str, session=Depends(get_d
 async def map_view(request: Request, session=Depends(get_db)):
     """Interactive map of geocoded master list deals."""
     sync_turso()
-    items = session.query(MasterItem).filter(
+    items = active_master(session).filter(
         MasterItem.latitude != None
     ).order_by(MasterItem.curated_at.desc()).all()
 

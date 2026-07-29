@@ -172,6 +172,17 @@ class MasterItem(Base):
     published = Column(Boolean, default=False)
     published_at = Column(DateTime)
 
+    # Soft delete. Set when a deal is removed from the dashboard (usually a
+    # duplicate caught by /duplicates after publishing). Rows are never hard
+    # deleted: dedup matching is a heuristic, so a removal can be a false
+    # positive and must stay reversible. Anything user-facing — master list,
+    # map, stats, sector/investor pages, and both exports — filters on
+    # removed_at IS NULL. Lookups by item_id deliberately do NOT filter, so a
+    # re-accepted item still finds its existing row instead of inserting a
+    # second one.
+    removed_at = Column(DateTime)
+    removed_reason = Column(Text)
+
     # Relationships
     raw_item = relationship("RawItem", back_populates="master")
     investor_links = relationship("DealInvestor", back_populates="master_item", cascade="all, delete-orphan")

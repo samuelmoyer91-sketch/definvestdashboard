@@ -21,7 +21,8 @@ def export_map_data(output_file='github_site/deals/map-data.json'):
     session = get_session()
     try:
         items = session.query(MasterItem).filter(
-            MasterItem.latitude != None
+            MasterItem.latitude != None,
+            MasterItem.removed_at.is_(None),   # skip soft-deleted duplicates
         ).order_by(MasterItem.curated_at.desc()).all()
 
         features = []

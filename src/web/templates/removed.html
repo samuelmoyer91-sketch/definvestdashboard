@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Removed Deals - Defense Capital Tracker{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+    <h2 style="margin: 0;">Removed Deals ({{ items | length }})</h2>
+    <a href="/duplicates" style="font-size: 14px;">&larr; Duplicate Check</a>
+</div>
+
+<p style="color: #666; margin-bottom: 20px; font-size: 14px; max-width: 760px;">
+    Deals taken off the dashboard — usually duplicates caught after publishing.
+    They are hidden from the master list, map, stats, and both exports, but the
+    records are intact. <strong>Restore</strong> puts one back.
+</p>
+
+{% if items | length == 0 %}
+<div class="card">
+    <p style="text-align: center; color: #666;">Nothing removed.</p>
+</div>
+{% else %}
+<div class="card">
+    <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+        <tr style="text-align: left; color: #666; border-bottom: 2px solid #eee;">
+            <th style="padding: 8px;">Removed</th>
+            <th style="padding: 8px;">Company</th>
+            <th style="padding: 8px;">Amount</th>
+            <th style="padding: 8px;">Title</th>
+            <th style="padding: 8px;">Reason</th>
+            <th style="padding: 8px;"></th>
+        </tr>
+        {% for item in items %}
+        <tr style="border-top: 1px solid #eee;">
+            <td style="padding: 8px; white-space: nowrap; color: #666;">{{ item.removed_at.strftime('%Y-%m-%d') if item.removed_at else '—' }}</td>
+            <td style="padding: 8px; font-weight: 600;">{{ item.company or '—' }}</td>
+            <td style="padding: 8px; white-space: nowrap;">{{ item.investment_amount or '—' }}</td>
+            <td style="padding: 8px;">{{ item.title or '—' }}</td>
+            <td style="padding: 8px; color: #888;">{{ item.removed_reason or '—' }}</td>
+            <td style="padding: 8px; white-space: nowrap;">
+                <form method="post" action="/master/{{ item.id }}/restore" style="margin: 0;">
+                    <button type="submit"
+                            style="background:none; color:#4c9173; border:1px solid #4c9173; border-radius:3px; padding:3px 9px; font-size:12px; cursor:pointer;">
+                        Restore
+                    </button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endif %}
+{% endblock %}

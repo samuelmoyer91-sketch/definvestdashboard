@@ -7,18 +7,23 @@
 
 <p style="color: #666; margin-bottom: 20px; font-size: 14px; max-width: 760px;">
     Deals that look like the same underlying event — same company, matching dollar
-    amount within {{ window_days }} days (±{{ tolerance_pct }}%). This is a
-    <strong>read-only report</strong>; nothing is changed automatically. Review each
-    cluster and merge or remove confirmed duplicates using the <em>Edit</em> link.
-    Cards marked <span style="color:#bf616a; font-weight:700;">&raquo;</span> are the
-    ones matched as likely duplicates; others share the company name but were judged
-    distinct (e.g. different facilities that happen to share an amount).
+    amount within {{ window_days }} days (±{{ tolerance_pct }}%). Rows marked
+    <span style="color:#bf616a; font-weight:700;">&raquo;</span> are the ones matched
+    as likely duplicates; others share the company name but were judged distinct
+    (e.g. different facilities that happen to share an amount). Within each cluster
+    the <span style="color:#88c540; font-weight:700;">&#10003;</span> row is the
+    best source — keep that one and remove the rest.
+    <strong>Remove</strong> is reversible: deals go to
+    <a href="/removed">Removed</a>, not the bin.
 </p>
 
 <div class="card" style="margin-bottom: 24px; display: flex; gap: 32px; flex-wrap: wrap;">
     <div><div class="stat-number">{{ likely | length }}</div><div style="color:#666; font-size:13px;">likely-dup clusters</div></div>
     <div><div class="stat-number">{{ scanned }}</div><div style="color:#666; font-size:13px;">deals scanned</div></div>
     <div><div class="stat-number" style="color:#bf616a;">{{ overcount_fmt }}</div><div style="color:#666; font-size:13px;">est. double-counted capital</div></div>
+    {% if removed_count %}
+    <div><div class="stat-number">{{ removed_count }}</div><div style="color:#666; font-size:13px;"><a href="/removed">removed</a></div></div>
+    {% endif %}
 </div>
 
 {% if likely | length == 0 %}
@@ -35,12 +40,21 @@
     </div>
     <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
         {% for d in cluster.entries %}
-        <tr style="border-top: 1px solid #eee; {% if d.is_flagged %}background: #fbeaec;{% endif %}">
-            <td style="padding: 6px 8px; width: 28px; color: #bf616a; font-weight: 700;">{% if d.is_flagged %}&raquo;{% endif %}</td>
+        <tr id="deal-row-{{ d.id }}" style="border-top: 1px solid #eee; {% if d.is_flagged %}background: #fbeaec;{% endif %}">
+            <td style="padding: 6px 8px; width: 28px; font-weight: 700;">
+                {% if d.is_keeper %}<span style="color:#88c540;" title="Best source — keep this one">&#10003;</span>
+                {% elif d.is_flagged %}<span style="color:#bf616a;">&raquo;</span>{% endif %}
+            </td>
             <td style="padding: 6px 8px; white-space: nowrap; color: #666;">{{ d.date_fmt }}</td>
             <td style="padding: 6px 8px; white-space: nowrap; font-weight: 600;">{{ d.amount_fmt }}</td>
             <td style="padding: 6px 8px;">{{ d.title }}</td>
-            <td style="padding: 6px 8px; white-space: nowrap;"><a href="/edit/{{ d.id }}">Edit</a></td>
+            <td style="padding: 6px 8px; white-space: nowrap;">
+                <button type="button" class="remove-deal" data-id="{{ d.id }}"
+                        data-label="{{ d.title }}"
+                        style="background:#bf616a; color:#fff; border:0; border-radius:3px; padding:3px 9px; font-size:12px; cursor:pointer;">
+                    Remove
+                </button>
+            </td>
         </tr>
         {% endfor %}
     </table>
@@ -61,11 +75,17 @@
             </div>
             <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
                 {% for d in cluster.entries %}
-                <tr style="border-top: 1px solid #eee;">
+                <tr id="deal-row-{{ d.id }}" style="border-top: 1px solid #eee;">
                     <td style="padding: 6px 8px; white-space: nowrap; color: #666;">{{ d.date_fmt }}</td>
                     <td style="padding: 6px 8px; white-space: nowrap; font-weight: 600;">{{ d.amount_fmt }}</td>
                     <td style="padding: 6px 8px;">{{ d.title }}</td>
-                    <td style="padding: 6px 8px; white-space: nowrap;"><a href="/edit/{{ d.id }}">Edit</a></td>
+                    <td style="padding: 6px 8px; white-space: nowrap;">
+                        <button type="button" class="remove-deal" data-id="{{ d.id }}"
+                                data-label="{{ d.title }}"
+                                style="background:none; color:#bf616a; border:1px solid #bf616a; border-radius:3px; padding:3px 9px; font-size:12px; cursor:pointer;">
+                            Remove
+                        </button>
+                    </td>
                 </tr>
                 {% endfor %}
             </table>
@@ -74,4 +94,38 @@
     </div>
 </details>
 {% endif %}
+
+<script>
+// Remove strikes the row out immediately rather than reloading the report —
+// a reload would re-cluster everything and lose your place on a long page.
+document.addEventListener('click', function (e) {
+    const btn = e.target.closest('.remove-deal');
+    if (!btn) return;
+
+    const id = btn.dataset.id;
+    const row = document.getElementById('deal-row-' + id);
+    btn.disabled = true;
+    btn.textContent = '...';
+
+    fetch('/master/' + id + '/remove', {
+        method: 'POST',
+        headers: {'X-Requested-With': 'XMLHttpRequest'},
+        body: new URLSearchParams({reason: 'duplicate'})
+    }).then(function (r) {
+        if (!r.ok && r.status !== 204) throw new Error('HTTP ' + r.status);
+        if (row) {
+            row.style.opacity = '0.45';
+            row.style.textDecoration = 'line-through';
+        }
+        btn.textContent = 'Removed';
+        btn.style.background = 'none';
+        btn.style.color = '#888';
+        btn.style.border = '1px solid #ccc';
+    }).catch(function (err) {
+        btn.disabled = false;
+        btn.textContent = 'Retry';
+        console.error('Remove failed', err);
+    });
+});
+</script>
 {% endblock %}

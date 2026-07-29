@@ -50,7 +50,7 @@ def main():
     args = ap.parse_args()
 
     session = get_session()
-    q = session.query(MasterItem)
+    q = session.query(MasterItem).filter(MasterItem.removed_at.is_(None))
     if args.published:
         q = q.filter(MasterItem.published == True)  # noqa: E712
     rows = q.all()

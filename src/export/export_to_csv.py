@@ -15,7 +15,9 @@ def export_master_to_csv(output_path='exports/master_list.csv'):
     session = get_session()
 
     # Get all master items with their raw item data
-    master_items = session.query(MasterItem).join(
+    master_items = session.query(MasterItem).filter(
+        MasterItem.removed_at.is_(None)   # skip soft-deleted duplicates
+    ).join(
         RawItem, MasterItem.item_id == RawItem.id
     ).order_by(
         RawItem.published_date.desc()  # Most recent first
@@ -78,7 +80,9 @@ def print_summary():
     """Print summary of master list for preview."""
     session = get_session()
 
-    master_items = session.query(MasterItem).join(
+    master_items = session.query(MasterItem).filter(
+        MasterItem.removed_at.is_(None)   # skip soft-deleted duplicates
+    ).join(
         RawItem, MasterItem.item_id == RawItem.id
     ).order_by(
         RawItem.published_date.desc()

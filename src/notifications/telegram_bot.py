@@ -117,7 +117,7 @@ def get_queue_status() -> Dict[str, int]:
         new = session.query(RawItem).filter_by(status='new').count()
         scraped = session.query(ArticleContent).filter_by(scrape_success=True).count()
         with_ai = session.query(AIExtraction).filter_by(summary_complete=True).count()
-        approved = session.query(MasterItem).count()
+        approved = session.query(MasterItem).filter(MasterItem.removed_at.is_(None)).count()
         rejected = session.query(RejectedItem).count()
 
         return {

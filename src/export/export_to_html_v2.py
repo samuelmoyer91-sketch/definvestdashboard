@@ -243,7 +243,9 @@ def generate_deals_html(output_file=None, deals_per_page=10):
     # Get deals with AI summaries
     session = get_session()
     try:
-        deals = session.query(MasterItem, RawItem, AIExtraction).join(
+        deals = session.query(MasterItem, RawItem, AIExtraction).filter(
+            MasterItem.removed_at.is_(None)   # skip soft-deleted duplicates
+        ).join(
             RawItem, MasterItem.item_id == RawItem.id
         ).outerjoin(
             AIExtraction, AIExtraction.item_id == RawItem.id
