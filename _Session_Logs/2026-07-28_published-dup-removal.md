@@ -66,6 +66,48 @@ lines to LF. Reverted and re-patched in binary mode. **Check line endings
 before scripting an edit** — `models.py` is CRLF too; the Edit tool preserves
 them, a naive Python rewrite does not.
 
+## Production incident: the startup migration lied
+
+Shipping this broke the triage app. Every page calling `active_master()` 500'd
+with `no such column: master_list.removed_at`.
+
+**Cause: DDL issued through the libsql embedded replica does not reach the
+Turso primary.** The startup migration in `app.py` ran, logged
+`"removed_at column added successfully"`, and the column was not there. This
+was confirmed, not guessed — the repair job read the primary and reported both
+columns `MISSING` before adding them.
+
+**Fix: run DDL from GitHub Actions.** Actions writes to this database every day
+and is the proven path. Added `scripts/migrate_soft_delete.py` (idempotent,
+`--check` dry-run, verifies the columns are queryable after `sync_turso()`) and
+a manual `.github/workflows/migrate.yml`. Ran it, and the app recovered.
+
+```bash
+gh workflow run migrate.yml -f script=<name>.py
+```
+
+The in-app block was hardened rather than removed: `PRAGMA table_info` instead
+of try-SELECT-except-ALTER, plus a verification pass that logs a loud
+`SCHEMA:` error naming the fix. It no longer claims success it cannot confirm.
+
+**Two process failures worth remembering:**
+
+1. **A local SQLite pass is not evidence for Turso.** The migration was tested
+   against plain SQLite, where it works perfectly. Different write path.
+2. **`/health` does not exercise the database.** It returned 200 for the entire
+   outage, and polling it was reported as evidence the deploy was clean. Any
+   future schema change needs a check against a page that actually reads
+   `master_list` — and those are all behind basic auth, so that check belongs
+   to Sam, before the work is called done.
+
+## Correction to the numbers above
+
+The migration reported **628 active deals** in production. The duplicate
+analysis in this log (480 scanned, 23 flagged, $545.5M double-counted) came
+from the local `turso_replica.db`, which is stale. **The real figures are
+higher.** Cluster counts and the overcount estimate on the live page will not
+match what is written above.
+
 ## Open
 
 - The dedup blind spot Sam should know about: `amounts_match` returns False
