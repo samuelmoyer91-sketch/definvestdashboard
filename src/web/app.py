@@ -224,15 +224,39 @@ async def run_startup_migrations():
                 conn.commit()
                 logger.info(f"master_list.{col} column added successfully")
 
-        # Soft-delete columns on master_list (see MasterItem.removed_at)
-        for col, typedef in [("removed_at", "DATETIME"), ("removed_reason", "TEXT")]:
-            try:
-                conn.execute(sa_text(f"SELECT {col} FROM master_list LIMIT 1"))
-            except Exception:
+        # Soft-delete columns on master_list (see MasterItem.removed_at).
+        #
+        # Uses PRAGMA rather than the try-SELECT-except-ALTER pattern above,
+        # and VERIFIES the result. The first cut of this used that pattern,
+        # logged "added successfully" on Railway, and left the columns absent
+        # — every page then 500'd with "no such column: master_list.removed_at".
+        # DDL issued here does not reliably reach the Turso primary, so the
+        # real fix is scripts/migrate_soft_delete.py run from GitHub Actions.
+        # This block stays as a best effort for local/SQLite, but it must not
+        # claim success it cannot confirm.
+        try:
+            present = {r[1] for r in conn.execute(
+                sa_text("PRAGMA table_info(master_list)")).fetchall()}
+            for col, typedef in [("removed_at", "DATETIME"), ("removed_reason", "TEXT")]:
+                if col in present:
+                    continue
                 logger.info(f"Adding {col} column to master_list...")
                 conn.execute(sa_text(f"ALTER TABLE master_list ADD COLUMN {col} {typedef}"))
                 conn.commit()
-                logger.info(f"master_list.{col} column added successfully")
+
+            after = {r[1] for r in conn.execute(
+                sa_text("PRAGMA table_info(master_list)")).fetchall()}
+            missing = [c for c, _ in [("removed_at", None), ("removed_reason", None)]
+                       if c not in after]
+            if missing:
+                logger.error(
+                    "SCHEMA: master_list is missing %s after migration. The app "
+                    "WILL 500 on the master list, map, stats and dup pages. Fix: "
+                    "gh workflow run migrate.yml", missing)
+            else:
+                logger.info("master_list soft-delete columns verified present")
+        except Exception as e:
+            logger.error(f"SCHEMA: soft-delete migration failed: {e}")
 
         # Check if deal_status column exists on ai_extractions
         try:

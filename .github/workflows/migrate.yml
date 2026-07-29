@@ -1,0 +1,46 @@
+name: Run Migration
+
+# Manual-only. Schema changes need a path to the Turso primary that actually
+# works; the startup migration inside the Railway app reported success but
+# left the columns missing (see scripts/migrate_soft_delete.py). Actions
+# writes to this database every day, so it is the reliable place to run DDL.
+
+on:
+  workflow_dispatch:
+    inputs:
+      script:
+        description: 'Migration script under scripts/'
+        required: true
+        default: 'migrate_soft_delete.py'
+      check_only:
+        description: 'Report what would change without writing'
+        type: boolean
+        required: false
+        default: false
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run migration
+        env:
+          TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+        run: |
+          python "scripts/${{ inputs.script }}" \
+            ${{ inputs.check_only && '--check' || '' }}
