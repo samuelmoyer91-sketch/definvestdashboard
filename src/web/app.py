@@ -8,6 +8,7 @@ import logging
 import os
 import secrets
 import time
+from collections import deque
 from fastapi import BackgroundTasks, FastAPI, Request, Form, Query, Depends
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -362,11 +363,33 @@ async def diagnostics():
 
     overall = "healthy" if db_ok and all(env_status.values()) else "unhealthy"
 
+    recent = list(_accept_timings)
+    accepts = [t["total_ms"] for t in recent if t["kind"] == "accept"]
+    rejects = [t["total_ms"] for t in recent if t["kind"] == "reject"]
+
+    def summarize(vals):
+        if not vals:
+            return None
+        s = sorted(vals)
+        return {
+            "n": len(s),
+            "median_ms": s[len(s) // 2],
+            "slowest_ms": s[-1],
+            "fastest_ms": s[0],
+        }
+
     return {
         "overall": overall,
         "env_vars": env_status,
         "database": {"connected": db_ok, "error": db_error},
         "counts": counts,
+        # Where triage time actually goes. Phase breakdown per action, plus
+        # summaries — read this instead of guessing at the cause.
+        "timings": {
+            "accept": summarize(accepts),
+            "reject": summarize(rejects),
+            "recent": recent[-15:],
+        },
     }
 
 
@@ -510,7 +533,51 @@ DEDUP_KEEP_MARKER = "dedup_keep"
 TRIAGE_PAGE_SIZE = 20
 
 
-def _triage_action_response(request: Request):
+# Accept has felt slow since the system was first built — long before the
+# dedup or pagination work — and the card only disappears once the server
+# answers, so the wait is server-side. Rather than guess again, time each
+# phase and keep the last N so the numbers can be read off /api/diagnostics.
+# Also emitted as a Server-Timing header, which browser devtools graphs for
+# free on the Network tab.
+_accept_timings = deque(maxlen=50)
+
+
+class _Phases:
+    """Stopwatch that records elapsed ms between mark() calls."""
+
+    def __init__(self):
+        self._t0 = time.perf_counter()
+        self._last = self._t0
+        self.marks = []
+
+    def mark(self, name):
+        now = time.perf_counter()
+        self.marks.append((name, round((now - self._last) * 1000, 1)))
+        self._last = now
+
+    @property
+    def total_ms(self):
+        return round((time.perf_counter() - self._t0) * 1000, 1)
+
+    def header(self):
+        """Server-Timing header value, e.g. 'lookup;dur=3.2, commit;dur=812.0'."""
+        parts = [f"{n};dur={ms}" for n, ms in self.marks]
+        parts.append(f"total;dur={self.total_ms}")
+        return ", ".join(parts)
+
+    def record(self, kind):
+        entry = {
+            "kind": kind,
+            "at": datetime.utcnow().isoformat(timespec="seconds"),
+            "total_ms": self.total_ms,
+            "phases": dict(self.marks),
+        }
+        _accept_timings.append(entry)
+        logger.info("TIMING %s total=%sms %s", kind, entry["total_ms"], entry["phases"])
+        return entry
+
+
+def _triage_action_response(request: Request, phases=None):
     """Response for accept/reject.
 
     The triage UI calls these with fetch() and removes the card itself, so the
@@ -519,9 +586,10 @@ def _triage_action_response(request: Request):
     click, only for the browser to throw it away. Return 204 to those callers
     instead. item_detail.html posts a real <form> and still needs the redirect.
     """
+    headers = {"Server-Timing": phases.header()} if phases else None
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        return Response(status_code=204)
-    return RedirectResponse(url="/", status_code=303)
+        return Response(status_code=204, headers=headers)
+    return RedirectResponse(url="/", status_code=303, headers=headers)
 
 
 def active_master(session):
@@ -818,8 +886,10 @@ async def accept_item(
     session=Depends(get_db),
 ):
     """Accept item and add to master list."""
+    phases = _Phases()
     # Check if already in master
     existing = session.query(MasterItem).filter_by(item_id=item_id).first()
+    phases.mark("lookup")
 
     if not existing:
         # Format investment amount with $ prefix
@@ -848,8 +918,11 @@ async def accept_item(
         session.add(master)
         session.flush()  # Get master.id for investor links
 
+        phases.mark("build")
+
         # Parse investors and create links
         _sync_investor_links(session, master)
+        phases.mark("investors")
 
         # Auto-reject duplicate articles about the same company within 7 days
         accepted_raw = session.query(RawItem).filter_by(id=item_id).first()
@@ -890,24 +963,32 @@ async def accept_item(
                             rejection_reason=f"Duplicate — {company} already accepted from another source"
                         ))
 
+        phases.mark("autoreject_scan")
+
         session.commit()
+        phases.mark("commit")
         background_tasks.add_task(sync_turso)
 
-    return _triage_action_response(request)
+    phases.record("accept")
+    return _triage_action_response(request, phases)
 
 
 @app.post("/reject/{item_id}")
 async def reject_item(item_id: int, request: Request, background_tasks: BackgroundTasks, rejection_reason: str = Form(default=None), session=Depends(get_db)):
     """Reject item and remove from triage queue."""
+    phases = _Phases()
     existing = session.query(RejectedItem).filter_by(item_id=item_id).first()
+    phases.mark("lookup")
 
     if not existing:
         rejected = RejectedItem(item_id=item_id, rejection_reason=rejection_reason)
         session.add(rejected)
         session.commit()
+        phases.mark("commit")
         background_tasks.add_task(sync_turso)
 
-    return _triage_action_response(request)
+    phases.record("reject")
+    return _triage_action_response(request, phases)
 
 
 @app.get("/master", response_class=HTMLResponse)
