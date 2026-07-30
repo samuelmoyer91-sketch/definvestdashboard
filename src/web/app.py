@@ -125,6 +125,9 @@ _SYNC_INTERVAL = 300  # seconds (5 minutes)
 _pending_sync: bool = False
 _last_sync_ms: float = 0.0
 
+_STARTED_AT_TS = time.time()
+_STARTED_AT = datetime.utcnow().isoformat(timespec="seconds")
+
 
 def mark_dirty():
     """Note that we wrote something, without paying for a sync right now.
@@ -354,8 +357,43 @@ async def global_exception_handler(request: Request, exc: Exception):
 
 @app.get("/health")
 async def health_check():
-    """Health check endpoint for Railway/container orchestration."""
-    return {"status": "healthy"}
+    """Health check for Railway, plus enough to answer two questions from
+    outside the auth wall: which commit is actually serving, and how long
+    triage actions are taking.
+
+    /health is the only unauthenticated route, and during the schema outage
+    it returned 200 the whole time — a green health check proved nothing.
+    Reporting the running commit makes "did the deploy land?" answerable
+    instead of assumed, and the timing medians make "is it still slow?"
+    answerable without asking Sam to open devtools.
+
+    Deliberately limited to operational metadata: commit sha, uptime, and
+    action durations. No deal content, no counts of the data itself, nothing
+    that isn't already implied by the site being up.
+    """
+    summary = {}
+    for kind in ("accept", "reject"):
+        vals = sorted(t["total_ms"] for t in _accept_timings if t["kind"] == kind)
+        if vals:
+            summary[kind] = {
+                "n": len(vals),
+                "median_ms": vals[len(vals) // 2],
+                "slowest_ms": vals[-1],
+                "slowest_phase": max(
+                    (t for t in _accept_timings if t["kind"] == kind),
+                    key=lambda t: t["total_ms"],
+                )["phases"],
+            }
+
+    return {
+        "status": "healthy",
+        "commit": (os.environ.get("RAILWAY_GIT_COMMIT_SHA") or "unknown")[:8],
+        "started_at": _STARTED_AT,
+        "uptime_s": round(time.time() - _STARTED_AT_TS),
+        "last_sync_ms": _last_sync_ms,
+        "pending_sync": _pending_sync,
+        "timings": summary or None,
+    }
 
 
 @app.get("/api/diagnostics")
