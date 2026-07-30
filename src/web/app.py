@@ -6,6 +6,7 @@ import hmac
 import json
 import logging
 import os
+import contextvars
 import secrets
 import time
 from collections import deque
@@ -100,6 +101,80 @@ app.add_middleware(BasicAuthMiddleware)
 
 
 # =============================================================================
+# Whole-request timing
+# =============================================================================
+#
+# The per-phase timers inside accept/reject start on the FIRST LINE OF THE
+# HANDLER BODY, which makes them blind to most of a request. Sam reports
+# 10-15s clicks while those timers report ~76ms, and they would report ~76ms
+# either way. Everything below happens before the handler body runs and was
+# never measured:
+#
+#   - Depends(get_db) -> get_session(), which acquires the DB connection.
+#     StaticPool holds exactly ONE connection for the whole process, so a
+#     request can block here waiting for whatever is using it.
+#   - BasicAuthMiddleware, and reading/parsing the form body.
+#   - Time queued on the event loop. Every route is `async def` doing blocking
+#     SQLAlchemy I/O, so one slow request stalls the loop for all others.
+#
+# This middleware wraps the entire ASGI call, so total_ms covers everything
+# the app is responsible for. pre_handler_ms is the gap the old timers could
+# not see. A large pre_handler_ms with a small handler total means the app is
+# WAITING (connection or event loop), not working — a different bug entirely
+# from a slow query, and it needs a different fix.
+#
+# Written as pure ASGI rather than BaseHTTPMiddleware, which adds its own
+# task-and-queue overhead per request and would pollute the measurement.
+
+_req_ctx: contextvars.ContextVar = contextvars.ContextVar("req_ctx", default=None)
+_TIMED_PREFIXES = ("/accept/", "/reject/", "/master/")
+
+
+class RequestTimingMiddleware:
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            return await self.app(scope, receive, send)
+
+        ctx = {"t0": time.perf_counter(), "path": scope.get("path", ""),
+               "method": scope.get("method", ""), "phases": None, "kind": None,
+               "session_ms": None, "handler_start": None, "ttfb_ms": None}
+        _req_ctx.set(ctx)
+
+        async def send_wrapper(message):
+            if message["type"] == "http.response.start" and ctx["ttfb_ms"] is None:
+                ctx["ttfb_ms"] = round((time.perf_counter() - ctx["t0"]) * 1000, 1)
+            await send(message)
+
+        try:
+            await self.app(scope, receive, send_wrapper)
+        finally:
+            total = round((time.perf_counter() - ctx["t0"]) * 1000, 1)
+            path = ctx["path"]
+            if any(path.startswith(p) for p in _TIMED_PREFIXES) or ctx["kind"]:
+                pre = (round((ctx["handler_start"] - ctx["t0"]) * 1000, 1)
+                       if ctx["handler_start"] else None)
+                entry = {
+                    "kind": ctx["kind"] or path.strip("/").split("/")[0] or "request",
+                    "at": datetime.utcnow().isoformat(timespec="seconds"),
+                    "total_ms": total,
+                    "ttfb_ms": ctx["ttfb_ms"],
+                    "pre_handler_ms": pre,
+                    "session_ms": ctx["session_ms"],
+                    "phases": ctx["phases"] or {},
+                }
+                _accept_timings.append(entry)
+                logger.info(
+                    "TIMING %s total=%sms pre_handler=%sms session=%sms phases=%s",
+                    entry["kind"], total, pre, ctx["session_ms"], entry["phases"])
+
+
+app.add_middleware(RequestTimingMiddleware)
+
+
+# =============================================================================
 # Database Dependency
 # =============================================================================
 
@@ -112,8 +187,19 @@ def _safe_url(url: str):
 
 
 def get_db():
-    """FastAPI dependency: yield a DB session and close it when done."""
+    """FastAPI dependency: yield a DB session and close it when done.
+
+    get_session() is timed because it runs BEFORE the handler body and was
+    therefore invisible to the per-phase timers. StaticPool keeps a single
+    connection for the process, so this is where a request blocks when
+    something else holds it — a prime suspect for clicks that take seconds
+    while the handler itself measures tens of milliseconds.
+    """
+    t0 = time.perf_counter()
     session = get_session()
+    ctx = _req_ctx.get()
+    if ctx is not None:
+        ctx["session_ms"] = round((time.perf_counter() - t0) * 1000, 1)
     try:
         yield session
     finally:
@@ -355,6 +441,38 @@ async def global_exception_handler(request: Request, exc: Exception):
 # Health & API Endpoints for Cloud Deployment
 # =============================================================================
 
+def _timing_summary():
+    """Per-action medians, split into waiting vs working.
+
+    pre_handler_ms is time the request spent before the handler body ran —
+    connection acquisition, middleware, event-loop queueing. If that dwarfs
+    handler_total, the app is blocked, not busy.
+    """
+    out = {}
+    for kind in ("accept", "reject"):
+        items = [t for t in _accept_timings if t["kind"] == kind]
+        if not items:
+            continue
+        tot = sorted(t["total_ms"] for t in items)
+        pre = sorted(t["pre_handler_ms"] for t in items if t.get("pre_handler_ms") is not None)
+        ses = sorted(t["session_ms"] for t in items if t.get("session_ms") is not None)
+        slowest = max(items, key=lambda t: t["total_ms"])
+        out[kind] = {
+            "n": len(items),
+            "median_total_ms": tot[len(tot) // 2],
+            "slowest_total_ms": tot[-1],
+            "median_pre_handler_ms": pre[len(pre) // 2] if pre else None,
+            "median_session_ms": ses[len(ses) // 2] if ses else None,
+            "slowest": {
+                "total_ms": slowest["total_ms"],
+                "pre_handler_ms": slowest.get("pre_handler_ms"),
+                "session_ms": slowest.get("session_ms"),
+                "phases": slowest.get("phases"),
+            },
+        }
+    return out
+
+
 @app.get("/health")
 async def health_check():
     """Health check for Railway, plus enough to answer two questions from
@@ -371,19 +489,7 @@ async def health_check():
     action durations. No deal content, no counts of the data itself, nothing
     that isn't already implied by the site being up.
     """
-    summary = {}
-    for kind in ("accept", "reject"):
-        vals = sorted(t["total_ms"] for t in _accept_timings if t["kind"] == kind)
-        if vals:
-            summary[kind] = {
-                "n": len(vals),
-                "median_ms": vals[len(vals) // 2],
-                "slowest_ms": vals[-1],
-                "slowest_phase": max(
-                    (t for t in _accept_timings if t["kind"] == kind),
-                    key=lambda t: t["total_ms"],
-                )["phases"],
-            }
+    summary = _timing_summary()
 
     return {
         "status": "healthy",
@@ -425,30 +531,18 @@ async def diagnostics():
     overall = "healthy" if db_ok and all(env_status.values()) else "unhealthy"
 
     recent = list(_accept_timings)
-    accepts = [t["total_ms"] for t in recent if t["kind"] == "accept"]
-    rejects = [t["total_ms"] for t in recent if t["kind"] == "reject"]
-
-    def summarize(vals):
-        if not vals:
-            return None
-        s = sorted(vals)
-        return {
-            "n": len(s),
-            "median_ms": s[len(s) // 2],
-            "slowest_ms": s[-1],
-            "fastest_ms": s[0],
-        }
 
     return {
         "overall": overall,
         "env_vars": env_status,
         "database": {"connected": db_ok, "error": db_error},
         "counts": counts,
-        # Where triage time actually goes. Phase breakdown per action, plus
-        # summaries — read this instead of guessing at the cause.
+        # Where triage time actually goes. total_ms is the WHOLE request;
+        # pre_handler_ms is the part spent before the handler body ran
+        # (connection acquisition, middleware, event-loop queueing). A big
+        # pre_handler_ms means blocked, not busy.
         "timings": {
-            "accept": summarize(accepts),
-            "reject": summarize(rejects),
+            **_timing_summary(),
             "recent": recent[-15:],
         },
     }
@@ -610,6 +704,11 @@ class _Phases:
         self._t0 = time.perf_counter()
         self._last = self._t0
         self.marks = []
+        # Tell the timing middleware when the handler body actually began, so
+        # it can report how long the request spent getting here.
+        ctx = _req_ctx.get()
+        if ctx is not None:
+            ctx["handler_start"] = self._t0
 
     def mark(self, name):
         now = time.perf_counter()
@@ -623,19 +722,26 @@ class _Phases:
     def header(self):
         """Server-Timing header value, e.g. 'lookup;dur=3.2, commit;dur=812.0'."""
         parts = [f"{n};dur={ms}" for n, ms in self.marks]
-        parts.append(f"total;dur={self.total_ms}")
+        ctx = _req_ctx.get()
+        if ctx is not None:
+            if ctx.get("session_ms") is not None:
+                parts.insert(0, f"session;dur={ctx['session_ms']}")
+            if ctx.get("handler_start"):
+                pre = round((ctx["handler_start"] - ctx["t0"]) * 1000, 1)
+                parts.insert(0, f"prehandler;dur={pre}")
+        parts.append(f"handler;dur={self.total_ms}")
         return ", ".join(parts)
 
     def record(self, kind):
-        entry = {
-            "kind": kind,
-            "at": datetime.utcnow().isoformat(timespec="seconds"),
-            "total_ms": self.total_ms,
-            "phases": dict(self.marks),
-        }
-        _accept_timings.append(entry)
-        logger.info("TIMING %s total=%sms %s", kind, entry["total_ms"], entry["phases"])
-        return entry
+        """Hand the phase breakdown to the middleware, which owns the ring
+        buffer — it is the only place that sees the whole request."""
+        phases = dict(self.marks)
+        phases["handler_total"] = self.total_ms
+        ctx = _req_ctx.get()
+        if ctx is not None:
+            ctx["phases"] = phases
+            ctx["kind"] = kind
+        return phases
 
 
 def _triage_action_response(request: Request, phases=None):
