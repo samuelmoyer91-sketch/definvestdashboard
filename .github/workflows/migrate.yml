@@ -12,11 +12,10 @@ on:
         description: 'Migration script under scripts/'
         required: true
         default: 'migrate_soft_delete.py'
-      check_only:
-        description: 'Report what would change without writing'
-        type: boolean
+      args:
+        description: 'Arguments passed to the script (e.g. --check, --cleanup)'
         required: false
-        default: false
+        default: ''
 
 jobs:
   migrate:
@@ -41,6 +40,4 @@ jobs:
         env:
           TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
           TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
-        run: |
-          python "scripts/${{ inputs.script }}" \
-            ${{ inputs.check_only && '--check' || '' }}
+        run: python "scripts/${{ inputs.script }}" ${{ inputs.args }}
