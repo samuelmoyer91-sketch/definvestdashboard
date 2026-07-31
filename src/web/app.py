@@ -155,6 +155,13 @@ app.add_middleware(BasicAuthMiddleware)
 # task-and-queue overhead per request and would pollute the measurement.
 
 _req_ctx: contextvars.ContextVar = contextvars.ContextVar("req_ctx", default=None)
+
+# Requests currently in flight. StaticPool gives the whole process a SINGLE
+# DB connection, so the keepalive ping must never fire while a request is
+# using it — two callers on one libsql connection is not safe. The keepalive
+# only needs to run when nothing else is talking to the database anyway,
+# which is precisely when the stream would otherwise be going stale.
+_inflight = 0
 _TIMED_PREFIXES = ("/accept/", "/reject/", "/master/")
 
 
@@ -176,9 +183,12 @@ class RequestTimingMiddleware:
                 ctx["ttfb_ms"] = round((time.perf_counter() - ctx["t0"]) * 1000, 1)
             await send(message)
 
+        global _inflight
+        _inflight += 1
         try:
             await self.app(scope, receive, send_wrapper)
         finally:
+            _inflight -= 1
             total = round((time.perf_counter() - ctx["t0"]) * 1000, 1)
             path = ctx["path"]
             if any(path.startswith(p) for p in _TIMED_PREFIXES) or ctx["kind"]:
@@ -303,6 +313,8 @@ async def start_db_keepalive():
     async def loop():
         while True:
             await asyncio.sleep(30)
+            if _inflight:
+                continue  # never share the single connection with a live request
             try:
                 # to_thread: the libsql call is blocking, and this must not
                 # stall the event loop it is meant to be protecting.
