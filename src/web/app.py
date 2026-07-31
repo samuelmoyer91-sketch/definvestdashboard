@@ -577,6 +577,14 @@ async def health_check():
         "last_sync_ms": _last_sync_ms,
         "pending_sync": _pending_sync,
         "timings": summary or None,
+        # Per-request sequence, not just medians: a one-off 15s reconnect on
+        # the first click after a deploy and a recurring one look identical in
+        # a median. Durations only — no deal content.
+        "recent": [
+            {k: t.get(k) for k in
+             ("kind", "at", "total_ms", "pre_handler_ms", "session_ms", "phases")}
+            for t in list(_accept_timings)[-20:]
+        ],
     }
 
 
@@ -1575,7 +1583,13 @@ def _sync_investor_links(session, master):
     old_links = session.query(DealInvestor).filter_by(master_item_id=master.id).all()
     for link in old_links:
         affected_investor_ids.add(link.investor_id)
-    session.query(DealInvestor).filter_by(master_item_id=master.id).delete()
+    # Only pay for the DELETE when there is something to delete. On accept the
+    # master row was created moments ago and never has links, so this was a
+    # wasted network round trip on every single accept. Reads come from the
+    # local replica and are cheap; writes go to the Turso primary and cost
+    # ~0.8s each in production.
+    if old_links:
+        session.query(DealInvestor).filter_by(master_item_id=master.id).delete()
 
     if not master.investors:
         # Update counts for removed investors only
@@ -1585,31 +1599,60 @@ def _sync_investor_links(session, master):
     parsed = parse_investors(master.investors)
     now = datetime.utcnow()
 
-    for name, is_lead in parsed:
-        slug = slugify(name)
-        investor = session.query(Investor).filter_by(slug=slug).first()
-        if not investor:
-            investor = Investor(
-                name=name,
-                slug=slug,
-                deal_count=0,
-                first_seen=now,
-                last_seen=now,
-            )
-            session.add(investor)
-            session.flush()
+    # Resolve every investor first, then flush ONCE. Flushing inside the loop
+    # made SQLAlchemy emit a separate INSERT per investor interleaved with a
+    # separate INSERT per link — six round trips for three investors. Batching
+    # lets it use executemany: one INSERT for the new investors, one for the
+    # links. Looking them up in a single IN query replaces N SELECTs too.
+    wanted = [(slugify(name), name, is_lead) for name, is_lead in parsed]
+    by_slug = {}
+    if wanted:
+        for inv in session.query(Investor).filter(
+                Investor.slug.in_([s for s, _, _ in wanted])).all():
+            by_slug[inv.slug] = inv
 
-        if investor.last_seen is None or now > investor.last_seen:
+    from sqlalchemy import insert
+
+    new_rows, pending_new = [], set()
+    for slug, name, is_lead in wanted:
+        investor = by_slug.get(slug)
+        if investor is None:
+            if slug not in pending_new:
+                new_rows.append({"name": name, "slug": slug, "deal_count": 0,
+                                 "first_seen": now, "last_seen": now})
+                pending_new.add(slug)
+        elif investor.last_seen is None or now > investor.last_seen:
             investor.last_seen = now
 
-        affected_investor_ids.add(investor.id)
+    # Insert new investors as one executemany, then read their ids back.
+    # session.add() per investor needs RETURNING id, which forces a statement
+    # each. Trading N writes for one extra read is strongly favourable here:
+    # reads hit the local replica, writes go over the network to the Turso
+    # primary at roughly 0.8s apiece.
+    if new_rows:
+        session.execute(insert(Investor), new_rows)
+        for inv in session.query(Investor).filter(
+                Investor.slug.in_(list(pending_new))).all():
+            by_slug[inv.slug] = inv
 
-        link = DealInvestor(
-            master_item_id=master.id,
-            investor_id=investor.id,
-            is_lead=is_lead,
-        )
-        session.add(link)
+    resolved = [(by_slug[slug], is_lead) for slug, _, is_lead in wanted
+                if by_slug.get(slug) is not None]
+
+    # Core insert rather than session.add() per link: the ORM path appends
+    # RETURNING id to each row, which forces one statement per link even
+    # though nothing ever reads those ids back. A values list is a single
+    # executemany — one round trip instead of one per investor.
+    if resolved:
+        from sqlalchemy import insert
+        rows = []
+        for investor, is_lead in resolved:
+            affected_investor_ids.add(investor.id)
+            rows.append({
+                "master_item_id": master.id,
+                "investor_id": investor.id,
+                "is_lead": is_lead,
+            })
+        session.execute(insert(DealInvestor), rows)
 
     # Update deal counts only for affected investors
     _update_investor_deal_counts(session, affected_investor_ids)
