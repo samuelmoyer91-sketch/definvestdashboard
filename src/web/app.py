@@ -1,5 +1,6 @@
 """FastAPI web application for triage and dashboard."""
 
+import asyncio
 import base64
 import hashlib
 import hmac
@@ -23,10 +24,37 @@ from datetime import datetime, timedelta
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
+# Railway's logs are not reachable from a dev machine without a live CLI
+# token, and during the accept-latency hunt that turned every warning the app
+# was emitting into a dead end — including the ones that would have named the
+# cause. Keep the recent warnings in memory and serve them from
+# /api/diagnostics so they can be read from anywhere.
+class _RecentLogHandler(logging.Handler):
+    def __init__(self, capacity=100):
+        super().__init__(level=logging.WARNING)
+        self.records = deque(maxlen=capacity)
+
+    def emit(self, record):
+        try:
+            self.records.append({
+                "at": datetime.utcfromtimestamp(record.created).isoformat(timespec="seconds"),
+                "level": record.levelname,
+                "logger": record.name,
+                "message": record.getMessage()[:500],
+            })
+        except Exception:
+            pass  # logging must never break a request
+
+
+_recent_logs = _RecentLogHandler()
+logging.getLogger().addHandler(_recent_logs)
+
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
 from src.database import RawItem, ArticleContent, AIExtraction, MasterItem, RejectedItem, Investor, DealInvestor, ApiUsageLog, get_session, sync_turso
-from src.database.models import _reset_turso_connection
+from src.database.models import (_reset_turso_connection, set_interactive_mode,
+                                 keepalive as db_keepalive)
 from src.utils.investor_parser import parse_investors, slugify
 
 _TOKEN_EXPIRY = 24 * 60 * 60  # 24 hours
@@ -247,6 +275,44 @@ def sync_if_stale():
 # =============================================================================
 # Startup Migration — ensures schema is current on deploy
 # =============================================================================
+
+@app.on_event("startup")
+async def enable_interactive_db_mode():
+    """Short sync-retry backoff for this process — see models.BATCH_BACKOFF.
+
+    A web request must never sit in a 5s or 10s time.sleep() waiting for a
+    replica sync; that blocks the event loop and the user just watches a
+    card refuse to disappear.
+    """
+    set_interactive_mode(True)
+    logger.info("DB interactive mode enabled (short sync-retry backoff)")
+
+
+@app.on_event("startup")
+async def start_db_keepalive():
+    """Ping the DB every 30s so Turso never expires the stream.
+
+    Turso drops an idle Hrana stream server-side. When that happens the next
+    request pays for the reconnect: probe fails, connection resets, rebuild
+    runs reconnect + sync. Sam reads each triage item for well over the 60s
+    idle threshold, so nearly every accept was a candidate for that penalty
+    while rapid-fire rejects escaped it — which matches the reported
+    accept-vs-reject asymmetry. Keeping the stream warm moves that cost off
+    the click path entirely.
+    """
+    async def loop():
+        while True:
+            await asyncio.sleep(30)
+            try:
+                # to_thread: the libsql call is blocking, and this must not
+                # stall the event loop it is meant to be protecting.
+                await asyncio.to_thread(db_keepalive)
+            except Exception as e:
+                logger.warning(f"Keepalive task error: {e}")
+
+    asyncio.create_task(loop())
+    logger.info("DB keepalive started (30s)")
+
 
 @app.on_event("startup")
 async def sync_replica_on_startup():
@@ -545,6 +611,10 @@ async def diagnostics():
             **_timing_summary(),
             "recent": recent[-15:],
         },
+        # Recent WARNING/ERROR lines. Reconnects and failed syncs show up
+        # here, which is what makes a latency spike explainable instead of
+        # merely visible.
+        "recent_warnings": list(_recent_logs.records)[-25:],
     }
 
 

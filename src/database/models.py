@@ -291,18 +291,33 @@ def get_engine(db_path='databases/tracker.db'):
                     return getattr(self._conn, name)
 
             def _sync_with_retry(conn, label):
-                """Attempt conn.sync() up to 3 times with 5s/10s backoff."""
-                for attempt in range(3):
+                """Attempt conn.sync(), retrying with backoff.
+
+                Backoff depends on who is calling. In the ingest pipeline a
+                patient 5s/10s wait is free and worth it. On a web request it
+                is not: this runs inside an `async def` route, so time.sleep()
+                freezes the whole event loop, and the user is sitting there
+                watching a card that will not disappear.
+
+                A stale-connection rebuild on the triage click path could
+                therefore cost 5s (one failed attempt) or 15s (two) — which
+                is exactly the 10-15s Sam reports on accept. See
+                INTERACTIVE_BACKOFF and set_interactive_mode().
+                """
+                waits = INTERACTIVE_BACKOFF if _interactive_mode else BATCH_BACKOFF
+                for attempt in range(len(waits) + 1):
                     try:
                         conn.sync()
                         return
                     except Exception as e:
-                        if attempt < 2:
-                            wait = 5 * (attempt + 1)
-                            logger.warning(f"Turso sync attempt {attempt + 1} failed ({e}), retrying in {wait}s...")
+                        if attempt < len(waits):
+                            wait = waits[attempt]
+                            logger.warning(
+                                f"Turso sync attempt {attempt + 1} failed ({e}), "
+                                f"retrying in {wait}s...")
                             time.sleep(wait)
                         else:
-                            logger.error(f"Turso sync failed after 3 attempts ({label}): {e}")
+                            logger.error(f"Turso sync failed after {attempt + 1} attempts ({label}): {e}")
                             raise
 
             def get_libsql_connection():
@@ -391,6 +406,45 @@ def sync_turso():
 # extra round-trip.
 _last_db_use: float = 0.0
 _LIVENESS_PROBE_AFTER_SECONDS = 60
+
+# Sync retry backoff, in seconds between attempts. The batch figures are the
+# original ones and are fine for GitHub Actions, where nobody is waiting. The
+# web app calls set_interactive_mode(True) at startup to opt into the short
+# ladder, because a multi-second sleep on a triage click is never the right
+# trade — better a fast failure the request can retry than a frozen UI.
+BATCH_BACKOFF = (5, 10)
+INTERACTIVE_BACKOFF = (0.25, 0.5)
+_interactive_mode = False
+
+
+def set_interactive_mode(enabled=True):
+    """Opt this process into short sync-retry backoff (see BATCH_BACKOFF)."""
+    global _interactive_mode
+    _interactive_mode = enabled
+
+
+def keepalive():
+    """Touch the connection so Turso does not expire the stream while idle.
+
+    The expensive path is not the probe, it is what the probe triggers: a
+    failed probe resets the connection, and the rebuild runs a full
+    reconnect + sync with backoff on whatever request happened to be
+    unlucky. Pinging on a timer keeps the stream alive so that rebuild
+    never lands on a user's click.
+
+    Returns True if the connection is alive, False if it was reset. Safe to
+    call from a background thread; never raises.
+    """
+    global _last_db_use
+    if _libsql_conn is None:
+        return False
+    try:
+        _libsql_conn.execute("SELECT 1")
+        return True
+    except BaseException as e:
+        logger.warning(f"Keepalive found a dead Turso connection ({e}); resetting.")
+        _reset_turso_connection()
+        return False
 
 
 def get_session(db_path='databases/tracker.db'):
