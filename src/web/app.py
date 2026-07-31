@@ -165,6 +165,73 @@ _inflight = 0
 _TIMED_PREFIXES = ("/accept/", "/reject/", "/master/")
 
 
+# ---------------------------------------------------------------------------
+# Statement-level SQL timing
+# ---------------------------------------------------------------------------
+# Phase timings said accept spends ~2s in "investors" and ~1s in "commit", but
+# a phase is still an aggregate. Cutting accept from 9 write statements to 4
+# changed the total by nothing, which means the per-statement model was wrong:
+# either executemany still costs a round trip per row, or the statements are
+# not where the time goes at all.
+#
+# A reject is one INSERT plus a commit and reliably takes ~1000ms, of which
+# ~990ms is the commit phase. If the INSERT itself turns out to be ~5ms, then
+# the entire cost is the transaction commit reaching the Turso primary, and
+# statement count was never the lever. That is the question this answers.
+#
+# Records the SQL text (schema only, truncated) and duration. NEVER the bound
+# parameters — those carry deal content.
+_stmt_log = deque(maxlen=400)
+
+
+def _install_sql_timing():
+    from sqlalchemy import event
+    from sqlalchemy.engine import Engine
+
+    @event.listens_for(Engine, "before_cursor_execute")
+    def _before(conn, cursor, statement, parameters, context, executemany):
+        try:
+            context._pcd_t0 = time.perf_counter()
+        except Exception:
+            pass
+
+    @event.listens_for(Engine, "after_cursor_execute")
+    def _after(conn, cursor, statement, parameters, context, executemany):
+        t0 = getattr(context, "_pcd_t0", None)
+        if t0 is None:
+            return
+        rec = {
+            "verb": statement.strip().split(None, 1)[0].upper()[:12],
+            "ms": round((time.perf_counter() - t0) * 1000, 1),
+            "rows": (len(parameters) if executemany and parameters is not None else 1),
+            "sql": " ".join(statement.split())[:70],
+        }
+        _stmt_log.append(rec)
+        ctx = _req_ctx.get()
+        if ctx is not None:
+            ctx.setdefault("stmts", []).append(rec)
+
+
+_install_sql_timing()
+
+
+def _sql_summary():
+    """Median/slowest per SQL verb over recent statements.
+
+    The comparison that matters: if SELECTs are ~1ms (local replica) and
+    INSERTs are also ~1ms while whole requests take a second, the cost is the
+    commit round trip, not the statements.
+    """
+    by_verb = {}
+    for r in _stmt_log:
+        by_verb.setdefault(r["verb"], []).append(r["ms"])
+    out = {}
+    for verb, vals in by_verb.items():
+        s = sorted(vals)
+        out[verb] = {"n": len(s), "median_ms": s[len(s) // 2], "slowest_ms": s[-1]}
+    return out
+
+
 class RequestTimingMiddleware:
     def __init__(self, app):
         self.app = app
@@ -194,6 +261,7 @@ class RequestTimingMiddleware:
             if any(path.startswith(p) for p in _TIMED_PREFIXES) or ctx["kind"]:
                 pre = (round((ctx["handler_start"] - ctx["t0"]) * 1000, 1)
                        if ctx["handler_start"] else None)
+                stmts = ctx.get("stmts") or []
                 entry = {
                     "kind": ctx["kind"] or path.strip("/").split("/")[0] or "request",
                     "at": datetime.utcnow().isoformat(timespec="seconds"),
@@ -202,6 +270,12 @@ class RequestTimingMiddleware:
                     "pre_handler_ms": pre,
                     "session_ms": ctx["session_ms"],
                     "phases": ctx["phases"] or {},
+                    # How much of the request is actually spent inside SQL
+                    # statements. If this is a small fraction of total_ms, the
+                    # time is going to the commit round trip instead.
+                    "sql_count": len(stmts),
+                    "sql_total_ms": round(sum(x["ms"] for x in stmts), 1),
+                    "sql_slowest": sorted(stmts, key=lambda x: -x["ms"])[:6],
                 }
                 _accept_timings.append(entry)
                 logger.info(
@@ -582,9 +656,11 @@ async def health_check():
         # a median. Durations only — no deal content.
         "recent": [
             {k: t.get(k) for k in
-             ("kind", "at", "total_ms", "pre_handler_ms", "session_ms", "phases")}
-            for t in list(_accept_timings)[-20:]
+             ("kind", "at", "total_ms", "pre_handler_ms", "session_ms", "phases",
+              "sql_count", "sql_total_ms", "sql_slowest")}
+            for t in list(_accept_timings)[-12:]
         ],
+        "sql_by_verb": _sql_summary(),
     }
 
 
