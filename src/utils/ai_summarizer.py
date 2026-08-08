@@ -114,19 +114,33 @@ Special handling for EARNINGS CALLS, ANNUAL REPORTS, and INVESTOR PRESENTATIONS:
 - For strategic_significance: 1-2 sentences. Describe specifically where the company is directing spending — which programs, capabilities, or facilities. Name them explicitly. No filler, no market context.
 - Treat the article as ONE card for the company, not separate cards per spending line item."""
 
+    message = None
     try:
         # Call Claude API
         message = client.messages.create(
             model="claude-sonnet-5",  # Latest Sonnet model
-            max_tokens=4096,
+            # Adaptive thinking spends from the same budget as the answer, so
+            # max_tokens has to cover thinking AND the JSON. At 4096 the long
+            # multi-deal roundups burned the whole budget thinking and returned
+            # no text block at all — see _Session_Logs/2026-08-08.
+            max_tokens=16000,
             thinking={"type": "adaptive"},
             messages=[
                 {"role": "user", "content": prompt}
             ]
         )
 
-        # Extract response
-        response_text = next(block.text for block in message.content if block.type == "text")
+        # Extract response. Default to None rather than letting next() raise:
+        # a bare StopIteration stringifies to "", which is why this failure
+        # logged as "Error generating AI summary: " with nothing after it.
+        response_text = next(
+            (block.text for block in message.content if block.type == "text"), None
+        )
+        if response_text is None:
+            raise ValueError(
+                f"response had no text block (stop_reason={message.stop_reason}); "
+                "thinking likely consumed max_tokens"
+            )
 
         # Parse JSON from response
         # Claude sometimes wraps JSON in markdown code blocks
@@ -150,7 +164,14 @@ Special handling for EARNINGS CALLS, ANNUAL REPORTS, and INVESTOR PRESENTATIONS:
         return summary_data
 
     except Exception as e:
-        print(f"⚠️  Error generating AI summary: {e}")
+        # Always print the exception TYPE — some exceptions (StopIteration)
+        # stringify to nothing, which makes the log useless.
+        print(f"⚠️  Error generating AI summary: {type(e).__name__}: {e}")
+
+        # If the API call itself succeeded and we failed while parsing, those
+        # tokens were still billed. Reporting 0 here is what made the /costs
+        # page under-report the real spend.
+        usage = getattr(message, 'usage', None)
         return {
             'company_name': None,
             'deal_amount': None,
@@ -158,9 +179,9 @@ Special handling for EARNINGS CALLS, ANNUAL REPORTS, and INVESTOR PRESENTATIONS:
             'strategic_significance': None,
             'market_implications': None,
             'summary_complete': False,
-            'input_tokens': 0,
-            'output_tokens': 0,
-            'error': str(e)
+            'input_tokens': getattr(usage, 'input_tokens', 0),
+            'output_tokens': getattr(usage, 'output_tokens', 0),
+            'error': f"{type(e).__name__}: {e}"
         }
 
 

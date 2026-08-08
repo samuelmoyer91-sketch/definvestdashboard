@@ -1,0 +1,111 @@
+# 2026-08-08 — Post-vacation review + quick-win maintenance
+
+Sam back from ~8 days away. Broad survey of pipeline, triage app, and site,
+then the quick-win fixes. The substantive accept-latency work is deferred to
+its own session.
+
+## Survey findings
+
+**Healthy:** ingest ran all 8 days (7/8 succeeded), publish ran daily,
+capitalfordefense.com 200 in ~0.19s, Railway app up 7.9d on HEAD (`c3136794`)
+with no restarts, all 14 direct feeds at 100% scrape rate, volume steady at
+110–166 new items/day.
+
+### 1. The 2026-07-29 accept-latency question is answered
+
+The instrumentation left running on 7/29 collected real triage data over the
+vacation. Read from `/health`:
+
+- `median_pre_handler_ms` = **2.1** — the app is NOT blocked. This kills the
+  leading hypothesis from the 7/29 log (single `StaticPool` connection +
+  `async def` routes doing blocking I/O). Not it.
+- The time is per-statement round-trips to Turso:
+
+  | verb | count | median |
+  |---|---|---|
+  | SELECT | 283 | 106ms |
+  | INSERT | 89 | 230ms |
+  | UPDATE | 28 | 121ms |
+
+- accept issues 7–16 statements → median **2810ms**, worst 5616ms.
+  reject issues 2 → median 483ms.
+
+So latency ≈ `statement_count × ~150ms`. The 9→4 write reduction (`de1ab1e`)
+helped; the remaining **283 SELECTs** now dominate. The fix direction is fewer
+round trips (batching, or an embedded replica for reads), not a faster handler.
+Deferred to its own session.
+
+### 2. Nine articles stuck in a permanent daily retry loop — FIXED
+
+The same 9 European VC roundup articles failed summarization on *every* run.
+Identical first-9 list on 8/7 and 8/8; exactly 9 failures on all four runs
+checked (8/4, 8/5, 8/7, 8/8) while success counts varied (22/28/27/36).
+They are retried forever because `generate_ai_summaries.py` re-queries anything
+with `summary_complete == False`.
+
+**Root cause:** `ai_summarizer.py:129` used `next(...)` with no default. The
+Sonnet 5 migration (2026-07-08) applied the safe-default fix to
+`title_screener.py:155` but **not** to the summarizer.
+
+`StopIteration` stringifies to `''` — which is exactly why the log read
+`⚠️  Error generating AI summary: ` with nothing after the colon. Reproduced
+locally, character for character.
+
+**Trigger:** `max_tokens=4096` with adaptive thinking. Thinking and the answer
+share that budget; on long multi-deal roundups thinking consumed it all, so the
+response came back with a thinking block and no text block.
+
+**Fixes applied:**
+- `max_tokens` 4096 → 16000 (the documented non-streaming default). `max_tokens`
+  is a cap, not a spend — this costs nothing on calls that already succeed.
+- `next(...)` given a `None` default; a missing text block now raises a real
+  error naming `stop_reason`.
+- Error log now prints `type(e).__name__` — the absence of that alone is what
+  made this undiagnosable for a month.
+- Error path now returns real `usage` tokens instead of hardcoded 0. Failed
+  calls were billed but recorded as zero, so `/costs` under-reported. The
+  caller already accumulates from this dict, so one fix covers both.
+
+**Note:** this stops the crash and the ~$0.50/day burn. It does NOT solve the
+underlying multi-deal-roundup problem — one row still can't represent five
+deals. See [[multi-deal-announcements]]. Open question below.
+
+### 3. Feed fragility is concentrated in the 2 Google Alerts feeds
+
+All 14 direct feeds scrape at 100%. The two Alerts feeds are the volatile ones:
+"Private Equity Defense" ranged 0% → 29% → 100% across three runs;
+"New Factory Defense Products" 43–80%. The 8/4 pipeline failure was this
+tripwire firing correctly (29%, below the 30% floor), which opened issue #5.
+
+Structural risk, since deal flow rests on those two feeds. Not addressed.
+
+### 4. Actions Node 20 deprecation — FIXED
+
+All four workflows pinned `actions/checkout@v4` + `actions/setup-python@v5`
+(+ `upload-artifact@v4` in export.yml), all forced onto Node 24 with a warning.
+Usage is entirely vanilla (bare checkout; `python-version` + `cache: pip`), so
+bumped all three to current majors (v7). YAML validated.
+
+### 5. Sonnet 5 intro pricing ends 2026-08-31
+
+$2/$10 → $3/$15 per MTok, a 50% increase, in three weeks. Confirmed against the
+pricing table in `src/utils/pricing.py:13`, which already carries the note.
+Worth a cost check before month end.
+
+## Not done / needs Sam
+
+- Triage backlog depth unknown — `/api/diagnostics` requires auth. At ~90 net
+  new items/day for 8 days, expect several hundred pending, but that's
+  arithmetic, not a measurement.
+- 3 open bug issues (#5 from 8/4; #1 and #2 stale from 2026-04-20) — not closed,
+  outward-facing.
+- `admiring-cerf` branch + worktree from 2026-01-05 — not pruned, deletion.
+- Changes not pushed. Real verification of the summarizer fix is the next ingest
+  run: the 9 stuck items should clear and `SUMMARY: N successful, 0
+  failed/incomplete` should replace the standing 9.
+
+## Open questions
+
+- Should multi-deal roundups be summarized at all, or detected and routed out?
+  The fix makes them not crash; it doesn't make one row represent five deals.
+- Softer feed tripwire that warns without failing the whole run?
