@@ -119,7 +119,15 @@ context). Flagged 2026-07-26, never tuned.
 
 ## EXTERNAL — real, but not verifiable from the repo
 
-### 11. Cloudflare API token — rotate as hygiene, NOT as an incident
+### 11. Cloudflare API token — CLOSED, won't fix (Sam, 2026-08-08)
+**Do not re-raise this as a security item.** Sam reviewed the evidence below and
+declined rotation. That is the right call on these facts: nothing is exposed,
+so this was only ever permission-tightening on a token nobody else holds.
+
+Fold it into the next Cloudflare change if one comes up — minting a
+Pages-Edit-only token is a two-minute job when you are already in that
+dashboard, and pointless to schedule on its own.
+
 **Downgraded 2026-08-08. The original framing was wrong.**
 
 The 2026-02-19 log says the token "was briefly in `_deploy_cloudflare.py` (now
