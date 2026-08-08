@@ -14,6 +14,26 @@ import os
 import json
 from anthropic import Anthropic
 
+
+def _describe_stop(message):
+    """Explain why a response carried no usable text.
+
+    stop_details is populated ONLY when stop_reason is "refusal" and is None
+    for every other stop reason, so it has to be guarded rather than read
+    directly. category is an open set ("cyber", "bio", ...) and can itself be
+    None even on a genuine refusal.
+    """
+    parts = [f"stop_reason={getattr(message, 'stop_reason', None)}"]
+
+    details = getattr(message, 'stop_details', None)
+    if details is not None:
+        parts.append(f"category={getattr(details, 'category', None)}")
+        explanation = getattr(details, 'explanation', None)
+        if explanation:
+            parts.append(f"explanation={explanation}")
+
+    return ", ".join(parts)
+
 def summarize_deal_article(article_text, article_title, article_url):
     """
     Generate AI summary of a defense deal article.
@@ -137,10 +157,11 @@ Special handling for EARNINGS CALLS, ANNUAL REPORTS, and INVESTOR PRESENTATIONS:
             (block.text for block in message.content if block.type == "text"), None
         )
         if response_text is None:
-            raise ValueError(
-                f"response had no text block (stop_reason={message.stop_reason}); "
-                "thinking likely consumed max_tokens"
-            )
+            # Observed cause on the nine stuck Sifted articles is
+            # stop_reason="refusal" — the safety classifiers declining, not
+            # thinking exhausting max_tokens. Report what the API actually
+            # says rather than guessing at a cause.
+            raise ValueError(f"response had no text block ({_describe_stop(message)})")
 
         # Parse JSON from response
         # Claude sometimes wraps JSON in markdown code blocks
