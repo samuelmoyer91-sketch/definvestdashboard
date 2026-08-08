@@ -119,11 +119,31 @@ context). Flagged 2026-07-26, never tuned.
 
 ## EXTERNAL — real, but not verifiable from the repo
 
-### 11. Cloudflare API token rotation — oldest item here
-Flagged 2026-02-19, restated three times in the 2026-02-20 log, no evidence it
-was ever done. The token was briefly committed in `_deploy_cloudflare.py` and
-**remains in git history**. Needs a Cloudflare dashboard check, rotation, and a
-GitHub secret update. Six months of exposure in a public repo's history.
+### 11. Cloudflare API token — rotate as hygiene, NOT as an incident
+**Downgraded 2026-08-08. The original framing was wrong.**
+
+The 2026-02-19 log says the token "was briefly in `_deploy_cloudflare.py` (now
+deleted, but in git history)", and every later restatement repeated that. It is
+not true:
+
+- `_deploy_cloudflare.py` appears in **no commit** — `git log --all
+  --diff-filter=A` lists no such path ever being added.
+- Scanning **all 291 commits, all file types** for a 40-char token-shaped
+  string returns nothing.
+
+The file was created and deleted locally before any commit. **There is no
+credential exposed in the public repo**, so this is not the security item it has
+been carried as for six months.
+
+Still worth doing, for two ordinary reasons: the token is ~6 months old, and per
+the 2026-02-19 log it was minted with **Pages Edit + Account Settings Read + DNS
+Edit**. Only Pages Edit is needed by the workflow — `publish.yml` uses it solely
+for `wrangler pages deploy`, with `accountId` passed explicitly. DNS Edit on a
+long-lived token is more authority than the job requires; that permission could
+repoint capitalfordefense.com.
+
+So: rotate, and scope the replacement down to Pages Edit. Sam's task — it is
+dashboard work, and credentials should not pass through here.
 
 ### 12. Google Alerts settings unconfirmed
 Each Alerts feed should be **Region = "Any region"** and **How many = "All
