@@ -12,6 +12,25 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).parent.parent.parent
 
 
+def boundary_pattern(term):
+    r"""Wrap a literal keyword in word boundaries, on edges where \b helps.
+
+    \b matches a word/non-word transition. For an alphanumeric keyword that
+    correctly means "don't match inside a bigger word". For a term whose edge
+    is a SYMBOL it means the opposite — \b\$\b demanded a word character on
+    both sides of the $, so "US$1.8bn" matched but " $100M" did not.
+
+    Every literal keyword is alphanumeric today, so this changes no current
+    behaviour. It is here so the next symbol added to the list fails visibly
+    rather than silently matching almost nothing. Symbols are better expressed
+    as named patterns (see deal_indicator_patterns) than as literals.
+    """
+    escaped = re.escape(term)
+    left = r'\b' if term[:1].isalnum() or term[:1] == '_' else ''
+    right = r'\b' if term[-1:].isalnum() or term[-1:] == '_' else ''
+    return left + escaped + right
+
+
 def load_scoring_config(config_path='config/feeds.json'):
     """Load keyword configuration for scoring."""
     path = Path(config_path)
@@ -37,6 +56,7 @@ def calculate_relevance_score(title, summary, config=None):
         - Each high_priority keyword match in title: +0.15
         - Each high_priority keyword match in summary: +0.08
         - Each deal_indicators match: +0.12 (strong signal)
+        - Each deal_indicator_patterns match: +0.12 (regex form of the above)
         - Each exclude keyword match: -0.25
         - Maximum score capped at 1.0, minimum at 0.0
     """
@@ -47,6 +67,7 @@ def calculate_relevance_score(title, summary, config=None):
     high_priority = keywords.get('high_priority', [])
     exclude = keywords.get('exclude', [])
     deal_indicators = keywords.get('deal_indicators', [])
+    deal_indicator_patterns = keywords.get('deal_indicator_patterns', {})
 
     # Combine and lowercase text for matching
     title_lower = (title or '').lower()
@@ -61,7 +82,7 @@ def calculate_relevance_score(title, summary, config=None):
     for keyword in high_priority:
         keyword_lower = keyword.lower()
         # Use word boundary matching to avoid partial matches
-        pattern = r'\b' + re.escape(keyword_lower) + r'\b'
+        pattern = boundary_pattern(keyword_lower)
 
         if re.search(pattern, title_lower):
             score += 0.15
@@ -75,17 +96,34 @@ def calculate_relevance_score(title, summary, config=None):
     # Check deal indicators (stronger signal)
     for indicator in deal_indicators:
         indicator_lower = indicator.lower()
-        pattern = r'\b' + re.escape(indicator_lower) + r'\b'
+        pattern = boundary_pattern(indicator_lower)
 
         if re.search(pattern, combined):
             score += 0.12
             if indicator not in matched_keywords:
                 matched_keywords.append(f"[deal]{indicator}")
 
+    # Regex deal indicators, for signals a literal keyword cannot express.
+    #
+    # "a dollar amount is mentioned" was previously the literal "$", which
+    # matched ANY dollar sign. Because a deal-indicator match exempts an
+    # article from the low-score auto-reject below, that let securities spam
+    # ("Losses In Excess Of $100,000", relevance 0.00) through untouched.
+    # Requiring a magnitude suffix makes the signal mean "a deal-sized
+    # figure". Only abbreviated forms are matched here — spelled-out
+    # "million"/"billion" are literal indicators already, so an article
+    # saying "$960 million" scores once, not twice.
+    for label, pattern in (deal_indicator_patterns or {}).items():
+        if re.search(pattern, combined):
+            score += 0.12
+            tag = f"[deal]{label}"
+            if tag not in matched_keywords:
+                matched_keywords.append(tag)
+
     # Check exclude keywords (penalty)
     for keyword in exclude:
         keyword_lower = keyword.lower()
-        pattern = r'\b' + re.escape(keyword_lower) + r'\b'
+        pattern = boundary_pattern(keyword_lower)
 
         if re.search(pattern, combined):
             score -= 0.25

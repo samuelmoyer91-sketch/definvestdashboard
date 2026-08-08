@@ -275,7 +275,6 @@
     "deal_indicators": [
       "million",
       "billion",
-      "$",
       "series a",
       "series b",
       "series c",
@@ -294,6 +293,9 @@
       "closed",
       "secures"
     ],
+    "deal_indicator_patterns": {
+      "$amount": "\\$\\s?\\d[\\d,.]*\\s?(?:m|bn|b)\\b"
+    },
     "exclude": [
       "obituary",
       "wedding",

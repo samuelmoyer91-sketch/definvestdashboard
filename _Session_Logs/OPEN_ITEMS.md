@@ -24,15 +24,28 @@ done when checked.
 
 ## LIVE — verified 2026-08-08
 
-### 1. The `$` deal indicator barely matches
-`config/feeds.json` (`keywords.deal_indicators` contains `"$"`) →
-[relevance_scorer.py:78](src/utils/relevance_scorer.py:78) wraps every indicator
-as `r'\b' + re.escape(x) + r'\b'`.
+### 1. Non-English amount expressions score zero
+Found 2026-08-08 while fixing the `$` indicator (see DONE). The scorer only
+understands English, singular, spelled-out magnitudes:
 
-`$` is a non-word character, so `\b\$\b` requires a word character on **both**
-sides. `US$1.8bn` matches; ` $100M` does not — the most common way money appears
-in a headline scores lower across every feed. Carried unaddressed in four
-separate logs since 2026-07-26. Smallest change with the widest reach.
+| Headline (all real) | Score | Outcome |
+|---|---|---|
+| `EDF investit 350 millions d'euros...` | 0.00 | auto-reject |
+| `TKMS: 6,3 Milliarden für vier MEKO-Fregatten` | 0.00 | auto-reject |
+| `Rheinmetall erhält Auftrag über 1,2 Mrd. Euro` | 0.00 | auto-reject |
+
+`\bmillion\b` does not match "million**s**"; nothing matches `Milliarden`,
+`Mrd.`, or a `€` amount. Decimal commas (`6,3`) compound it.
+
+**Partly mitigated already:** 6 of the 7 local-language European feeds carry
+`skip_relevance_filter: true`, which is why this has not shown up as missing
+deals. **But `Alert: Central/Eastern European Defense` has the flag `false`** —
+any local-language item on that feed is scored, hits 0.00, and is auto-rejected.
+That is the live exposure.
+
+Fix has two halves: add `€`/`£` and German/French magnitude words to
+`deal_indicator_patterns` (the mechanism now exists), and decide whether the CEE
+Alerts feed should carry the skip flag like its siblings.
 
 ### 2. `amounts_match` misses one-sided amounts
 [dedup.py:194](src/utils/dedup.py:194) — returns `False` when one side has a
@@ -152,3 +165,28 @@ item 7.
 | Migrate off GitHub Pages | Live at capitalfordefense.com via Cloudflare Pages | 2026-02-18 |
 | Google News feeds → Alerts | "Defense M&A Transactions" and "Defense Tech Funding" now disabled in `config/feeds.json` | 2026-04-19 |
 | Actions on deprecated Node 20 | Bumped to checkout@v7 / setup-python@v7 / upload-artifact@v7 in `6d81bb2` | 2026-08-08 |
+| Summary failures reported no cause | `_describe_stop` reports `stop_reason` + refusal `category` (`00925e9`) | 2026-08-08 |
+| The `$` deal-indicator regex | Replaced by a named `$amount` pattern — see the note below | 07-26, 07-27, 07-28, 07-29 |
+
+### Note on the `$` indicator — the fix was not the one described
+
+Carried in four logs as "`\b\$\b` is too narrow, widen it". Measuring against
+240 live feed items showed widening it to a bare `\$` would have **added 13
+false positives and recovered zero real deals** — nine were securities-litigation
+spam ("Losses In Excess Of $100,000") scoring 0.00.
+
+The mechanism nobody had noticed: [relevance_scorer.py:157](src/utils/relevance_scorer.py:157)
+makes *any* deal-indicator match exempt an article from low-score auto-rejection.
+So the indicator is not worth +0.12 — it is a veto on rejection. And real deals
+already match "acquisition"/"funding"/"defense", so `$` was redundant for
+genuine deals and decisive only for junk.
+
+Shipped instead: `keywords.deal_indicator_patterns`, a named-regex list, with
+`$amount` = `\$\s?\d[\d,.]*\s?(?:m|bn|b)\b`. Requires a magnitude suffix, and
+matches only abbreviated forms — spelled-out "million"/"billion" are literal
+indicators already, so `$960 million` scores once, not twice. Net effect on 240
+live items: **1 outcome change, 0 spam admitted.**
+
+**Lesson worth keeping:** the item had been restated four times without anyone
+measuring it. It read like the cheapest win on the list and was the one item
+that would have made triage worse. Measure before shipping a scoring change.
