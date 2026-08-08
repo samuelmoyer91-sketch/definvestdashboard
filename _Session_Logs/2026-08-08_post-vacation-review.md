@@ -51,9 +51,24 @@ Sonnet 5 migration (2026-07-08) applied the safe-default fix to
 `⚠️  Error generating AI summary: ` with nothing after the colon. Reproduced
 locally, character for character.
 
-**Trigger:** `max_tokens=4096` with adaptive thinking. Thinking and the answer
-share that budget; on long multi-deal roundups thinking consumed it all, so the
-response came back with a thinking block and no text block.
+**Trigger — CORRECTED after verification run `31261208698`:** the hypothesis
+below was **wrong**. With the improved error message the real cause is
+`stop_reason: "refusal"` — Sonnet 5's safety classifiers declining these 9
+outright, not thinking exhausting the token budget.
+
+> ~~`max_tokens=4096` with adaptive thinking. Thinking and the answer share that
+> budget; on long multi-deal roundups thinking consumed it all.~~
+
+The `max_tokens` 4096→16000 change is harmless (it is the documented
+non-streaming default, and `max_tokens` caps rather than spends) but it fixed
+nothing. The error string committed in `6d81bb2` still ends "thinking likely
+consumed max_tokens", which is now misleading and needs correcting.
+
+What *did* work is the error-message change: a month of empty-string errors
+became a precise cause in one run. Next step is logging
+`stop_details.category`. All 9 are Sifted articles — one paywalled publisher —
+so the scrape is as likely a culprit as the topic. Tracked as item 6 in
+[OPEN_ITEMS.md](OPEN_ITEMS.md).
 
 **Fixes applied:**
 - `max_tokens` 4096 → 16000 (the documented non-streaming default). `max_tokens`
@@ -106,6 +121,17 @@ Worth a cost check before month end.
 
 ## Open questions
 
-- Should multi-deal roundups be summarized at all, or detected and routed out?
-  The fix makes them not crash; it doesn't make one row represent five deals.
-- Softer feed tripwire that warns without failing the whole run?
+Moved to [OPEN_ITEMS.md](OPEN_ITEMS.md), which is now the canonical backlog and
+supersedes the `## Open` sections of every log before today. Open items from
+this session are tracked there as items 5, 6, and 7.
+
+## Backlog consolidation (same session)
+
+The deferred items were scattered across ~31 logs, restated rather than
+resolved, with drifting status. Built `OPEN_ITEMS.md`: every item verified
+against current code, with `file:line` evidence and a verified-on date.
+
+Three items carried as open turned out to be **already done** — AJAX
+accept/reject (`triage.html:521`), lazy-loading charts
+(`indicators.html:1451`), and the Google News → Alerts migration. That is the
+argument for the file: without verification, the list was actively misleading.
