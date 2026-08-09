@@ -1016,8 +1016,12 @@ def _queue_dup_flagged_ids(session, queue_items):
             'source': item.feed_source,
             'location': (ext.location if ext else None),
             'insight': (ext.strategic_significance if ext else None),
+            'group_key': f"art:{item.split_group_id}",
         }
 
+    # RawItem is joined only for split_parent_id. Deals split out of one
+    # roundup share a company and a date by construction, so without a
+    # group_key they would flag each other and vanish into Possible Duplicates.
     published = [{
         'id': m.id,
         'company': m.company,
@@ -1026,7 +1030,13 @@ def _queue_dup_flagged_ids(session, queue_items):
         'title': m.title or m.company,
         'source': m.source_url,
         'location': m.location,
-    } for m in active_master(session).all()]
+        'group_key': f"art:{split_parent_id or m.item_id}",
+    } for m, split_parent_id in (
+        active_master(session)
+        .join(RawItem, MasterItem.item_id == RawItem.id)
+        .add_columns(RawItem.split_parent_id)
+        .all()
+    )]
 
     # Items Sam explicitly confirmed are NOT duplicates carry a marker in
     # relevance_flags; never re-flag them.
@@ -1096,8 +1106,12 @@ async def possible_duplicates(request: Request, session=Depends(get_db)):
             'source': item.feed_source,
             'location': (ext.location if ext else None),
             'insight': (ext.strategic_significance if ext else None),
+            'group_key': f"art:{item.split_group_id}",
         }
 
+    # RawItem is joined only for split_parent_id. Deals split out of one
+    # roundup share a company and a date by construction, so without a
+    # group_key they would flag each other and vanish into Possible Duplicates.
     published = [{
         'id': m.id,
         'company': m.company,
@@ -1106,7 +1120,13 @@ async def possible_duplicates(request: Request, session=Depends(get_db)):
         'title': m.title or m.company,
         'source': m.source_url,
         'location': m.location,
-    } for m in active_master(session).all()]
+        'group_key': f"art:{split_parent_id or m.item_id}",
+    } for m, split_parent_id in (
+        active_master(session)
+        .join(RawItem, MasterItem.item_id == RawItem.id)
+        .add_columns(RawItem.split_parent_id)
+        .all()
+    )]
 
     result = dedup.find_queue_duplicates([q_dict(i) for i in eligible], published)
 
@@ -1366,7 +1386,11 @@ async def duplicates(request: Request, session=Depends(get_db)):
     from src.utils import dedup
     sync_if_stale()
 
-    rows = active_master(session).all()
+    # RawItem is joined only for split_parent_id — see _queue_dup_flagged_ids.
+    rows = (active_master(session)
+            .join(RawItem, MasterItem.item_id == RawItem.id)
+            .add_columns(RawItem.split_parent_id)
+            .all())
     deals = [{
         'id': r.id,
         'company': r.company or r.title,
@@ -1374,7 +1398,8 @@ async def duplicates(request: Request, session=Depends(get_db)):
         'date': r.curated_at or r.published_at,
         'title': r.title or r.company,
         'source': r.source_url,
-    } for r in rows]
+        'group_key': f"art:{split_parent_id or r.item_id}",
+    } for r, split_parent_id in rows]
 
     result = dedup.find_clusters(deals)
 

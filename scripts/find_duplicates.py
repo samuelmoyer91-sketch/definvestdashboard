@@ -27,7 +27,7 @@ from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent.parent))
 
-from src.database.models import get_session, MasterItem
+from src.database.models import get_session, MasterItem, RawItem
 from src.utils import dedup
 
 
@@ -53,7 +53,11 @@ def main():
     q = session.query(MasterItem).filter(MasterItem.removed_at.is_(None))
     if args.published:
         q = q.filter(MasterItem.published == True)  # noqa: E712
-    rows = q.all()
+    # RawItem is joined only for split_parent_id: deals split out of one
+    # roundup share a company and a date, so they must not flag each other.
+    rows = (q.join(RawItem, MasterItem.item_id == RawItem.id)
+             .add_columns(RawItem.split_parent_id)
+             .all())
 
     deals = [{
         'id': r.id,
@@ -62,7 +66,8 @@ def main():
         'date': r.curated_at or r.published_at,
         'title': r.title or r.company,
         'source': r.source_url,
-    } for r in rows]
+        'group_key': f"art:{split_parent_id or r.item_id}",
+    } for r, split_parent_id in rows]
 
     result = dedup.find_clusters(deals, window_days=args.days)
 

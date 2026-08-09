@@ -210,6 +210,25 @@ def fmt_amount(val):
     return f'${val:,.0f}'
 
 
+def same_group(a, b):
+    """True when two entries are deliberate passes over the SAME article.
+
+    A roundup article is re-extracted once per deal it contains, so its passes
+    share a company and a publication date by construction — and when neither
+    deal states a figure, amounts_match(None, None) is True. That is exactly
+    the signature below treats as a duplicate, so without this the split deals
+    would flag each other and be routed out of the triage queue.
+
+    Deliberately NOT fixed by changing amounts_match: two sources covering one
+    undisclosed round is a real duplicate worth catching, and that is the same
+    (None, None) case.
+
+    Entries with no group_key (the default) never match, so this is inert for
+    any caller that does not set one.
+    """
+    return a.get('group_key') is not None and a.get('group_key') == b.get('group_key')
+
+
 def find_clusters(deals, window_days=WINDOW_DAYS, tolerance=AMOUNT_TOLERANCE):
     """Group deals into duplicate clusters.
 
@@ -241,6 +260,7 @@ def find_clusters(deals, window_days=WINDOW_DAYS, tolerance=AMOUNT_TOLERANCE):
             'date': d.get('date'),
             'title': d.get('title') or d.get('company') or '',
             'source': d.get('source') or '',
+            'group_key': d.get('group_key'),
         })
 
     groups = {}
@@ -257,6 +277,8 @@ def find_clusters(deals, window_days=WINDOW_DAYS, tolerance=AMOUNT_TOLERANCE):
         for i in range(len(entries)):
             for j in range(i + 1, len(entries)):
                 a, b = entries[i], entries[j]
+                if same_group(a, b):
+                    continue
                 gap = abs((a['date'] - b['date']).days) if (a['date'] and b['date']) else 9999
                 if gap <= window_days and amounts_match(a['amount_num'], b['amount_num'], tolerance):
                     pairs.append((a, b, gap))
@@ -378,6 +400,7 @@ def find_queue_duplicates(queue_items, published_items,
             'source': d.get('source') or '',
             'location': d.get('location') or '',
             'insight': d.get('insight') or '',
+            'group_key': d.get('group_key'),
         }
 
     recs = [enrich(d, 'queue') for d in queue_items] + \
@@ -409,6 +432,8 @@ def find_queue_duplicates(queue_items, published_items,
         for i in range(n):
             for j in range(i + 1, n):
                 a, b = entries[i], entries[j]
+                if same_group(a, b):
+                    continue
                 gap = abs((a['date'] - b['date']).days) if (a['date'] and b['date']) else 9999
                 if gap <= window_days and amounts_match(a['amount_num'], b['amount_num'], tolerance):
                     union(i, j)
