@@ -19,6 +19,12 @@ except ImportError:
 
 Base = declarative_base()
 
+# Marker appended to a re-extraction pass's URL. `raw_items.url` is UNIQUE, so
+# a second pass over one article needs a distinct value; a fragment is
+# client-side only, so the link still resolves. Defined once here because both
+# RawItem.canonical_url and the /split route depend on the exact string.
+SPLIT_FRAGMENT = '#split-'
+
 # Turso/LibSQL connection cache
 _turso_engine = None
 _session_factory = None
@@ -38,6 +44,17 @@ class RawItem(Base):
     date_found = Column(DateTime, default=datetime.utcnow)
     status = Column(String, default='new', index=True)  # new, ai_screened_out, scraped, failed, auto_rejected
 
+    # Roundup splitting (added 2026-08-08). A roundup article is re-extracted
+    # once per deal it contains; each pass is its own row.
+    #   split_instruction — which deal THIS pass should extract. Persisted, not
+    #     just passed at call time: generate_ai_summaries retries anything with
+    #     summary_complete = False, and a retry without the focus would
+    #     silently overwrite a focused extraction with a mooshed one.
+    #   split_parent_id   — the original row this pass came from; NULL on the
+    #     original itself. Read it via RawItem.split_group_id.
+    split_instruction = Column(Text)
+    split_parent_id = Column(Integer, ForeignKey('raw_items.id'))
+
     # Relevance scoring (added 2026-01-22)
     relevance_score = Column(Float)  # 0.0-1.0, based on keyword matching
     relevance_flags = Column(Text)   # Comma-separated list of matched keywords
@@ -46,6 +63,29 @@ class RawItem(Base):
     article = relationship("ArticleContent", back_populates="raw_item", uselist=False)
     extraction = relationship("AIExtraction", back_populates="raw_item", uselist=False)
     master = relationship("MasterItem", back_populates="raw_item", uselist=False)
+
+    @property
+    def canonical_url(self):
+        """The real article URL, without the split marker.
+
+        A roundup article can be re-extracted several times, once per deal it
+        contains. Each pass is its own raw_items row, and `url` is UNIQUE, so
+        passes after the first carry a `#split-N` fragment. The fragment is
+        client-side only, so the link still resolves — but use this property
+        anywhere a URL is shown to a human or stored on a deal.
+        """
+        return self.url.split(SPLIT_FRAGMENT)[0] if self.url else self.url
+
+    @property
+    def split_group_id(self):
+        """Which article this row is a pass over — itself, or its parent.
+
+        Passes over one article share a company and a publication date by
+        construction. That is exactly the signature the duplicate detector and
+        the accept-time auto-reject scan treat as a duplicate, so both must
+        compare this instead of the row id.
+        """
+        return self.split_parent_id or self.id
 
     def __repr__(self):
         return f"<RawItem(id={self.id}, title='{self.title[:50]}...')>"
