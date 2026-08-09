@@ -58,12 +58,31 @@ reversible (`410bb9e`).
 [dedup.py:130](src/utils/dedup.py:130) — strips punctuation and legal suffixes
 via `NAME_NOISE`, but has no prefix handling. From the 2026-07-29 drone/EW log.
 
-### 4. Deal-splitting needs a schema change
-[models.py:59](src/database/models.py:59) — `item_id ... unique=True` on
-`master_list` means one article physically cannot yield multiple deals. This is
-the root of the multi-deal roundup problem. Explicitly deferred to its own
-session three times (07-26 ×2, 07-28). Needs a live Turso DDL migration, so it
-runs through `migrate.yml` — see [[turso-schema-migrations]].
+### 4. Multi-deal roundups — SHIPPED 2026-08-08, and the framing was wrong
+
+Carried in four logs as *"deal-splitting needs `master_list.item_id`'s UNIQUE
+dropped, which needs a Turso table rebuild"* — the reason it was deferred three
+separate times. **It needed neither.**
+
+Shipped instead: a roundup is re-extracted once per deal it contains, each pass
+told which deal to cover. Each pass is its own `raw_items` row, so it gets its
+own extraction and its own `master_list` row through the unchanged accept path.
+No constraint dropped, no rebuild, two additive columns.
+
+The first plan for this *did* do the rebuild — six steps, one high-risk DDL
+phase needing a migration window. Sam asked whether a simpler shape existed and
+described re-entering an article with an instruction; that turned out to
+dissolve the hard part entirely.
+
+**Third time this has happened.** The `$` regex (see DONE) and the Cloudflare
+token (item 11) were both carried with a stated framing that measurement or a
+five-minute check disproved. A backlog entry records what someone believed at
+the time, not what is true — treat the stated cause as a hypothesis.
+
+Still open, downstream of this: whether roundups should be *detected*
+automatically rather than spotted by eye (see DECISION below), and the nine
+Sifted articles that fail with `stop_reason="refusal"` (item 6) — a focused
+single-deal instruction may sidestep it, unproven.
 
 ### 5. Accept latency is round-trip count, not slow code
 `/health` on 2026-08-08: `median_pre_handler_ms` 2.1 (so *not* blocked — the

@@ -135,3 +135,83 @@ Three items carried as open turned out to be **already done** — AJAX
 accept/reject (`triage.html:521`), lazy-loading charts
 (`indicators.html:1451`), and the Google News → Alerts migration. That is the
 argument for the file: without verification, the list was actively misleading.
+
+---
+
+# Roundup splitting — shipped (same session, evening)
+
+One article could produce at most one deal. Roundups mooshed several into one
+card. Now a roundup can be re-done as N focused deals.
+
+## The approach changed once, and that was the important part
+
+The first plan dropped `master_list.item_id`'s UNIQUE so one article could own
+N deals. That needs SQLite's 12-step table rebuild on Turso — the operation
+that silently failed during the soft-delete migration — across six steps with
+one high-risk DDL phase and a migration window. It was approved.
+
+Sam then asked whether something simpler existed, and described re-entering an
+article with an instruction. That dissolves the hard part: each focused pass is
+its own `raw_items` row, so it gets its own extraction and its own
+`master_list` row through the **unchanged** accept path. No constraint dropped.
+Two additive columns.
+
+I had accepted the backlog's stated framing ("needs a schema change") and
+designed to it rather than questioning it. **Third time today** — see the `$`
+regex and the Cloudflare token.
+
+## What shipped
+
+`raw_items.split_instruction` + `split_parent_id` (migration `460b4ce`, applied
+clean: 14,759 rows, all reading as unsplit originals). Then `b254f62`,
+`fae3e20`, `02ae4a1`.
+
+`POST /split/{item_id}` takes one focus line per deal. Line 1 re-focuses the
+ORIGINAL row in place; later lines each clone the row and its article text.
+Clones get `status='scraped'` so the title screener and scraper skip them, and
+numbering continues past existing passes so re-splitting cannot collide.
+
+## Two things that would have broken it
+
+**The accept-time auto-reject scan.** It rejects same-company articles within
+±7 days — and split passes share a company AND a publication date by
+construction. Accepting deal 1 would have immediately auto-rejected deal 2 as
+"already accepted from another source", and rejection has no undo. The feature
+would have silently failed in exactly its canonical case. Found by reading the
+scan's filter while stress-testing the plan, not by testing.
+
+**Dedup.** `amounts_match(None, None)` is True, so two siblings with no stated
+figure would flag each other and both vanish into Possible Duplicates. Fixed
+with a `group_key` derived from `split_group_id` — deliberately NOT by changing
+`amounts_match`, since two sources covering one undisclosed round is a real
+duplicate worth catching.
+
+## Deviation from the approved plan
+
+Re-extraction runs **synchronously**, not as a `BackgroundTask`. Commit
+`3fc8917` established that two callers on the single libsql connection is
+unsafe, and FastAPI runs background tasks in a threadpool concurrently with
+later requests — exactly that pattern. Synchronous adds no concurrency; the
+cost is a few seconds' wait per deal.
+
+## Self-inflicted, caught and fixed
+
+A bulk edit silently converted CRLF→LF in three templates, rewriting 458 lines
+of one. `pathlib.read_text()` normalises line endings in memory and writes them
+back as LF. Restored and re-applied in bytes. Worth remembering before the next
+bulk edit.
+
+## Verified
+
+Baseline and after, both **683 deals** — `export.yml` and `find_duplicates.py`
+run against production via `migrate.yml`. Dedup guard proven inert on today's
+data (no splits exist, so no two entries share a group key), siblings
+suppressed, real cross-article duplicates still caught. Auto-reject regression
+test passes all four cases. Split logic tested against a real DB including
+re-split. Rendered triage page asserted free of the `#split-` marker.
+
+## Not yet verified — needs Sam
+
+The end-to-end split on a real roundup. `/split` is behind basic auth, so I
+cannot exercise it. Watch for: two cards, separate amounts, no duplicate flag,
+and the capital total rising by exactly the newly-captured figure.
