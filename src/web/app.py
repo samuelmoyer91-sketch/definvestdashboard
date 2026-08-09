@@ -1281,14 +1281,23 @@ async def accept_item(
         accepted_raw = session.query(RawItem).filter_by(id=item_id).first()
         accepted_company = company.strip().lower() if company else None
         if accepted_company and accepted_raw and accepted_raw.published_date:
+            from sqlalchemy import func as sa_func
+
             window_start = accepted_raw.published_date - timedelta(days=7)
             window_end = accepted_raw.published_date + timedelta(days=7)
+            # Never auto-reject another pass over the SAME article. A roundup
+            # split into several deals produces rows that share a company AND
+            # a publication date — precisely what this scan treats as a
+            # duplicate — so without this, accepting deal 1 would immediately
+            # reject deal 2, and rejection has no undo.
+            accepted_group = accepted_raw.split_group_id
             # Load candidates with their AIExtraction in one query
             candidates = (
                 session.query(RawItem, AIExtraction)
                 .join(AIExtraction, AIExtraction.item_id == RawItem.id)
                 .filter(
                     RawItem.id != item_id,
+                    sa_func.coalesce(RawItem.split_parent_id, RawItem.id) != accepted_group,
                     RawItem.status == 'scraped',
                     RawItem.published_date >= window_start,
                     RawItem.published_date <= window_end,

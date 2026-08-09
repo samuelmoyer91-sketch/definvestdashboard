@@ -21,13 +21,17 @@ from src.utils.pricing import calculate_cost
 SONNET_MODEL = "claude-sonnet-5"
 
 
-def generate_summaries(limit=5, force_regenerate=False):
+def generate_summaries(limit=5, force_regenerate=False, item_ids=None):
     """
     Generate AI summaries for articles.
 
     Args:
         limit: Max number of summaries to generate
         force_regenerate: If True, regenerate summaries even if they exist
+        item_ids: If given, summarize exactly these RawItem ids and always
+            regenerate. Used after a roundup is split: those rows usually
+            already HAVE a complete extraction, it is just the wrong one —
+            so the normal "needs a summary" filter would skip them.
     """
 
     session = get_session()
@@ -35,7 +39,12 @@ def generate_summaries(limit=5, force_regenerate=False):
     # Find articles that need summaries
     query = session.query(RawItem).join(ArticleContent).outerjoin(AIExtraction)
 
-    if force_regenerate:
+    if item_ids:
+        items = query.filter(
+            RawItem.id.in_(item_ids),
+            ArticleContent.scrape_success == True
+        ).all()
+    elif force_regenerate:
         # Regenerate all that have article content
         items = query.filter(
             ArticleContent.scrape_success == True
@@ -75,11 +84,14 @@ def generate_summaries(limit=5, force_regenerate=False):
         article = item.article
 
         try:
-            # Generate AI summary
+            # Generate AI summary. split_instruction is passed unconditionally,
+            # including on the nightly run: a retry that had lost the focus
+            # would overwrite a focused extraction with a mooshed one.
             summary = summarize_deal_article(
                 article_text=article.clean_text,
                 article_title=item.title,
-                article_url=item.url
+                article_url=item.url,
+                focus=item.split_instruction,
             )
 
             # Check if extraction exists

@@ -34,7 +34,7 @@ def _describe_stop(message):
 
     return ", ".join(parts)
 
-def summarize_deal_article(article_text, article_title, article_url):
+def summarize_deal_article(article_text, article_title, article_url, focus=None):
     """
     Generate AI summary of a defense deal article.
 
@@ -42,6 +42,9 @@ def summarize_deal_article(article_text, article_title, article_url):
         article_text: Full article text
         article_title: Article headline
         article_url: Source URL
+        focus: Optional. When the article is a roundup covering several deals,
+            names the ONE this pass should extract. The article is re-extracted
+            once per deal it contains, each pass with a different focus.
 
     Returns:
         dict with extracted fields (may have None values for missing data)
@@ -63,8 +66,26 @@ def summarize_deal_article(article_text, article_title, article_url):
     # Initialize Claude client
     client = Anthropic(api_key=api_key)
 
+    # When this pass is one of several over a roundup, scope it up front —
+    # before the field list — so the whole extraction is framed by it.
+    # The final sentence matters most: without it the model borrows a
+    # neighbouring deal's figure, and a repeated figure double-counts capital
+    # in every total, chart, and export.
+    focus_block = ""
+    if focus:
+        focus_block = (
+            "\n\nIMPORTANT — THIS ARTICLE DESCRIBES SEVERAL SEPARATE DEALS.\n"
+            f"Extract ONLY this one: {focus}\n"
+            "Ignore every other investment, acquisition, facility, and programme "
+            "mentioned in the article. Every field below must describe only the "
+            "deal named above — its company, its amount, its location. If the "
+            "article states a figure that belongs to a DIFFERENT deal, do not "
+            'use it: return "Unknown" for the amount rather than borrowing '
+            "another deal's number."
+        )
+
     # Craft the extraction prompt
-    prompt = f"""Analyze this defense/aerospace investment article and extract key information. Be concise and factual.
+    prompt = f"""Analyze this defense/aerospace investment article and extract key information. Be concise and factual.{focus_block}
 
 Article Title: {article_title}
 Article URL: {article_url}
