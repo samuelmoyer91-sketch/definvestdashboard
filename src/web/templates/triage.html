@@ -98,7 +98,7 @@
         <div class="item-actions" style="margin-top: 12px;">
             <button onclick="toggleReview({{ item.id }})" class="btn btn-primary">▼ Review & Accept</button>
             <button type="button" onclick="rejectItem({{ item.id }})" class="btn btn-danger">Reject</button>
-            <a href="{{ item.url }}" target="_blank" class="btn btn-link">View Original</a>
+            <a href="{{ item.canonical_url }}" target="_blank" class="btn btn-link">View Original</a>
         </div>
     </div>
 
@@ -456,7 +456,7 @@
                             Source URL (override original)
                         </label>
                         <input type="url" name="source_url"
-                               value="{{ item.url }}"
+                               value="{{ item.canonical_url }}"
                                style="width: 100%; padding: 7px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px;"
                                placeholder="https://...">
                         <div style="font-size: 10px; color: #888; margin-top: 2px;">Pre-filled from original article. Replace if you found a better source.</div>
@@ -480,13 +480,41 @@
         </form>
         <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 6px;">
             <button type="button" onclick="rejectItem({{ item.id }})" class="btn btn-danger">✗ Reject</button>
-            <a href="{{ item.url }}" target="_blank" class="btn btn-link">View Original</a>
+            <button type="button" onclick="toggleSplit({{ item.id }})" class="btn btn-secondary">⑂ Re-do as separate deals</button>
+            <a href="{{ item.canonical_url }}" target="_blank" class="btn btn-link">View Original</a>
         </div>
+
+        <!-- Outside the accept form on purpose: nested forms are invalid HTML.
+             A plain POST rather than fetch(), because re-extraction runs
+             synchronously and takes a few seconds per deal — letting the
+             browser show its own loading state is simpler than faking one. -->
+        <form id="split-{{ item.id }}" method="post" action="/split/{{ item.id }}"
+              onsubmit="var b=this.querySelector('button[type=submit]'); b.disabled=true; b.textContent='Working…';"
+              style="display: none; margin-top: 8px; padding: 10px; background: #f7f7f9; border: 1px solid #ddd; border-radius: 4px;">
+            <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 4px; color: #555;">
+                One line per deal — each becomes its own card, re-extracted to cover only that deal.
+            </label>
+            <textarea name="focuses" rows="3" required
+                      placeholder="the $135M Texas and New Hampshire munitions investment&#10;the $300M Hägglunds Sweden combat vehicle expansion"
+                      style="width: 100%; padding: 7px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px; font-family: inherit;"></textarea>
+            <div style="font-size: 10px; color: #888; margin: 4px 0 6px;">
+                The first line replaces this card; the rest are added to the queue. Takes a few seconds per deal.
+            </div>
+            <button type="submit" class="btn btn-primary">Re-do</button>
+            <button type="button" onclick="toggleSplit({{ item.id }})" class="btn btn-secondary">Cancel</button>
+        </form>
     </div>
 </div>
 {% endfor %}
 
 <script>
+function toggleSplit(itemId) {
+    const f = document.getElementById('split-' + itemId);
+    const showing = f.style.display !== 'none';
+    f.style.display = showing ? 'none' : 'block';
+    if (!showing) f.querySelector('textarea').focus();
+}
+
 function toggleReview(itemId) {
     const collapsed = document.getElementById(`collapsed-${itemId}`);
     const expanded = document.getElementById(`expanded-${itemId}`);

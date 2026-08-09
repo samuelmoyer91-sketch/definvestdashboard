@@ -759,7 +759,7 @@ def generate_deal_card(master, raw, ai):
             </div>"""
 
     # Footer with source link (includes domain attribution)
-    primary_url = master.source_url if master and master.source_url else raw.url
+    primary_url = master.source_url if master and master.source_url else raw.canonical_url
     primary_domain = extract_domain(primary_url)
     card_html += f"""
         </div>

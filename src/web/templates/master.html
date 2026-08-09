@@ -143,7 +143,7 @@
 
         <div class="item-actions" style="margin-top: 15px;">
             <button onclick="toggleMasterEdit({{ item.id }})" class="btn btn-primary">Edit</button>
-            <a href="{{ item.raw_item.url }}" target="_blank" class="btn btn-link">View Original Article</a>
+            <a href="{{ item.raw_item.canonical_url }}" target="_blank" class="btn btn-link">View Original Article</a>
             <a href="/item/{{ item.item_id }}" class="btn btn-link">View Details</a>
         </div>
     </div>
@@ -159,7 +159,7 @@
             <span style="margin-left: 10px; color: #666;">{{ item.raw_item.published_date.strftime('%Y-%m-%d') }}</span>
             {% endif %}
             <span style="margin-left: 10px;">
-                <a href="{{ item.raw_item.url }}" target="_blank" class="btn btn-link" style="padding: 0; font-size: 13px;">View Original Article</a>
+                <a href="{{ item.raw_item.canonical_url }}" target="_blank" class="btn btn-link" style="padding: 0; font-size: 13px;">View Original Article</a>
             </span>
         </div>
 

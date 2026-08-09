@@ -55,7 +55,9 @@ def export_master_to_csv(output_path='exports/master_list.csv'):
                 'Location': master.location or 'N/A',
                 'Project Type': master.project_type or 'N/A',
                 'Summary': master.summary if master.summary else 'N/A',
-                'Source URL': raw.url
+                # canonical_url, not raw.url: a deal split out of a roundup
+                # carries a '#split-N' marker on its row to keep urls unique.
+                'Source URL': raw.canonical_url
             })
 
     session.close()

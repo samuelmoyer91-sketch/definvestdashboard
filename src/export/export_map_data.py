@@ -28,7 +28,7 @@ def export_map_data(output_file='github_site/deals/map-data.json'):
         features = []
         for item in items:
             raw = item.raw_item
-            url = item.source_url or (raw.url if raw else None) or ""
+            url = item.source_url or (raw.canonical_url if raw else None) or ""
             pub_date = raw.published_date.strftime('%b %d, %Y') if raw and raw.published_date else ""
 
             features.append({

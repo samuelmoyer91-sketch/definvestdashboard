@@ -62,7 +62,7 @@
     <div class="item-actions" style="margin-top: 12px;">
         <a href="/edit/{{ item.id }}" class="btn btn-primary" style="font-size: 13px; padding: 6px 12px;">Edit</a>
         {% if item.raw_item %}
-        <a href="{{ item.raw_item.url }}" target="_blank" class="btn btn-link" style="font-size: 13px;">View Original</a>
+        <a href="{{ item.raw_item.canonical_url }}" target="_blank" class="btn btn-link" style="font-size: 13px;">View Original</a>
         {% endif %}
     </div>
 </div>

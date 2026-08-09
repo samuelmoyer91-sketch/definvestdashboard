@@ -69,7 +69,7 @@ def main():
             "location": m.location or "",
             "country_hint": (m.location or "").split(",")[-1].strip(),
             "deal_date": date.strftime("%Y-%m-%d") if date else "",
-            "source_url": m.source_url or (raw.url if raw else ""),
+            "source_url": m.source_url or (raw.canonical_url if raw else ""),
             "summary": (m.summary or "").replace("\n", " ").strip(),
         })
 

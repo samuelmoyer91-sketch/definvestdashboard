@@ -54,7 +54,7 @@ sys.path.append(str(Path(__file__).parent.parent.parent))
 
 from src.database import RawItem, ArticleContent, AIExtraction, MasterItem, RejectedItem, Investor, DealInvestor, ApiUsageLog, get_session, sync_turso
 from src.database.models import (_reset_turso_connection, set_interactive_mode,
-                                 keepalive as db_keepalive)
+                                 keepalive as db_keepalive, SPLIT_FRAGMENT)
 from src.utils.investor_parser import parse_investors, slugify
 
 _TOKEN_EXPIRY = 24 * 60 * 60  # 24 hours
@@ -1134,7 +1134,7 @@ async def possible_duplicates(request: Request, session=Depends(get_db)):
     for g in result['groups']:
         for q in g['queue']:
             raw = by_id.get(q['id'])
-            q['url'] = raw.url if raw else '#'
+            q['url'] = raw.canonical_url if raw else '#'
             q['amount_fmt'] = dedup.fmt_amount(q['amount_num'])
             q['date_fmt'] = q['date'].strftime('%Y-%m-%d') if q['date'] else '—'
         for p in g['published']:
@@ -1147,6 +1147,93 @@ async def possible_duplicates(request: Request, session=Depends(get_db)):
         "group_count": len(result['groups']),
         "flagged_count": len(result['flagged_ids']),
     })
+
+
+@app.post("/split/{item_id}")
+async def split_item(item_id: int, focuses: str = Form(default=""),
+                     session=Depends(get_db)):
+    """Re-do a roundup article as one focused deal per line of `focuses`.
+
+    A roundup announces several deals but produces one card that mooshes them
+    together. Each line here becomes a separate pass over the same article
+    text, told which deal to extract. Line 1 re-focuses the ORIGINAL row in
+    place; later lines each become a new raw_items row. Every pass therefore
+    gets its own extraction and, once accepted, its own master_list row —
+    without touching any uniqueness constraint.
+
+    Re-extraction runs synchronously rather than in a BackgroundTask: with
+    StaticPool the process has ONE database connection, and a background
+    thread using it while a request is mid-query is unsafe (see the keepalive
+    fix, commit 3fc8917). A synchronous call adds no concurrency — it is the
+    request's own thread — at the cost of the caller waiting ~10s per deal.
+    """
+    lines = [ln.strip() for ln in (focuses or "").splitlines() if ln.strip()]
+    if not lines:
+        return RedirectResponse(url="/", status_code=303)
+
+    original = session.query(RawItem).filter_by(id=item_id).first()
+    if not original:
+        return HTMLResponse(content="<h1>Not Found</h1>", status_code=404)
+
+    article = session.query(ArticleContent).filter_by(item_id=item_id).first()
+    if not article or not article.clean_text:
+        return HTMLResponse(
+            content="<h1>Cannot split</h1><p>This article has no scraped text to "
+                    're-extract from.</p><p><a href="/">Back to queue</a></p>',
+            status_code=400)
+
+    # Always attach passes to the ORIGINAL article, so splitting an already
+    # split row widens that article's set rather than building a chain.
+    group_id = original.split_group_id
+    base_url = original.canonical_url
+
+    original.split_instruction = lines[0]
+    affected = [original.id]
+
+    # Number clones after any that already exist, so re-splitting cannot
+    # collide with an existing url.
+    next_n = session.query(RawItem).filter(
+        RawItem.split_parent_id == group_id).count() + 2
+
+    for focus in lines[1:]:
+        clone = RawItem(
+            url=f"{base_url}{SPLIT_FRAGMENT}{next_n}",
+            title=original.title,
+            rss_summary=original.rss_summary,
+            published_date=original.published_date,
+            feed_source=original.feed_source,
+            # 'scraped' means the title screener and the article scraper both
+            # skip it — the text is copied below, not re-fetched.
+            status='scraped',
+            relevance_score=original.relevance_score,
+            relevance_flags=original.relevance_flags,
+            split_instruction=focus,
+            split_parent_id=group_id,
+        )
+        session.add(clone)
+        session.flush()
+        session.add(ArticleContent(
+            item_id=clone.id,
+            html=article.html,
+            clean_text=article.clean_text,
+            scrape_success=True,
+        ))
+        affected.append(clone.id)
+        next_n += 1
+
+    session.commit()
+
+    # Failure here is non-fatal: the rows exist, and the nightly ingest picks
+    # up anything without a complete extraction — correctly, because
+    # split_instruction is persisted rather than passed at call time.
+    try:
+        from src.scraper.generate_ai_summaries import generate_summaries
+        generate_summaries(item_ids=affected)
+    except Exception as e:
+        logger.error(f"Split re-extraction failed for {affected}: {e}")
+
+    mark_dirty()
+    return RedirectResponse(url="/", status_code=303)
 
 
 @app.post("/reject-dup/{item_id}")
