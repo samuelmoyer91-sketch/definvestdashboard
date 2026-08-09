@@ -50,6 +50,8 @@ def main():
         rej = session.query(RejectedItem).filter_by(item_id=r.id).first()
 
         print(f"\nid={r.id}  parent={r.split_parent_id}  status={r.status}")
+        if rej:
+            print(f"  REJECTED at {rej.rejected_at}: {rej.rejection_reason!r}")
         print(f"  url   : {r.url}")
         print(f"  focus : {r.split_instruction!r}")
         print(f"  date  : {r.published_date}")
