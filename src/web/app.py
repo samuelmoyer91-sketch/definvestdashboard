@@ -982,8 +982,13 @@ def _triage_queue_items(session):
         # redirect scrapes that returned ~11 chars of stub text — show up as empty
         # cards). Items with no AIExtraction row at all still pass through (they're
         # legitimate pending items waiting for AI summarization).
+        # The all-Unknown filter hides junk from failed scrapes. It must never
+        # hide a card Sam explicitly acted on: if a split's re-extraction comes
+        # back empty, the card has to stay visible so the failure is obvious
+        # and fixable, rather than the action appearing to do nothing.
         ~(
             (AIExtraction.id != None) &
+            (RawItem.split_instruction == None) &
             func.lower(func.coalesce(AIExtraction.company, '')).in_(['unknown', 'none', '']) &
             func.lower(func.coalesce(AIExtraction.deal_amount, '')).in_(['unknown', '']) &
             func.lower(func.coalesce(AIExtraction.deal_type, '')).in_(['unknown', ''])
@@ -1167,13 +1172,32 @@ async def split_item(item_id: int, focuses: str = Form(default=""),
     fix, commit 3fc8917). A synchronous call adds no concurrency — it is the
     request's own thread — at the cost of the caller waiting ~10s per deal.
     """
-    lines = [ln.strip() for ln in (focuses or "").splitlines() if ln.strip()]
+    # Split on semicolons as well as newlines. Listing several deals on one
+    # line separated by semicolons is a natural way to write them, and taking
+    # only newlines silently collapsed five deals into one unusable focus.
+    import re as _re
+    lines = [p.strip() for p in _re.split(r'[\n;]+', focuses or "") if p.strip()]
     if not lines:
         return RedirectResponse(url="/", status_code=303)
 
     original = session.query(RawItem).filter_by(id=item_id).first()
     if not original:
         return HTMLResponse(content="<h1>Not Found</h1>", status_code=404)
+
+    # The queue page may have been rendered before this item was accepted or
+    # rejected elsewhere. Splitting a stale card wrote a focus onto a row that
+    # could never appear again, which looked exactly like the split failing.
+    if session.query(MasterItem).filter_by(item_id=item_id).first():
+        return HTMLResponse(
+            content="<h1>Already accepted</h1><p>This article has already been "
+                    'accepted as a deal, so it cannot be split.</p>'
+                    '<p><a href="/">Back to queue</a></p>', status_code=409)
+    if session.query(RejectedItem).filter_by(item_id=item_id).first():
+        return HTMLResponse(
+            content="<h1>Already rejected</h1><p>This article was rejected — most "
+                    "likely auto-rejected when you accepted the same company from "
+                    'another source. Restore it first, then split.</p>'
+                    '<p><a href="/">Back to queue</a></p>', status_code=409)
 
     article = session.query(ArticleContent).filter_by(item_id=item_id).first()
     if not article or not article.clean_text:
@@ -1385,6 +1409,12 @@ async def accept_item(
                 .filter(
                     RawItem.id != item_id,
                     sa_func.coalesce(RawItem.split_parent_id, RawItem.id) != accepted_group,
+                    # An article Sam explicitly marked for splitting is
+                    # deliberate work; a company-name heuristic must not
+                    # discard it. This is how the first real split was lost —
+                    # accepting the same company from another source rejected
+                    # the roundup that was mid-split.
+                    RawItem.split_instruction == None,
                     RawItem.status == 'scraped',
                     RawItem.published_date >= window_start,
                     RawItem.published_date <= window_end,

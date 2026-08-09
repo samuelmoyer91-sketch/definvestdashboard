@@ -106,6 +106,24 @@ def generate_summaries(limit=5, force_regenerate=False, item_ids=None):
             else:
                 cap_src = None
 
+            if extraction and extraction.summary_complete and not summary.get('summary_complete'):
+                # A failed extraction must NEVER overwrite a good one. This bit
+                # on the first real roundup split: the re-extraction failed and
+                # replaced the article's whole extraction with nulls, which
+                # both lost the data and dropped the card out of the queue via
+                # the all-Unknown filter.
+                #
+                # Keep the existing values but leave summary_complete False, so
+                # the next run retries — with the focus, which lives on the row
+                # rather than being passed at call time.
+                extraction.summary_complete = False
+                error_count += 1
+                print(f"  ⚠️  Extraction failed; KEEPING the previous one. Will retry.")
+                session.commit()
+                if i < len(items):
+                    time.sleep(1)
+                continue
+
             if extraction:
                 # Update existing
                 extraction.title = summary.get('title')
