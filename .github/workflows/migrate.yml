@@ -40,4 +40,9 @@ jobs:
         env:
           TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
           TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+          # Some maintenance scripts re-run extraction (recover_item.py
+          # --reextract). Without this the summarizer silently returns an
+          # empty stub — "ANTHROPIC_API_KEY not set" — which reads like a
+          # model failure rather than a missing secret.
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: python "scripts/${{ inputs.script }}" ${{ inputs.args }}
