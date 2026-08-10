@@ -51,6 +51,31 @@ companies"), which has not been observed. Deliberately not reworded.
 
 ## LIVE — verified 2026-08-08
 
+### 0. Repair the 74 European deals stored in the wrong currency
+Opened 2026-08-08. The *cause* is fixed (`337d21e`); the **existing data is
+not**.
+
+Every European deal carrying an amount — 74 of them, measured from
+`exports/deals.csv` — is stored as a bare dollar figure because the triage form
+stripped the currency symbol before submit. Some are also off by a factor of a
+million, where the magnitude went with it:
+
+| Stored | Company | Almost certainly |
+|---|---|---|
+| `$100` | CSG, Bautzen | €100 million |
+| `$300` | Hensoldt, Oberkochen | €300 million |
+| `$3,900,000,000` | "Erail Technologies", Paris | the long-standing Exail euro bug |
+
+Repair needs the original figure from each article, so it is a re-extraction
+pass plus review, not a query. `scripts/reextract_items.py` can drive it; the
+selection is deals whose `location` is European and whose `investment_amount`
+carries no marker. Note the AI prompt says *"DEAL AMOUNT: Dollar value if
+mentioned"*, which may itself push the model to drop or self-convert
+currencies — worth checking before trusting a bulk re-extraction.
+
+Two of these are visibly absurd on the public site right now, which argues for
+fixing at least those by hand rather than waiting for a full pass.
+
 ### 1. Non-English amount expressions score zero
 Found 2026-08-08 while fixing the `$` indicator (see DONE). The scorer only
 understands English, singular, spelled-out magnitudes:
