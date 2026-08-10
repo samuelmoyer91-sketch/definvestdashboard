@@ -650,6 +650,15 @@ async def health_check():
         "uptime_s": round(time.time() - _STARTED_AT_TS),
         "last_sync_ms": _last_sync_ms,
         "pending_sync": _pending_sync,
+        # Whether each required secret is CONFIGURED — booleans only, never
+        # values. /api/diagnostics reports the same thing but sits behind auth,
+        # which is useless for exactly the case that needs it: a missing key
+        # makes the summarizer return an empty stub silently, so a split
+        # produced six blank cards with no visible error anywhere.
+        "env_configured": {
+            v: bool(os.environ.get(v))
+            for v in ("TURSO_DATABASE_URL", "TURSO_AUTH_TOKEN", "ANTHROPIC_API_KEY")
+        },
         "timings": summary or None,
         # Per-request sequence, not just medians: a one-off 15s reconnect on
         # the first click after a deploy and a recurring one look identical in

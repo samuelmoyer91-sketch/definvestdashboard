@@ -74,7 +74,8 @@ def main():
                 ("deal_status not speculative", ext.deal_status != 'speculative'),
                 ("not transfer-without-amount",
                  not (ext.capital_deployment == 'transfer' and not ext.deal_amount)),
-                ("not an all-Unknown stub",   not allunk),
+                ("not an all-Unknown stub (exempt when split)",
+                 not allunk or bool(r.split_instruction)),
             ]
         else:
             print("  extraction: NONE YET (re-extraction failed or has not run)")
