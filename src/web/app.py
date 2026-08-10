@@ -1256,6 +1256,25 @@ async def split_item(item_id: int, focuses: str = Form(default=""),
 
     session.commit()
 
+    mark_dirty()
+
+    # Without the key the summarizer returns an empty stub for every pass,
+    # which produced a set of identical blank cards and no error anywhere.
+    # Say so instead: the rows are real and tonight's ingest — which runs in
+    # Actions, where the key does exist — will fill them in using the focus
+    # stored on each row.
+    if not os.environ.get('ANTHROPIC_API_KEY'):
+        logger.error("Split created %d passes but ANTHROPIC_API_KEY is not set; "
+                     "extraction deferred to the nightly ingest", len(affected))
+        return HTMLResponse(content=f"""
+            <h1>{len(affected)} deals created — but not yet extracted</h1>
+            <p>This app has no <code>ANTHROPIC_API_KEY</code>, so the per-deal
+            extraction could not run here. The rows exist and each one has its
+            focus stored, so tonight's ingest will fill them in.</p>
+            <p>To have splits extract immediately, set
+            <code>ANTHROPIC_API_KEY</code> in the Railway service variables.</p>
+            <p><a href="/">Back to queue</a></p>""", status_code=200)
+
     # Failure here is non-fatal: the rows exist, and the nightly ingest picks
     # up anything without a complete extraction — correctly, because
     # split_instruction is persisted rather than passed at call time.
@@ -1265,7 +1284,6 @@ async def split_item(item_id: int, focuses: str = Form(default=""),
     except Exception as e:
         logger.error(f"Split re-extraction failed for {affected}: {e}")
 
-    mark_dirty()
     return RedirectResponse(url="/", status_code=303)
 
 
