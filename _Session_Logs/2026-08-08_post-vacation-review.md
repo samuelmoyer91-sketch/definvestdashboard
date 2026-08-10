@@ -215,3 +215,33 @@ re-split. Rendered triage page asserted free of the `#split-` marker.
 The end-to-end split on a real roundup. `/split` is behind basic auth, so I
 cannot exercise it. Watch for: two cards, separate amounts, no duplicate flag,
 and the capital total rising by exactly the newly-captured figure.
+
+## Correction: totals were never the point
+
+Sam, at the end of the session: he does **not** use this system to produce an
+accumulated capital number, so avoiding double-counting is not critical.
+
+Verified immediately: **nothing sums `investment_amount`** — not
+`generate_site.py`, not any exporter, not `/stats`. The only aggregate is
+`dedup.py`'s advisory `overcount` on `/duplicates`.
+
+This invalidates a premise I designed around for most of the evening. The
+splitting work was shaped by "never repeat a figure, every chart and export
+sums this" — which is simply not true of this codebase. The strict amount rule
+it justified was **never shipped** (the design changed to one-row-per-pass
+before it was implemented), so nothing needs undoing. But the rationale is
+written into the 2026-08-08 commit messages and the plan file, where a future
+reader would take it as a live constraint.
+
+Recorded in OPEN_ITEMS.md under "Standing context" and in project memory.
+
+Sam asked that the focused-extraction prompt's wording be left alone. It tells
+the model to return "Unknown" rather than borrow another deal's figure — aimed
+at misattribution, which is still wanted. The theoretical over-application ("$50M
+each to five companies" → siblings marked Unknown) has not been observed.
+
+Worth noting how this was found: not by testing, but by Sam volunteering how he
+actually uses the tool. Three of today's wrong assumptions came from stated
+framings rather than code — the `$` regex, the Cloudflare token, the
+deal-splitting schema — and this is a fourth, from my own inference rather than
+a backlog entry.

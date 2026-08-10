@@ -22,6 +22,33 @@ done when checked.
 
 ---
 
+## Standing context — read before designing around deal amounts
+
+**Sam does not use this system to produce an accumulated capital total**
+(stated 2026-08-08). Avoiding double-counted dollars is therefore *not* a
+design constraint, and nothing should be made harder to protect one.
+
+Confirmed in code the same day: **nothing sums `investment_amount`** — not
+`generate_site.py`, not any exporter, not `/stats` (which counts rows only).
+The single aggregate is `dedup.py`'s `overcount`, an advisory "estimated
+double-counted dollars" hint on `/duplicates`, which is a triage aid rather
+than a published figure.
+
+Why this is written down: the roundup-splitting design was originally built
+around protecting totals, including a rule that a split deal could not carry an
+amount matching a sibling's. That rule was never shipped — the design changed
+before it was implemented — but the rationale appears in commit messages from
+2026-08-08 and would mislead anyone who reads them as current constraints.
+
+One live consequence, left as-is by Sam's call: the focused-extraction prompt
+([ai_summarizer.py:82](src/utils/ai_summarizer.py:82)) tells the model to
+return "Unknown" rather than borrow another deal's figure. That is aimed at
+misattribution and is still wanted. It could in principle over-apply to an
+article stating the same figure for several deals ("$50M each to five
+companies"), which has not been observed. Deliberately not reworded.
+
+---
+
 ## LIVE — verified 2026-08-08
 
 ### 1. Non-English amount expressions score zero
