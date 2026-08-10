@@ -626,9 +626,25 @@ function submitReject() {
     });
 }
 
+// Currency markers this form understands, longest-first so "US$" beats "$".
+// Kept deliberately in step with FX_RATES in src/utils/dedup.py: conversion to
+// USD happens at DISPLAY time from whatever marker survives in the stored
+// string, so a marker dropped here becomes a deal silently recorded as US
+// dollars — which is how 74 European deals ended up stored as bare numbers,
+// some of them a millionth of their real value.
+const CURRENCY_RE = /^\s*(US\$|C\$|A\$|EUR|GBP|CAD|AUD|JPY|INR|ILS|[€£¥₹₪$])\s*/i;
+
+// -> [marker, rest]. marker is '' when the value carries none.
+function splitCurrency(value) {
+    const m = value.match(CURRENCY_RE);
+    return m ? [m[1], value.slice(m[0].length)] : ['', value.trim()];
+}
+
 function parseDealAmount(value) {
-    // Strip "$" and whitespace
-    value = value.replace(/^\$/, '').trim();
+    // Strip ANY currency marker, not just "$". Stripping only "$" left a
+    // leading "€" in place, which made the anchored shorthand match below fail
+    // and silently dropped the magnitude: "€300 million" became 300.
+    value = splitCurrency(value)[1].trim();
 
     // Handle shorthand: $300M, $4.7B, $1.5T, $500K
     const shorthandMatch = value.match(/^([\d,.]+)\s*([KMBT])/i);
@@ -655,13 +671,17 @@ function formatNumberWithCommas(num) {
 }
 
 function formatCurrencyInput(input) {
-    let value = input.value;
+    // Hold the currency marker aside and put it back afterwards. The old code
+    // stripped it along with everything else non-numeric, so a euro amount was
+    // submitted as a bare number and stored as US dollars.
+    const [marker, value] = splitCurrency(input.value);
+    const keep = (formatted) => { input.value = marker ? marker + formatted : formatted; };
 
     // If it looks like AI shorthand (e.g., "$300M"), parse it first
     if (/[KMBT]/i.test(value)) {
         const parsed = parseDealAmount(value);
         if (parsed !== null) {
-            input.value = formatNumberWithCommas(parsed);
+            keep(formatNumberWithCommas(parsed));
             return;
         }
     }
@@ -674,7 +694,7 @@ function formatCurrencyInput(input) {
 
     // Allow trailing decimal or decimal with digits
     if (raw === '' || raw === '.') {
-        input.value = raw;
+        keep(raw);
         return;
     }
 
@@ -682,9 +702,9 @@ function formatCurrencyInput(input) {
     if (decimalIndex !== -1) {
         const intPart = raw.substring(0, decimalIndex);
         const decPart = raw.substring(decimalIndex);
-        input.value = (intPart ? formatNumberWithCommas(parseInt(intPart)) : '0') + decPart;
+        keep((intPart ? formatNumberWithCommas(parseInt(intPart)) : '0') + decPart);
     } else {
-        input.value = formatNumberWithCommas(parseInt(raw));
+        keep(formatNumberWithCommas(parseInt(raw)));
     }
 }
 </script>

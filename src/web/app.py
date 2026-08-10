@@ -7,6 +7,7 @@ import hmac
 import json
 import logging
 import os
+import re
 import contextvars
 import secrets
 import time
@@ -289,6 +290,24 @@ app.add_middleware(RequestTimingMiddleware)
 # =============================================================================
 # Database Dependency
 # =============================================================================
+
+
+# Currency markers understood downstream — kept in step with FX_RATES in
+# src/utils/dedup.py, which converts to USD at display time from whatever
+# marker survives in this string.
+_CURRENCY_PREFIX = re.compile(r'^\s*(US\$|C\$|A\$|EUR|GBP|CAD|AUD|JPY|INR|ILS|[\u20ac\u00a3\u00a5\u20b9\u20aa$])', re.I)
+
+
+def _prefix_currency(amount):
+    """Prefix '$' only when the amount states no currency of its own.
+
+    This used to prefix '$' unconditionally, which asserted US dollars over
+    every euro and pound figure that reached it. Combined with the triage
+    form stripping the symbol client-side, 74 European deals were stored as
+    bare dollar amounts.
+    """
+    amount = (amount or '').strip()
+    return amount if _CURRENCY_PREFIX.match(amount) else f"${amount}"
 
 def _safe_url(url: str):
     """Accept only http/https URLs; return None for anything else (e.g. javascript:)."""
@@ -1388,7 +1407,7 @@ async def accept_item(
         if investment_amount:
             clean = investment_amount.replace(',', '').strip()
             if clean:
-                formatted_amount = f"${investment_amount.strip()}"
+                formatted_amount = _prefix_currency(investment_amount)
 
         master = MasterItem(
             item_id=item_id,
@@ -1944,7 +1963,7 @@ async def save_edit(
     if investment_amount:
         clean = investment_amount.replace(',', '').strip()
         if clean:
-            formatted_amount = f"${investment_amount.strip()}"
+            formatted_amount = _prefix_currency(investment_amount)
 
     master.title = title if title else None
     master.company = company if company else None
