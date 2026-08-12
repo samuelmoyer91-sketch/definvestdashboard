@@ -91,8 +91,23 @@ try:
 except Exception as e:
     print(f"     error: {type(e).__name__}: {e}")
 
+# Server-side fallbacks are unavailable on this model, so the question becomes
+# which OTHER model will answer the same prompt. Only a model that does not
+# refuse is usable as a client-side retry target.
+print("\n  b) Same prompt, other models:")
+for cand in ("claude-sonnet-4-6", "claude-opus-4-8", "claude-haiku-4-5"):
+    try:
+        r = client.messages.create(model=cand, max_tokens=1000,
+                                   messages=[{"role": "user", "content": prompt}])
+        txt = next((b.text for b in r.content if b.type == "text"), None)
+        cat = getattr(getattr(r, 'stop_details', None), 'category', None)
+        print(f"     {cand:20s} stop_reason={r.stop_reason:10s} "
+              f"{'ANSWERED: ' + txt[:70].replace(chr(10),' ') if txt else 'no text (category=' + str(cat) + ')'}")
+    except Exception as e:
+        print(f"     {cand:20s} error: {type(e).__name__}: {str(e)[:110]}")
+
 for label, beta, value in accepted:
-    print(f"\n  b) WITH fallbacks ({label}):")
+    print(f"\n  c) WITH fallbacks ({label}):")
     try:
         r = client.beta.messages.create(model=MODEL, max_tokens=1000,
                                         betas=[beta], fallbacks=value,
