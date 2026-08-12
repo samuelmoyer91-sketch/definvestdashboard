@@ -30,12 +30,18 @@ jobs:
         env:
           TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
           TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+          # One-shot run: connect straight to the primary rather than
+          # downloading the whole database into a throwaway replica.
+          TURSO_REMOTE_ONLY: '1'
         run: python src/ingest/rss_fetcher.py
 
       - name: Screen titles
         env:
           TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
           TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+          # One-shot run: connect straight to the primary rather than
+          # downloading the whole database into a throwaway replica.
+          TURSO_REMOTE_ONLY: '1'
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: python src/scraper/run_title_screen.py
 
@@ -43,12 +49,18 @@ jobs:
         env:
           TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
           TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+          # One-shot run: connect straight to the primary rather than
+          # downloading the whole database into a throwaway replica.
+          TURSO_REMOTE_ONLY: '1'
         run: python src/scraper/article_scraper.py
 
       - name: Generate AI summaries
         env:
           TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
           TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+          # One-shot run: connect straight to the primary rather than
+          # downloading the whole database into a throwaway replica.
+          TURSO_REMOTE_ONLY: '1'
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: python src/scraper/generate_ai_summaries.py --limit 300
 

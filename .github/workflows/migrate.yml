@@ -40,6 +40,9 @@ jobs:
         env:
           TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
           TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+          # One-shot run: connect straight to the primary rather than
+          # downloading the whole database into a throwaway replica.
+          TURSO_REMOTE_ONLY: '1'
           # Some maintenance scripts re-run extraction (recover_item.py
           # --reextract). Without this the summarizer silently returns an
           # empty stub — "ANTHROPIC_API_KEY not set" — which reads like a

@@ -36,6 +36,9 @@ jobs:
         env:
           TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
           TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+          # One-shot run: connect straight to the primary rather than
+          # downloading the whole database into a throwaway replica.
+          TURSO_REMOTE_ONLY: '1'
         run: |
           python scripts/export_deals.py \
             --out exports/deals.csv \

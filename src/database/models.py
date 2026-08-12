@@ -296,6 +296,21 @@ class ApiUsageLog(Base):
         return f"<ApiUsageLog(run_type='{self.run_type}', cost=${self.cost_usd:.4f})>"
 
 
+def remote_only():
+    """True when this process should talk straight to the Turso primary.
+
+    A one-shot process — every GitHub Actions run — gets a fresh container, so
+    an embedded replica has nothing cached and downloads the WHOLE database
+    (~176 MB) just to run one script and exit. Two scheduled runs a day plus
+    ad-hoc ones is most of the account's embedded-sync usage, which sat at
+    5.8 GB of a 10 GB limit on 2026-08-12.
+
+    Long-lived processes (the Railway app) keep the replica: it persists
+    across requests, so it syncs incrementally rather than wholesale.
+    """
+    return os.environ.get('TURSO_REMOTE_ONLY', '').strip().lower() in ('1', 'true', 'yes')
+
+
 # Database setup
 def get_engine(db_path='databases/tracker.db'):
     """Create and return database engine.
@@ -360,14 +375,24 @@ def get_engine(db_path='databases/tracker.db'):
                             logger.error(f"Turso sync failed after {attempt + 1} attempts ({label}): {e}")
                             raise
 
+            def _open_connection(label):
+                """Open a libsql connection in whichever mode is configured."""
+                if remote_only():
+                    # Straight to the primary — no local file, no sync. What
+                    # `turso db shell` does.
+                    return libsql.connect(turso_url, auth_token=turso_token)
+                conn = libsql.connect('turso_replica.db',
+                    sync_url=turso_url,
+                    auth_token=turso_token)
+                _sync_with_retry(conn, label)
+                return conn
+
             def get_libsql_connection():
                 global _libsql_conn
                 if _libsql_conn is None:
-                    _libsql_conn = libsql.connect('turso_replica.db',
-                        sync_url=turso_url,
-                        auth_token=turso_token)
-                    _sync_with_retry(_libsql_conn, "initial")
-                    logger.info("Initial Turso sync complete")
+                    _libsql_conn = _open_connection("initial")
+                    logger.info("Turso connected (%s)",
+                                "remote-only" if remote_only() else "embedded replica")
                 else:
                     # Verify the cached connection is still alive.
                     # Catch BaseException (not just Exception) because a stale
@@ -379,10 +404,7 @@ def get_engine(db_path='databases/tracker.db'):
                     except BaseException:
                         logger.warning("Cached libsql connection stale, reconnecting...")
                         _libsql_conn = None
-                        _libsql_conn = libsql.connect('turso_replica.db',
-                            sync_url=turso_url,
-                            auth_token=turso_token)
-                        _sync_with_retry(_libsql_conn, "reconnect")
+                        _libsql_conn = _open_connection("reconnect")
                 return LibsqlConnectionWrapper(_libsql_conn)
 
             _turso_engine = create_engine(
@@ -427,6 +449,9 @@ def sync_turso():
     cached connection state so the next get_session() call reconnects.
     """
     global _libsql_conn, _turso_engine, _session_factory
+    if remote_only():
+        # Nothing to sync: writes already went straight to the primary.
+        return
     if _libsql_conn is not None:
         try:
             _libsql_conn.sync()
