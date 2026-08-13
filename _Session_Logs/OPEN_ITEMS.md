@@ -144,6 +144,43 @@ INSERT 230ms ×89. Accept issues 7–16 statements → median 2810ms; reject iss
 (batch the SELECTs, move `autoreject_scan`/`investors` off the click path, or an
 embedded replica for reads) — not a faster handler.
 
+### 6a. Refusals are `category=bio`, and NO fallback fixes them
+Settled 2026-08-12. The `stop_details.category` logging added on 08-08 paid off:
+
+```
+stop_reason=refusal, category=bio
+explanation=API integrators: you can reduce refusals ... configuring a fallback model
+```
+
+Anthropic's message points at a fallback model. **Tested, and it does not
+work** — do not spend time on it again:
+
+| Approach | Result |
+|---|---|
+| Server-side `fallbacks` param | **400** — `'claude-sonnet-5' does not support the fallbacks parameter`; `allowed_fallback_models = []` on both beta headers |
+| Retry on `claude-sonnet-4-6` | refuses, `category=bio` |
+| Retry on `claude-opus-4-8` | refuses, `category=bio` |
+| Retry on `claude-haiku-4-5` | answers, but the answer is *"Unfortunately, I cannot extract…"* |
+
+So every model declines the same content. A client-side fallback would refuse
+three times and cost more. **Decision: build no fallback.**
+
+**The open question, and the more promising lead:** the test article is
+*"AI, dual use and spacetech: the new stars of debt funding"* — a European VC
+funding roundup, which has no business tripping a *biology* classifier. That
+suggests the text being sent is not the article. Sifted is paywalled, so the
+scrape may be capturing something else entirely, which would also explain why
+it is always the same articles.
+
+`scripts/inspect_failing_text.py` exists to answer this (dumps the stored
+`clean_text` and the feed breakdown for every failing item). It ran clean on
+2026-08-12 but the output could not be retrieved through the Actions log API —
+re-run it and read the output in the GitHub web UI instead.
+
+If the text turns out to be junk, this is a **scraper** problem, not a model
+problem, and the fix is upstream — which would also close the paywalled-source
+question that has been open since the feed build-out.
+
 ### 6. Nine Sifted articles refused by the model
 Opened 2026-08-08. The same 9 European VC roundups fail summarization every run
 and are retried forever (the query re-selects `summary_complete == False`).
