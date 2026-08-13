@@ -49,7 +49,7 @@ companies"), which has not been observed. Deliberately not reworded.
 
 ---
 
-## LIVE — verified 2026-08-08
+## LIVE — verified 2026-08-08, items 0/5/6 re-verified 2026-08-12
 
 ### 0. Repair the 74 European deals stored in the wrong currency
 Opened 2026-08-08. The *cause* is fixed (`337d21e`); the **existing data is
@@ -110,41 +110,22 @@ reversible (`410bb9e`).
 [dedup.py:130](src/utils/dedup.py:130) — strips punctuation and legal suffixes
 via `NAME_NOISE`, but has no prefix handling. From the 2026-07-29 drone/EW log.
 
-### 4. Multi-deal roundups — SHIPPED 2026-08-08, and the framing was wrong
-
-Carried in four logs as *"deal-splitting needs `master_list.item_id`'s UNIQUE
-dropped, which needs a Turso table rebuild"* — the reason it was deferred three
-separate times. **It needed neither.**
-
-Shipped instead: a roundup is re-extracted once per deal it contains, each pass
-told which deal to cover. Each pass is its own `raw_items` row, so it gets its
-own extraction and its own `master_list` row through the unchanged accept path.
-No constraint dropped, no rebuild, two additive columns.
-
-The first plan for this *did* do the rebuild — six steps, one high-risk DDL
-phase needing a migration window. Sam asked whether a simpler shape existed and
-described re-entering an article with an instruction; that turned out to
-dissolve the hard part entirely.
-
-**Third time this has happened.** The `$` regex (see DONE) and the Cloudflare
-token (item 11) were both carried with a stated framing that measurement or a
-five-minute check disproved. A backlog entry records what someone believed at
-the time, not what is true — treat the stated cause as a hypothesis.
-
-Still open, downstream of this: whether roundups should be *detected*
-automatically rather than spotted by eye (see DECISION below), and the nine
-Sifted articles that fail with `stop_reason="refusal"` (item 6) — a focused
-single-deal instruction may sidestep it, unproven.
-
 ### 5. Accept latency is round-trip count, not slow code
 `/health` on 2026-08-08: `median_pre_handler_ms` 2.1 (so *not* blocked — the
 StaticPool/`async def` hypothesis from 07-29 is dead). SELECT median 106ms ×283,
 INSERT 230ms ×89. Accept issues 7–16 statements → median 2810ms; reject issues 2
 → 483ms. Latency ≈ `statements × ~150ms`. Fix direction is fewer round trips
-(batch the SELECTs, move `autoreject_scan`/`investors` off the click path, or an
-embedded replica for reads) — not a faster handler.
+(batch the SELECTs, or move `autoreject_scan`/`investors` off the click path)
+— not a faster handler.
 
-### 6a. Refusals are `category=bio`, and NO fallback fixes them
+**Correction, 2026-08-12:** an earlier version of this item suggested "an
+embedded replica for reads". The app *already runs one* — that is what
+`turso_replica.db` is. Reads measuring 106ms means they are not being served
+locally despite it, so adding a replica is not the fix and would be a dead
+end. Why a local replica still costs a full round trip per SELECT is itself
+worth understanding before optimising anything else here.
+
+### 6. Refusals are `category=bio`, and NO fallback fixes them
 Settled 2026-08-12. The `stop_details.category` logging added on 08-08 paid off:
 
 ```
@@ -180,23 +161,6 @@ re-run it and read the output in the GitHub web UI instead.
 If the text turns out to be junk, this is a **scraper** problem, not a model
 problem, and the fix is upstream — which would also close the paywalled-source
 question that has been open since the feed build-out.
-
-### 6. Nine Sifted articles refused by the model
-Opened 2026-08-08. The same 9 European VC roundups fail summarization every run
-and are retried forever (the query re-selects `summary_complete == False`).
-
-Cause is **`stop_reason: "refusal"`** — Sonnet 5's safety classifiers declining,
-confirmed by run `31261208698`. An earlier `max_tokens` exhaustion theory was
-**wrong**; the `max_tokens` 4096→16000 bump in `6d81bb2` was harmless but did not
-fix this, and that commit's error string still says "thinking likely consumed
-max_tokens", which is now misleading and should be corrected.
-
-Next step: log `stop_details.category` in the error path of
-[ai_summarizer.py](src/utils/ai_summarizer.py) — the API populates it precisely
-for this case. That distinguishes a real classifier category from something odd
-in the scraped Sifted content (Sifted is paywalled, so the captured text may not
-be article text at all). All 9 are from the one publisher, which points at the
-scrape rather than the topic.
 
 ### 7. Feed concentration
 Two Google Alerts feeds are the only volatile sources — "Private Equity Defense"
@@ -271,8 +235,9 @@ item 7.
 - 117 items dropped 2026-04-20 to the retroactive 200-char threshold
   (`scrape_success=False`, `error_message='insufficient_content'`) — never
   backfilled. Four months on, worth deciding whether to abandon.
-- Exail's `$3.9B` euro conversion bug, and removing the Exail duplicate
-  (2026-07-29).
+- The Exail duplicate still needs removing (2026-07-29). Its `$3.9B` figure
+  is **explained** — see item 0; the triage form was discarding the euro
+  marker. Repairing it is part of that backfill, not a separate puzzle.
 - Current triage queue depth — unknown; `/api/diagnostics` needs auth.
 
 ---
@@ -303,6 +268,32 @@ item 7.
 | Actions on deprecated Node 20 | Bumped to checkout@v7 / setup-python@v7 / upload-artifact@v7 in `6d81bb2` | 2026-08-08 |
 | Summary failures reported no cause | `_describe_stop` reports `stop_reason` + refusal `category` (`00925e9`) | 2026-08-08 |
 | The `$` deal-indicator regex | Replaced by a named `$amount` pattern — see the note below | 07-26, 07-27, 07-28, 07-29 |
+
+### Multi-deal roundups — shipped 2026-08-08, and the framing was wrong
+
+Carried in four logs as *"deal-splitting needs `master_list.item_id`'s UNIQUE
+dropped, which needs a Turso table rebuild"* — the reason it was deferred three
+separate times. **It needed neither.**
+
+Shipped instead: a roundup is re-extracted once per deal it contains, each pass
+told which deal to cover. Each pass is its own `raw_items` row, so it gets its
+own extraction and its own `master_list` row through the unchanged accept path.
+No constraint dropped, no rebuild, two additive columns.
+
+The first plan for this *did* do the rebuild — six steps, one high-risk DDL
+phase needing a migration window. Sam asked whether a simpler shape existed and
+described re-entering an article with an instruction; that turned out to
+dissolve the hard part entirely.
+
+**Third time this has happened.** The `$` regex (see DONE) and the Cloudflare
+token (item 11) were both carried with a stated framing that measurement or a
+five-minute check disproved. A backlog entry records what someone believed at
+the time, not what is true — treat the stated cause as a hypothesis.
+
+Still open, downstream of this: whether roundups should be *detected*
+automatically rather than spotted by eye (see DECISION below), and the nine
+Sifted articles that fail with `stop_reason="refusal"` (item 6) — a focused
+single-deal instruction may sidestep it, unproven.
 
 ### Note on the `$` indicator — the fix was not the one described
 
