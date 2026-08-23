@@ -36,31 +36,53 @@ def generate_summaries(limit=5, force_regenerate=False, item_ids=None):
 
     session = get_session()
 
-    # Find articles that need summaries
-    query = session.query(RawItem).join(ArticleContent).outerjoin(AIExtraction)
+    def _select(session):
+        """Build and run the 'what needs summarising' query."""
+        query = session.query(RawItem).join(ArticleContent).outerjoin(AIExtraction)
+        if item_ids:
+            return query.filter(
+                RawItem.id.in_(item_ids),
+                ArticleContent.scrape_success == True
+            ).all()
+        elif force_regenerate:
+            # Regenerate all that have article content
+            return query.filter(
+                ArticleContent.scrape_success == True
+            ).limit(limit).all()
+        else:
+            # Only generate for items without complete summaries
+            # Include items with no AI extraction OR incomplete extractions
+            from sqlalchemy import or_
+            return query.filter(
+                ArticleContent.scrape_success == True,
+                or_(
+                    AIExtraction.id == None,  # No AI extraction yet
+                    AIExtraction.summary_complete == False,  # Incomplete extraction
+                    AIExtraction.summary_complete == None  # Null summary_complete
+                )
+            ).limit(limit).all()
 
-    if item_ids:
-        items = query.filter(
-            RawItem.id.in_(item_ids),
-            ArticleContent.scrape_success == True
-        ).all()
-    elif force_regenerate:
-        # Regenerate all that have article content
-        items = query.filter(
-            ArticleContent.scrape_success == True
-        ).limit(limit).all()
-    else:
-        # Only generate for items without complete summaries
-        # Include items with no AI extraction OR incomplete extractions
-        from sqlalchemy import or_
-        items = query.filter(
-            ArticleContent.scrape_success == True,
-            or_(
-                AIExtraction.id == None,  # No AI extraction yet
-                AIExtraction.summary_complete == False,  # Incomplete extraction
-                AIExtraction.summary_complete == None  # Null summary_complete
-            )
-        ).limit(limit).all()
+    # Retry the read, reconnecting in between. A transient Turso error here
+    # kills the whole step before a single article is summarised: on
+    # 2026-08-23 the connection stream expired and every one of that
+    # morning's 94 scraped items went unextracted. The commit path below has
+    # recovered this way for a while; the read path did not.
+    for attempt in range(3):
+        try:
+            items = _select(session)
+            break
+        except BaseException as e:
+            if attempt == 2:
+                print(f"Query failed after 3 attempts: {e}")
+                raise
+            print(f"  \u26a0 Query failed ({e}); resetting Turso connection and retrying...")
+            try:
+                session.rollback()
+            except BaseException:
+                pass
+            _reset_turso_connection()
+            session = get_session()
+            time.sleep(2 ** attempt)
 
     if not items:
         print("No items need AI summaries!")

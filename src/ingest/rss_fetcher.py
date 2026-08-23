@@ -1,5 +1,7 @@
 """RSS feed ingestion module."""
 
+import html
+import re
 import feedparser
 import json
 from datetime import datetime, timedelta, timezone
@@ -26,6 +28,24 @@ def load_config(config_path='config/feeds.json'):
         return json.load(f)
 
 
+def clean_rss_text(value):
+    """Strip HTML tags and unescape entities from an RSS field.
+
+    Google Alerts wraps the matched keywords in <b> tags, so titles arrive as
+    'Relativity Space <b>expansion</b>, plans to hire thousands'. Stored raw,
+    that shows verbatim on a triage card whenever there is no AI title to
+    cover it — which is exactly when you are least able to read around it.
+
+    Applied to the title and the RSS summary; the summary also feeds the
+    relevance scorer, where a stray tag could split a keyword in two.
+    """
+    if not value:
+        return value
+    text = re.sub(r'<[^>]+>', '', value)
+    text = html.unescape(text)
+    return re.sub(r'\s+', ' ', text).strip()
+
+
 def parse_feed(feed_url, feed_name):
     """Parse a single RSS feed and return entries."""
     print(f"Fetching feed: {feed_name}")
@@ -40,9 +60,9 @@ def parse_feed(feed_url, feed_name):
     for entry in feed.entries:
         # Extract relevant fields
         item = {
-            'title': entry.get('title', 'No title'),
+            'title': clean_rss_text(entry.get('title', 'No title')),
             'url': entry.get('link', ''),
-            'summary': entry.get('summary', ''),
+            'summary': clean_rss_text(entry.get('summary', '')),
             'published': entry.get('published_parsed', None),
             'feed_source': feed_name
         }
