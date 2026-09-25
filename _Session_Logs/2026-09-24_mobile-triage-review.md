@@ -95,3 +95,30 @@ Nobody has tried it on a real iPhone. That's the real test, once it's deployed.
 - Public site picks the new values up on the next publish (daily 1 AM UTC,
   or `gh workflow run publish.yml`).
 - Round 2 (53 deals with no currency in the title) logged in OPEN_ITEMS #0.
+
+## Project status review (Sam asked for a full review + next refinements)
+Sources: fresh deals export (925 deals), ingest logs Jun 29 – Sep 24 (every
+3rd run), live `/health`, July-5 replica for edit behaviour (Apr–Jul, 299
+accepts), and `inspect_failing_text.py`, run for the first time (36083257006).
+
+Findings worth keeping:
+- **Refusals root-caused:** 27 of 29 are Sifted. Its paywall scrambles
+  everything after the lead paragraph, and the model's safety filter refuses
+  the cipher-like text. Refused items are **hidden** from triage (the
+  all-Unknown filter) and **retried daily forever**: the pile went 9 → 29 over
+  Aug 10 – Sep 24, and it's roughly half the daily extraction spend. Missing
+  from master as a result: Uforce, The Exploration Company $450M. See
+  OPEN_ITEMS #6.
+- Volume: accepts ~70/month (Feb–May) → 183 (Jul), 174 (Aug), 114 (Sep to
+  date). Europe is 26% of accepts in the last 3 months (13% before). 68% carry
+  an amount.
+- Edit behaviour (Apr–Jul): 54% of accepts are taken exactly as the AI
+  proposed; company changed 3% of the time, amount 5%. Investor "Self-funded" was
+  overridden 21 of 21 times (20 to the company's own name). "Unknown" location
+  was hand-filled 29 of 33 times.
+- Live, tonight: 20 accepts + 13 rejects in ~7 min on the new phone layout.
+  Accept median 1.7s, of which investors 0.64s + autoreject_scan 0.56s; one
+  accept took 22s (first click after the deploy).
+- Pipeline: 0 failed ingest runs in September; 5 of ~95 since late June,
+  all transient.
+- Stale: memory `project_current_state.md` (July). Marked stale in the index.

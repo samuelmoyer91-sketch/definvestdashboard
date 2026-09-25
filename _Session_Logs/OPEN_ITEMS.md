@@ -129,7 +129,7 @@ locally despite it, so adding a replica is not the fix and would be a dead
 end. Why a local replica still costs a full round trip per SELECT is itself
 worth understanding before optimising anything else here.
 
-### 6. Refusals are `category=bio`, and NO fallback fixes them
+### 6. Refusals are `category=bio`, and NO fallback fixes them — root cause found 2026-09-24
 Settled 2026-08-12. The `stop_details.category` logging added on 08-08 paid off:
 
 ```
@@ -157,14 +157,36 @@ suggests the text being sent is not the article. Sifted is paywalled, so the
 scrape may be capturing something else entirely, which would also explain why
 it is always the same articles.
 
-`scripts/inspect_failing_text.py` exists to answer this (dumps the stored
-`clean_text` and the feed breakdown for every failing item). It ran clean on
-2026-08-12 but the output could not be retrieved through the Actions log API —
-re-run it and read the output in the GitHub web UI instead.
+**ROOT CAUSE FOUND 2026-09-24 — it is the scrape, and it is Sifted.**
+`inspect_failing_text.py` finally ran (run 36083257006; `gh run view --log`
+reads it fine). 29 articles are failing: **27 are `Direct: Sifted`**, plus one
+each from Private Equity Defense and New Factory Defense Products. Every Sifted
+article has the same shape: a readable headline and first paragraph, then
+**thousands of characters of paywall-scrambled text**:
 
-If the text turns out to be junk, this is a **scraper** problem, not a model
-problem, and the fix is upstream — which would also close the paywalled-source
-question that has been open since the feed build-out.
+```
+ZuriQ ... has raised a $25.5m seed round to develop a new architecture for
+quantum chips...Plf zahss fmk hvf ud Xbyqwjtblrda, r Hvyik-kfgah TV lpymsmo...
+```
+
+The model's safety filter reads that cipher-like text as a possible attempt to
+hide something and refuses; `category=bio` is a red herring. The readable lead
+nearly always carries the deal (company, amount, investors).
+
+**Two consequences, both worse than a blank card:**
+1. **Refused deals are hidden from triage, silently.** A refusal stores an
+   empty `ai_extractions` row, and the queue's all-Unknown filter
+   ([app.py `_triage_queue_items`](src/web/app.py)) removes it. Missing from
+   master as of today: Uforce ($4bn-valuation drone round) and The Exploration
+   Company ($450M). ZuriQ got in through another source.
+2. **Refused items are retried every day, forever.** The pile grows as Sifted
+   publishes: 9 (Aug 10), 12 (Aug 25), 19 (Sep 9), 29 (Sep 24). Daily
+   extraction spend rose from ~$0.3–0.5 (July) to ~$1.0–1.1; roughly half of
+   today's is the retries.
+
+**Fix direction (not built):** when scraped text turns into gibberish, keep
+only the readable lead. Stop retrying after N refusals, and surface a refused
+item in triage rather than hiding it. Then re-run the 29 once.
 
 ### 7. Feed concentration
 Two Google Alerts feeds are the only volatile sources — "Private Equity Defense"
