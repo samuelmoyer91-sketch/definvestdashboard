@@ -15,6 +15,11 @@ even if some items fail.
     gh workflow run migrate.yml -f script=reextract_items.py -f args="--splits"
     gh workflow run migrate.yml -f script=reextract_items.py -f args="--splits --apply"
     gh workflow run migrate.yml -f script=reextract_items.py -f args="--items 14667,14839 --apply"
+    gh workflow run migrate.yml -f script=reextract_items.py -f args="--refused --apply"
+
+--refused re-runs every article the model refused (status extraction_refused).
+The nightly run never retries those, so this is the way to give them another
+pass after the input changes, as when the paywall-scramble trimming improved.
 """
 import argparse
 import os
@@ -23,7 +28,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from src.database.models import get_session, sync_turso, RawItem, AIExtraction
+from src.database.models import (get_session, sync_turso, RawItem, AIExtraction,
+                                 EXTRACTION_REFUSED)
 
 
 def main():
@@ -31,13 +37,15 @@ def main():
     ap.add_argument('--items', help='comma-separated RawItem ids')
     ap.add_argument('--splits', action='store_true',
                     help='every row carrying a split_instruction')
+    ap.add_argument('--refused', action='store_true',
+                    help='every row the model refused (status extraction_refused)')
     ap.add_argument('--incomplete-only', action='store_true',
                     help='skip rows whose extraction is already complete')
     ap.add_argument('--apply', action='store_true', help='without this, report only')
     args = ap.parse_args()
 
-    if not args.items and not args.splits:
-        print("Nothing selected — pass --items or --splits.")
+    if not args.items and not args.splits and not args.refused:
+        print("Nothing selected — pass --items, --splits or --refused.")
         return 1
 
     session = get_session()
@@ -45,6 +53,10 @@ def main():
     if args.splits:
         rows = (session.query(RawItem)
                 .filter(RawItem.split_instruction.isnot(None))
+                .order_by(RawItem.id).all())
+    elif args.refused:
+        rows = (session.query(RawItem)
+                .filter(RawItem.status == EXTRACTION_REFUSED)
                 .order_by(RawItem.id).all())
     else:
         ids = [int(x) for x in args.items.split(',') if x.strip()]
@@ -58,7 +70,7 @@ def main():
             print(f"  skip  id={r.id} (already complete)")
             continue
         selected.append(r.id)
-        print(f"  id={r.id}  complete={complete}  focus={r.split_instruction!r}")
+        print(f"  id={r.id}  complete={complete}  focus={r.split_instruction!r}  {r.title[:60]}")
 
     if not selected:
         print("\nNothing to do.")

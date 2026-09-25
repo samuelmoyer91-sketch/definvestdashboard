@@ -3,9 +3,47 @@
 {% block title %}Duplicate Check - Defense Capital Tracker{% endblock %}
 
 {% block content %}
+<style>
+.help-short { display: none; }
+.dup-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.dup-row { border-top: 1px solid #eee; }
+.dup-row.flagged { background: #fbeaec; }
+.dup-row td { padding: 6px 8px; }
+.c-mark { width: 28px; font-weight: 700; }
+.c-date, .c-amt, .c-act { white-space: nowrap; }
+.c-date { color: #666; }
+.c-amt { font-weight: 600; }
+.remove-deal {
+    background: #bf616a; color: #fff; border: 0; border-radius: 3px;
+    padding: 3px 9px; font-size: 12px; cursor: pointer;
+}
+.remove-deal.quiet { background: none; color: #bf616a; border: 1px solid #bf616a; }
+
+/* Phones: the table was wider than the screen, which shrank the page and
+   made the Remove buttons tiny. Each row becomes a small stacked card:
+   mark · date · amount / headline / full-width Remove. */
+@media (max-width: 640px) {
+    .help-long { display: none; }
+    .help-short { display: block; }
+    .dup-table, .dup-table tbody { display: block; }
+    .dup-row {
+        display: grid; grid-template-columns: auto auto 1fr;
+        grid-template-areas: "mark date amt" "title title title" "act act act";
+        gap: 4px 10px; align-items: center; padding: 10px 6px;
+    }
+    .dup-row td { padding: 0; }
+    .c-mark { grid-area: mark; width: auto; }
+    .c-date { grid-area: date; }
+    .c-amt { grid-area: amt; }
+    .c-title { grid-area: title; font-size: 15px; }
+    .c-act { grid-area: act; }
+    .remove-deal { width: 100%; min-height: 44px; font-size: 15px; }
+}
+</style>
+
 <h2 style="margin-bottom: 8px;">Duplicate Check</h2>
 
-<p style="color: #666; margin-bottom: 20px; font-size: 14px; max-width: 760px;">
+<p class="help-long" style="color: #666; margin-bottom: 20px; font-size: 14px; max-width: 760px;">
     Deals that look like the same underlying event — same company, matching dollar
     amount within {{ window_days }} days (±{{ tolerance_pct }}%). Rows marked
     <span style="color:#bf616a; font-weight:700;">&raquo;</span> are the ones matched
@@ -15,6 +53,10 @@
     best source — keep that one and remove the rest.
     <strong>Remove</strong> is reversible: deals go to
     <a href="/removed">Removed</a>, not the bin.
+</p>
+<p class="help-short" style="color: #666; margin-bottom: 14px; font-size: 14px;">
+    Keep the <span style="color:#88c540; font-weight:700;">&#10003;</span> row and remove
+    the rest. Removed deals go to <a href="/removed">Removed</a> and can be restored.
 </p>
 
 <div class="card" style="margin-bottom: 24px; display: flex; gap: 32px; flex-wrap: wrap;">
@@ -38,22 +80,19 @@
             — {{ cluster.entries | length }} cards, {{ cluster.pairs | length }} matching pair(s)
         </span>
     </div>
-    <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+    <table class="dup-table">
         {% for d in cluster.entries %}
-        <tr id="deal-row-{{ d.id }}" style="border-top: 1px solid #eee; {% if d.is_flagged %}background: #fbeaec;{% endif %}">
-            <td style="padding: 6px 8px; width: 28px; font-weight: 700;">
+        <tr id="deal-row-{{ d.id }}" class="dup-row{% if d.is_flagged %} flagged{% endif %}">
+            <td class="c-mark">
                 {% if d.is_keeper %}<span style="color:#88c540;" title="Best source — keep this one">&#10003;</span>
                 {% elif d.is_flagged %}<span style="color:#bf616a;">&raquo;</span>{% endif %}
             </td>
-            <td style="padding: 6px 8px; white-space: nowrap; color: #666;">{{ d.date_fmt }}</td>
-            <td style="padding: 6px 8px; white-space: nowrap; font-weight: 600;">{{ d.amount_fmt }}</td>
-            <td style="padding: 6px 8px;">{{ d.title }}</td>
-            <td style="padding: 6px 8px; white-space: nowrap;">
+            <td class="c-date">{{ d.date_fmt }}</td>
+            <td class="c-amt">{{ d.amount_fmt }}</td>
+            <td class="c-title">{{ d.title }}</td>
+            <td class="c-act">
                 <button type="button" class="remove-deal" data-id="{{ d.id }}"
-                        data-label="{{ d.title }}"
-                        style="background:#bf616a; color:#fff; border:0; border-radius:3px; padding:3px 9px; font-size:12px; cursor:pointer;">
-                    Remove
-                </button>
+                        data-label="{{ d.title }}">Remove</button>
             </td>
         </tr>
         {% endfor %}
@@ -73,18 +112,16 @@
                 {{ cluster.company }}
                 <span style="font-weight: normal; font-size: 13px; color: #888;">— {{ cluster.entries | length }} cards</span>
             </div>
-            <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+            <table class="dup-table">
                 {% for d in cluster.entries %}
-                <tr id="deal-row-{{ d.id }}" style="border-top: 1px solid #eee;">
-                    <td style="padding: 6px 8px; white-space: nowrap; color: #666;">{{ d.date_fmt }}</td>
-                    <td style="padding: 6px 8px; white-space: nowrap; font-weight: 600;">{{ d.amount_fmt }}</td>
-                    <td style="padding: 6px 8px;">{{ d.title }}</td>
-                    <td style="padding: 6px 8px; white-space: nowrap;">
-                        <button type="button" class="remove-deal" data-id="{{ d.id }}"
-                                data-label="{{ d.title }}"
-                                style="background:none; color:#bf616a; border:1px solid #bf616a; border-radius:3px; padding:3px 9px; font-size:12px; cursor:pointer;">
-                            Remove
-                        </button>
+                <tr id="deal-row-{{ d.id }}" class="dup-row">
+                    <td class="c-mark"></td>
+                    <td class="c-date">{{ d.date_fmt }}</td>
+                    <td class="c-amt">{{ d.amount_fmt }}</td>
+                    <td class="c-title">{{ d.title }}</td>
+                    <td class="c-act">
+                        <button type="button" class="remove-deal quiet" data-id="{{ d.id }}"
+                                data-label="{{ d.title }}">Remove</button>
                     </td>
                 </tr>
                 {% endfor %}
