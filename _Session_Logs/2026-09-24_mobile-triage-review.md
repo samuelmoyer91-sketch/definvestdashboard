@@ -152,3 +152,26 @@ Sam passed on 3 (quick accept) and 5 (currency round 2) for now.
   forms, public-site filter label (`export_to_html_v2.py`).
 - **Possible Dups phone layout**: table rows stack into cards under 640px,
   44px buttons, short help text; desktop unchanged (checked side by side).
+
+## Post-deploy pipeline run (a4e5071) + detector v2
+- Manual ingest 36085220840: refusals 29 → 9. All 20 trimmed articles
+  extracted; the 9 refusals were all UNtrimmed. On these, Sifted follows the
+  scramble with readable "related articles" teasers, and v1 assumed the
+  scramble runs to the end. 3 of my 5 "unscrambled" live samples were this
+  shape too, so my v1 test result was wrong.
+- v2 (local, not pushed): vowel-share windows find the first random-looking
+  run anywhere (normal articles never go below 0.253 in any 300-letter window;
+  scrambles run 0.16–0.22). A rare-letter-pair change point then places the
+  cut; the vowel change point is the fallback. Rare pairs are NOT used for
+  detection because they are common in Polish/Czech (cz, rz) and in encoded
+  junk strings. Tests: 0 false cuts on 1,669 articles, and Polish/Czech/
+  Cyrillic/Hebrew untouched. All 12 scrambled live Sifted articles are cut
+  exactly, including a podcast page whose scramble starts mid-line.
+- The 9 refused items are `extraction_refused` (shown in triage with the
+  notice) and need one manual re-run after v2 ships.
+
+## Published Dup Check investigation (Sam: "messy, can't reject, nothing new")
+See OPEN_ITEMS 2+3. It runs, but its rules catch 1/27 hand-verified
+duplicate pairs; a prototype catches 22/27. Remove buttons exist on every row
+(reversible); on a phone they are tiny, and there is no "not a duplicate".
+Proposal given to Sam; awaiting go-ahead.

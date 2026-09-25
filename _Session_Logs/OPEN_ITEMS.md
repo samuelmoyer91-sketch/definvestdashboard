@@ -108,16 +108,40 @@ Remaining fix, if wanted: add `€`/`£` and German/French magnitude words to
 `deal_indicator_patterns` (the mechanism exists). Low value while the skip
 flags cover the local-language feeds.
 
-### 2. `amounts_match` misses one-sided amounts
-[dedup.py:194](src/utils/dedup.py:194) — returns `False` when one side has a
-figure and the other doesn't. "Anduril raises $250M" never matches a write-up of
-the same deal that omits the number. Fixing it means matching on company + tight
-date window, which adds false positives — survivable now that removal is
-reversible (`410bb9e`).
+### 2+3. Duplicate matching misses most real duplicates — measured 2026-09-24
+Items 2 (one-sided amounts) and 3 (name variants) were the visible edges
+of a bigger gap. Sam asked why the Published Dup Check "hasn't come up with
+anything new". It runs fine, but on today's 925 deals it lists 2 clusters:
+Hensoldt, a real duplicate that only became matchable after the currency
+repair, and Northrop Utah vs Florida, a false alarm because neither has an
+amount. Meanwhile the rules catch **1 of 27** duplicate pairs verified by hand
+over Jul 22 – Sep 16. The reasons, in order of frequency:
+- **Company name variants** ([dedup.py:130](src/utils/dedup.py:130)):
+  "Raytheon" / "Raytheon (RTX)", "Stoke Space" / "Stoke Space Technologies",
+  "L3Harris" / "L3Harris Technologies", a missing European suffix
+  (SA/GmbH/mbH), and a typo ("Erail" for Exail).
+- **One card has no amount** (GoPro/Starman, Heven, Duotech, Perpetua).
+- **Converted currencies drift past the 5% tolerance** (ICEYE €1B vs
+  $1.16B, Neuraspace €15.6M vs $18M).
+- **The same deal re-reported after the 30-day window** (Rheinmetall €350M
+  Bavaria, 51 days; Park Aerospace $65M, 55 days).
 
-### 3. `normalize_company` prefix gap
-[dedup.py:130](src/utils/dedup.py:130) — strips punctuation and legal suffixes
-via `NAME_NOISE`, but has no prefix handling. From the 2026-07-29 drone/EW log.
+The pre-triage Possible Dups bucket uses the same helpers, so these are also
+exactly the duplicates that get past triage. The page staying empty follows
+from that. It is not evidence that it works.
+
+**Prototype** (scratch, not shipped): token-subset/typo name matching, city
+as a tie-breaker (different cities = different deal unless the amounts are
+identical, e.g. GE/CPP buyer vs target HQ), 12% tolerance when either
+amount was converted, one-sided amounts allowed with the same place + a
+similar headline, and 60 days when amount and place match. Result: 22/27 real
+pairs caught, 2/19 known-distinct pairs flagged (Rheinmetall Neuss vs
+Nordhessen; Iten expansion vs NP Aerospace buying Iten). A full scan
+suggests 40–50 duplicate groups in the published data (~5%).
+
+Page problems Sam raised: no "not a duplicate" dismissal (judged pairs
+stay forever), a table that overflows on phones (the Remove buttons exist
+but are tiny), and a noisy "94 companies judged distinct" list.
 
 ### 5. Accept latency is round-trip count, not slow code
 `/health` on 2026-08-08: `median_pre_handler_ms` 2.1 (so *not* blocked — the
