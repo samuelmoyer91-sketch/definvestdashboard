@@ -56,6 +56,8 @@ def fetch_private_capital_data(excel_file=None, output_dir=None):
         pdc_data = []
         for idx in year_rows:  # Rows 16-20 (0-indexed)
             year = int(df.iloc[idx, 2])
+            if pd.isna(df.iloc[idx, 3]):
+                continue  # this series has no figure for that year yet
             value = float(df.iloc[idx, 3])
             pdc_data.append({
                 'date': f'{year}-12-31',
@@ -82,6 +84,8 @@ def fetch_private_capital_data(excel_file=None, output_dir=None):
         vc_data = []
         for idx in year_rows:
             year = int(df.iloc[idx, 2])
+            if pd.isna(df.iloc[idx, 4]):
+                continue  # this series has no figure for that year yet
             value = float(df.iloc[idx, 4])
             vc_data.append({
                 'date': f'{year}-12-31',
@@ -108,6 +112,8 @@ def fetch_private_capital_data(excel_file=None, output_dir=None):
         ma_data = []
         for idx in year_rows:
             year = int(df.iloc[idx, 2])
+            if pd.isna(df.iloc[idx, 5]):
+                continue  # this series has no figure for that year yet
             value = float(df.iloc[idx, 5])
             ma_data.append({
                 'date': f'{year}-12-31',

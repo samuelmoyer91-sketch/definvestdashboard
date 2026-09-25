@@ -383,6 +383,15 @@ def generate_navigation(active_page=None):
     ]
     return '\n                '.join(nav_items)
 
+# Full citations for hand-entered series, shown as the chart's source line.
+CITATIONS = {
+    'vc_defense': (
+        'Ali Javaheri, \u201cDefense Tech VC Trends,\u201d PitchBook, May 27, 2026',
+        'https://pitchbook.com/news/reports/q1-2026-defense-tech-vc-trends',
+    ),
+}
+
+
 def get_source_url(chart_id):
     """Get the source URL for a given chart"""
     # FRED series - use series ID from the chart_id (uppercase)
@@ -395,6 +404,8 @@ def get_source_url(chart_id):
     # Custom data (no external source)
     custom_data = ['vc_defense', 'ma_defense', 'public_defense_companies']
 
+    if chart_id in CITATIONS:
+        return CITATIONS[chart_id][1]
     if chart_id in fred_series:
         # FRED URL format: https://fred.stlouisfed.org/series/{SERIES_ID}
         return f'https://fred.stlouisfed.org/series/{chart_id.upper()}'
@@ -413,6 +424,8 @@ def get_source_name(chart_id):
     fred_series = ['dgorder', 'fdefx', 'adefno', 'adapno', 'ipb52300s', 'prmfgcons',
                    'indpro', 'pnfi', 'gpdi', 'drtscilm', 'dgs10']
     yahoo_tickers = ['ita', 'xli', 'pld']
+    if chart_id in CITATIONS:
+        return CITATIONS[chart_id][0]
     if chart_id in fred_series:
         return 'Federal Reserve Economic Data (FRED)'
     elif chart_id in yahoo_tickers:
@@ -619,7 +632,7 @@ def generate_indicators_page():
 
     <footer>
         <p><strong>Defense Capital Dashboard</strong></p>
-        <p>Data sources: Federal Reserve Economic Data (FRED), Yahoo Finance, Custom Research</p>
+        <p>Data sources: Federal Reserve Economic Data (FRED), Yahoo Finance, PitchBook, Custom Research</p>
         <p style="font-size: 0.75rem; opacity: 0.7; margin-top: 0.5rem;">This product uses the FRED&reg; API but is not endorsed or certified by the Federal Reserve Bank of St. Louis.</p>
         <p>Created by Sam Moyer | <a href="https://github.com/samuelmoyer91-sketch">GitHub</a> | <a href="mailto:samuel.moyer91@gmail.com">samuel.moyer91@gmail.com</a></p>
     </footer>
