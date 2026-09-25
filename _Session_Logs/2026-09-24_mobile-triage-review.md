@@ -175,3 +175,35 @@ See OPEN_ITEMS 2+3. It runs, but its rules catch 1/27 hand-verified
 duplicate pairs; a prototype catches 22/27. Remove buttons exist on every row
 (reversible); on a phone they are tiny, and there is no "not a duplicate".
 Proposal given to Sam; awaiting go-ahead.
+
+## Close-out (Sam: "bare minimum, update logs, close out")
+- Shipped `d4f38e2` (scramble detector v2) and `abe2056` (Duplicate Check
+  phone layout; `reextract_items.py --refused`). Re-ran the 9 refused
+  articles: 7 recovered, 2 still refused and shown in triage.
+- Duplicate-matching overhaul NOT built; the proposal is in OPEN_ITEMS 2+3.
+
+### Session summary (2026-09-24, one long day)
+Shipped to main, in order:
+1. Phone layout for triage and a pinned Accept/Reject/Cancel bar (`6f9082b`).
+2. Shorter reject popup (`2c6972d`).
+3. One shared currency formatter; fixed C$/A$ mangling on the edit page
+   (`57bef0b`).
+4. 31 mis-denominated deal amounts repaired, then site republished
+   (`1c35b56`, data).
+5. Status review and root cause of the bio refusals (`942df39`).
+6. Sifted trimming v1, refused-status handling, instant Accept/Reject,
+   self-funded prefill, HQ fallback, Debt capital type, Possible Dups phone
+   layout (`a4e5071`).
+7. Scramble detector v2 (`d4f38e2`); Duplicate Check phone layout and
+   `--refused` re-run (`abe2056`).
+
+Open, all in OPEN_ITEMS:
+- Duplicate matching (2+3, with a proposal).
+- Currency round 2: 53 deals (#0).
+- Quick accept (DECISION; Sam passed for now).
+- Debt backfill (DECISION).
+- The CEE feed is nearly silent (#1).
+- 2 refused articles waiting in triage (#6).
+
+Tomorrow's scheduled ingest is the first unattended run on v2. Worth a glance
+at its refusal count.

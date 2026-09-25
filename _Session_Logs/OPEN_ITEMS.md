@@ -49,7 +49,7 @@ companies"), which has not been observed. Deliberately not reworded.
 
 ---
 
-## LIVE — verified 2026-08-08, items 0/5/6 re-verified 2026-08-12
+## LIVE — verified 2026-08-08; 0/5/6 re-verified 2026-08-12; 0/2/3/6 on 2026-09-24
 
 ### 0. European deals stored in the wrong currency — PARTLY DONE 2026-09-24
 The *cause* was fixed 2026-08 (`337d21e`), and every form now shares one
@@ -143,6 +143,14 @@ Page problems Sam raised: no "not a duplicate" dismissal (judged pairs
 stay forever), a table that overflows on phones (the Remove buttons exist
 but are tiny), and a noisy "94 companies judged distinct" list.
 
+**Sam's call, 2026-09-24: bare minimum for now.** Shipped only the phone
+layout (`abe2056`). NOT built, and the proposal stands: the matching overhaul
+above (tune out the 2 false flags first; it also changes what the pre-triage
+bucket holds back), a "Not a duplicate" dismissal (needs a small new table),
+and a one-time clear-out of the ~40–50 groups. The "judged distinct" list was
+deliberately kept: until matching improves, it is the only place same-name
+misses like the L3Harris Rhode Island cards show up.
+
 ### 5. Accept latency is round-trip count, not slow code
 `/health` on 2026-08-08: `median_pre_handler_ms` 2.1 (so *not* blocked — the
 StaticPool/`async def` hypothesis from 07-29 is dead). SELECT median 106ms ×283,
@@ -225,9 +233,22 @@ nearly always carries the deal (company, amount, investors).
   (`models.EXTRACTION_REFUSED`): no daily retries, and triage shows the card
   with a notice instead of hiding it. A later clean extraction resets it to
   `scraped`.
-- The 29 stuck items are still `scraped` + incomplete, so the next ingest
-  retries each once with the trimmed text. **Check that run:** the refusal
-  count should drop from 29 to near 0 and they should appear in triage.
+- **Outcome, same day:** the manual ingest after deploy cut refusals from 29 to
+  9. All 20 trimmed articles extracted, and the 9 failures were ones v1 had
+  not trimmed. Those Sifted pages follow the scramble with readable "related
+  articles" teasers, so v1's assumption that the scramble runs to the end
+  failed. **v2** (`d4f38e2`) finds the scramble anywhere: vowel-share
+  windows detect it, and a rare-letter-pair change point places the cut.
+  Rare pairs are never used for detection, because they are common in
+  Polish/Czech. Re-run with `reextract_items.py --refused --apply`:
+  **7 of 9 recovered** (The Exploration Company $450M, Open Cosmos €300M,
+  Exein $270M, DTCP €455M, Uforce, Loft Orbital, ElevenLabs).
+- **Still refused, shown in triage:** #15054 DecisionPoint (a BLOX-CMS news
+  page; v2 trimmed 2.9k chars of what looks like encoded boilerplate, and it
+  was still refused) and #20594 (a Sifted drone-boat story, not trimmed).
+  Not investigated further — Sam asked for the bare minimum.
+- **If refusals climb again:** run `inspect_failing_text.py` first. Every
+  refusal seen so far was input text, not model behaviour.
 
 ### 7. Feed concentration
 Two Google Alerts feeds are the only volatile sources — "Private Equity Defense"
@@ -353,6 +374,8 @@ item 7.
 | "Self-funded" investor retyped by hand | Triage pre-fills the company's own name (Sam overrode "Self-funded" 21/21 times) | 2026-09-24 |
 | "Unknown" location looked up by hand | Prompt now gives the company HQ when known with confidence (was hand-filled 29/33 times) | 2026-09-24 |
 | Possible Dups unusable on a phone | Rows stack as cards under 640px; desktop unchanged | 2026-09-24 |
+| Published Dup Check unusable on a phone | Same stacked-card layout, full-width Remove (`abe2056`) | 2026-09-24 |
+| No way to retry refused articles | `reextract_items.py --refused [--apply]` | 2026-09-24 |
 | Currency code copied per page (#14, #15) | One shared `_currency_input.html` now used by triage, item-detail and edit. Item-detail no longer strips symbols; edit no longer turns `C$`/`A$` into `C`/`A` | 2026-09-24 |
 
 ### Multi-deal roundups — shipped 2026-08-08, and the framing was wrong
