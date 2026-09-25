@@ -4,14 +4,29 @@ Generate HTML pages for all charts with reorganized navigation
 Creates individual chart pages and category overview pages
 """
 
+import hashlib
 from pathlib import Path
+
+STYLESHEET = Path(__file__).resolve().parent.parent.parent / 'github_site' / 'css' / 'style.css'
+
+
+def stylesheet_version():
+    """Short hash of style.css, added to the page's stylesheet link.
+
+    The site serves CSS with a 4-hour browser cache, so without it a returning
+    visitor could get a freshly published page styled by the old stylesheet.
+    """
+    try:
+        return hashlib.md5(STYLESHEET.read_bytes()).hexdigest()[:8]
+    except OSError:
+        return ''
 
 # Navigation categories with key insights
 CATEGORIES = {
     'defense-investment': {
         'title': 'Capital Flows',
         'description': 'Tracking capital flows and investment activity in the defense sector',
-        'charts': ['dgorder', 'public_defense_companies', 'vc_defense', 'ma_defense'],
+        'charts': ['adefno', 'public_defense_companies', 'vc_defense', 'ma_defense'],
         'insights': [
             'Defense capital goods orders provide early signals of future production activity and contractor revenue',
             'VC investment trends indicate emerging technology areas attracting private capital in defense',
@@ -21,9 +36,9 @@ CATEGORIES = {
     'defense-industrial': {
         'title': 'Industrial Capacity',
         'description': 'Measuring the production capacity and health of the defense industrial base',
-        'charts': ['adefno', 'adapno', 'ipb52300s', 'fdefx', 'prmfgcons', 'ita'],
+        'charts': ['adapno', 'ipb52300s', 'fdefx', 'prmfgcons', 'ita'],
         'insights': [
-            'Aircraft orders and production volumes indicate the health of major defense aerospace programs',
+            'Aircraft and parts orders and production volumes indicate the health of major defense aerospace programs',
             'Defense equipment production levels show current output capacity of the industrial base',
             'Federal defense spending drives contractor revenues and investment in production capacity',
             'Manufacturing construction reflects long-term capacity expansion in defense-critical facilities'
@@ -32,7 +47,7 @@ CATEGORIES = {
     'us-industrial': {
         'title': 'Macro Environment',
         'description': 'Broader economic indicators affecting defense manufacturing capabilities',
-        'charts': ['indpro', 'pnfi', 'gpdi', 'drtscilm', 'xli', 'pld', 'dgs10'],
+        'charts': ['indpro', 'dgorder', 'pnfi', 'gpdi', 'drtscilm', 'xli', 'pld', 'dgs10'],
         'insights': [
             'Overall industrial production indicates the health of the manufacturing base supporting defense',
             'Business investment trends signal confidence and capacity expansion across the industrial economy',
@@ -77,22 +92,21 @@ Y_AXIS_FORMATS = {
 # Chart definitions with user's original descriptions
 CHARTS = {
     'dgorder': {
-        'title': 'Defense Capital Goods Orders',
-        'subtitle': "Manufacturers' new orders for defense capital goods",
+        'title': 'Durable Goods Orders (All Industries)',
+        'subtitle': "Manufacturers' new orders for all durable goods",
         'description': """
-            Manufacturers' New Orders: Defense Capital Goods is a data set released monthly by the US Census Bureau.
-            This data set tracks how much money US manufacturers are receiving in new orders for military equipment and technology,
-            from aircraft and missiles to small arms and communication systems. It gives us a snapshot of how active the defense
-            industry is at any given time.
+            Manufacturers' New Orders: Durable Goods (DGORDER) is the Census Bureau's monthly measure of new orders
+            for goods built to last three years or more: machinery, vehicles, civil and military aircraft, electronics
+            and more. It covers the whole economy, not just defense. Defense capital goods are about 5% of the total
+            (3-9% in any given month since 2018; see Defense Capital Goods Orders under Capital Flows).
         """,
         'context': """
-            Because these are long-term, high-value items, an increase in orders usually reflects a boost in government spending
-            or a shift in national defense priorities. When new orders rise, it can indicate that the government is preparing for
-            future defense needs or responding to global tensions. On the flip side, a drop might suggest tightening budgets or
-            changes in sentiment in industry.
+            Durable goods orders are a leading indicator of manufacturing activity: companies order long-lived
+            equipment when they expect demand to hold up. For the defense industrial base, a strong economy-wide
+            order book competes for the same suppliers, machine shops and skilled labor that defense programs rely on.
         """,
         'units': 'Millions of Dollars',
-        'category': 'defense-investment'
+        'category': 'us-industrial'
     },
     'vc_defense': {
         'title': 'Venture Capital Investment in Defense',
@@ -146,31 +160,33 @@ CHARTS = {
         'category': 'defense-investment'
     },
     'adefno': {
-        'title': 'Defense Aircraft Orders',
-        'subtitle': "Manufacturers' new orders for defense aircraft",
+        'title': 'Defense Capital Goods Orders',
+        'subtitle': "Manufacturers' new orders for defense capital goods",
         'description': """
-            Defense Aircraft Orders (ADEFNO) tracks new orders for complete military aircraft from manufacturers.
-            This includes fighter jets, transport aircraft, helicopters, and other defense aviation platforms. These are typically
-            large, multi-year contracts that represent major defense procurement programs.
+            Manufacturers' New Orders: Defense Capital Goods is a data set released monthly by the US Census Bureau.
+            This data set tracks how much money US manufacturers are receiving in new orders for military equipment and technology,
+            from aircraft and missiles to small arms and communication systems. It gives us a snapshot of how active the defense
+            industry is at any given time.
         """,
         'context': """
-            Aircraft orders are often the largest single-item defense purchases and provide visibility into future aerospace sector
-            performance. Major programs can span decades and involve thousands of workers. Rising aircraft orders signal strong
-            demand for air superiority, transport capability, or modernization of aging fleets.
+            Because these are long-term, high-value items, an increase in orders usually reflects a boost in government spending
+            or a shift in national defense priorities. When new orders rise, it can indicate that the government is preparing for
+            future defense needs or responding to global tensions. On the flip side, a drop might suggest tightening budgets or
+            changes in sentiment in industry.
         """,
         'units': 'Millions of Dollars',
-        'category': 'defense-industrial'
+        'category': 'defense-investment'
     },
     'adapno': {
-        'title': 'Defense Aircraft Parts Orders',
-        'subtitle': "Manufacturers' new orders for defense aircraft parts and components",
+        'title': 'Defense Aircraft & Parts Orders',
+        'subtitle': "Manufacturers' new orders for military aircraft and their parts",
         'description': """
-            Defense Aircraft Parts Orders (ADAPNO) measures orders for aircraft components, subassemblies, and
-            replacement parts used in military aviation. This includes everything from engines and avionics to structural components
-            and weapons systems integration.
+            Defense Aircraft and Parts (ADAPNO) measures manufacturers' new orders for military aircraft and the
+            components, subassemblies and replacement parts that go into them: engines, avionics, airframe structures
+            and more. Because it includes parts, it moves with both new production and the upkeep of existing fleets.
         """,
         'context': """
-            Parts orders complement aircraft orders and include maintenance, repair, and overhaul (MRO) activities. A healthy parts
+            Orders here include maintenance, repair, and overhaul (MRO) demand as well as new aircraft. A healthy
             order book indicates both new production activity and sustained support for existing aircraft fleets. This metric can
             signal the health of the broader defense aerospace supply chain.
         """,
@@ -427,15 +443,20 @@ def generate_indicators_page():
             source_name = get_source_name(cid)
             source_display = f'<a href="{source_url}" target="_blank" rel="noopener noreferrer">{source_name}</a>' if source_url else source_name
             desc = cinfo['description'].strip()
+            # The title heads its own card, above the chart. It used to sit in the
+            # description box beside the chart, which on phones stacks BELOW the
+            # chart, so each title read as the heading of the next chart down.
             chart_rows.append(f"""        <div class="indicators-row">
+            <div class="indicators-row-head">
+                <h3>{cinfo['title']}</h3>
+                <p class="indicators-subtitle">{cinfo['subtitle']}</p>
+            </div>
             <div class="indicators-chart-col is-loading">
                 <div class="chart-loading">Loading…</div>
                 <div class="chart-error">Data unavailable</div>
                 <canvas id="chart_{cid}"></canvas>
             </div>
             <div class="indicators-desc-col">
-                <h3>{cinfo['title']}</h3>
-                <p class="indicators-subtitle">{cinfo['subtitle']}</p>
                 <p>{desc}</p>
                 <p class="indicators-source">Source: {source_display}</p>
                 <p class="indicators-source" id="through_{cid}"></p>
@@ -459,10 +480,11 @@ def generate_indicators_page():
                         if (!limitedDataChart) {{
                             displayData = data.data.filter(d => new Date(d.date) >= new Date('{DEFAULT_START_DATE}'));
                         }}
-                        const yearLabels = displayData.map(d => {{
-                            const date = new Date(d.date);
-                            return `${{date.getFullYear()}}`;
-                        }});
+                        // Read the year straight from the "YYYY-MM-DD" string. new Date()
+                        // treats it as UTC midnight, which is still Dec 31 of the prior
+                        // year in US time zones, so January points were labelled with
+                        // the previous year and a 2019-onward chart began "2018".
+                        const yearLabels = displayData.map(d => String(d.date).slice(0, 4));
                         new Chart(ctx, {{
                             type: 'line',
                             data: {{
@@ -486,16 +508,18 @@ def generate_indicators_page():
                                     x: {{
                                         display: true,
                                         grid: {{ display: true, color: '#eef1f4' }},
-                                        ticks: {{
-                                            maxRotation: 0, minRotation: 0, maxTicksLimit: 12,
-                                            callback: function(value, index, ticks) {{
-                                                // Labels are per-point years; blank consecutive duplicates
-                                                // so the axis reads "2019  2020  2021" not "2020 2020 2021 2021"
-                                                const lbl = this.getLabelForValue(value);
-                                                if (index > 0 && this.getLabelForValue(ticks[index-1].value) === lbl) return '';
-                                                return lbl;
-                                            }}
-                                        }}
+                                        // One tick per year, at that year's first data point. The
+                                        // old callback blanked a label whenever the previous DATA
+                                        // POINT had the same year, and Chart.js then thinned the
+                                        // ticks, so most monthly and daily charts showed only
+                                        // their first year. autoSkip still drops every other year
+                                        // when a narrow screen can't fit them all.
+                                        afterBuildTicks: function(axis) {{
+                                            const labels = axis.chart.data.labels;
+                                            axis.ticks = axis.ticks.filter(t =>
+                                                t.value === 0 || labels[t.value] !== labels[t.value - 1]);
+                                        }},
+                                        ticks: {{ maxRotation: 0, minRotation: 0, autoSkip: true, autoSkipPadding: 14 }}
                                     }},
                                     y: {{
                                         grid: {{ color: '#eef1f4' }},
@@ -547,7 +571,7 @@ def generate_indicators_page():
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Defense Business Environment Indicators - Defense Capital Dashboard</title>
     <link rel="icon" type="image/svg+xml" href="../favicon.svg">
-    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/style.css?v={stylesheet_version()}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-CS5MJEVNGN"></script>
