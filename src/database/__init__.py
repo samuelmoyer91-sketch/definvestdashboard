@@ -9,6 +9,7 @@ from .models import (
     Investor,
     DealInvestor,
     ApiUsageLog,
+    DupDismissal,
     get_engine,
     get_session,
     sync_turso
@@ -23,6 +24,7 @@ __all__ = [
     'Investor',
     'DealInvestor',
     'ApiUsageLog',
+    'DupDismissal',
     'get_engine',
     'get_session',
     'sync_turso'

@@ -302,6 +302,20 @@ class ApiUsageLog(Base):
         return f"<ApiUsageLog(run_type='{self.run_type}', cost=${self.cost_usd:.4f})>"
 
 
+class DupDismissal(Base):
+    """A pair of published deals Sam marked "not a duplicate" on the Duplicate
+    Check, so the pair stops being flagged. Stored as master_list ids with the
+    smaller id first. Added 2026-09-25; before it, a false alarm (e.g.
+    Northrop's Utah and Florida sites) could only be cleared by removing a deal.
+    """
+    __tablename__ = 'dup_dismissals'
+
+    id = Column(Integer, primary_key=True)
+    deal_a = Column(Integer, nullable=False)
+    deal_b = Column(Integer, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
 def remote_only():
     """True when this process should talk straight to the Turso primary.
 

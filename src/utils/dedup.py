@@ -15,6 +15,7 @@ TUNING KNOBS
 """
 
 import re
+import unicodedata
 from datetime import datetime
 
 WINDOW_DAYS = 30          # Two cards within this many days are dup candidates.
@@ -27,7 +28,41 @@ AMOUNT_TOLERANCE = 0.05   # Amounts "match" if within 5% (catches $28M vs $28.5M
 NAME_NOISE = [
     'inc', 'incorporated', 'corp', 'corporation', 'llc', 'ltd', 'limited',
     'co', 'company', 'plc', 'lp', 'holdings', 'group', 'the',
+    # European legal forms: "Exail Technologies SA" vs "Exail Technologies"
+    'sa', 'ag', 'gmbh', 'mbh', 'nv', 'bv', 'se', 'spa', 'srl', 'sas', 'ab',
+    'oy', 'oyj', 'asa', 'kg', 'gruppe',
 ]
+
+# --- Pair-matching rules (reworked 2026-09-25) -------------------------------
+# Measured against 27 hand-verified duplicate pairs, the old rule (identical
+# normalized name + amounts within 5% + 30 days) caught 1. See find_pairs.
+EXTENDED_WINDOW_DAYS = 60   # same amount and same place: a re-report weeks later
+CONVERTED_TOLERANCE = 0.12  # either amount converted from another currency (FX drift)
+SAME_AMOUNT = 0.01          # "identical" — lets a buyer-HQ vs target-HQ pair match
+MIN_TITLE_SIMILARITY = 0.4  # needed when an amount is missing and the place is unclear
+MIN_TITLE_SIMILARITY_SAME_CITY = 0.25  # lowest real same-town pair 0.25 (Heven); a false one 0.20 (Iten)
+
+# Too common in company names to link two records on their own.
+_GENERIC_NAME_WORDS = set('''
+    defense defence aerospace systems system technologies technology tech industries industrial
+    international global space solutions services energy manufacturing security capital
+    partners national american advanced labs lab robotics dynamics research center centre
+    corp group holdings aero air naval marine motors electronics engineering and of for
+    us usa uk new north south east west first united fund ventures venture
+'''.split())
+
+# Same company under two names.
+_COMPANY_ALIASES = {'rtx': 'raytheon'}
+
+# Words that say nothing about WHICH deal a headline describes.
+_TITLE_STOPWORDS = set('''
+    a an the of for in on at to and with by from as its into after new
+    raises raise raised invests invest investment acquires acquire acquisition buys buy
+    opens open builds build expands expand expansion facility plant site factory hub center centre
+    deal funding round series seed million billion usd eur gbp announces secures secure
+    launches launch plans plan completes complete closes close
+'''.split())
+
 
 # Fixed (approximate) FX rates -> USD. Deliberately simple, not live: a deal
 # tracker doesn't need to-the-cent accuracy, and fixed rates keep amounts
@@ -229,19 +264,241 @@ def same_group(a, b):
     return a.get('group_key') is not None and a.get('group_key') == b.get('group_key')
 
 
-def find_clusters(deals, window_days=WINDOW_DAYS, tolerance=AMOUNT_TOLERANCE):
-    """Group deals into duplicate clusters.
+# --- Pair matching ------------------------------------------------------------
+
+_US_STATE_NAMES = set('''alabama alaska arizona arkansas california colorado connecticut delaware
+    florida georgia hawaii idaho illinois indiana iowa kansas kentucky louisiana maine maryland
+    massachusetts michigan minnesota mississippi missouri montana nebraska nevada ohio oklahoma
+    oregon pennsylvania tennessee texas utah vermont virginia washington wisconsin wyoming'''.split()) | {
+    'new hampshire', 'new jersey', 'new mexico', 'new york', 'north carolina', 'north dakota',
+    'rhode island', 'south carolina', 'south dakota', 'west virginia', 'district of columbia'}
+_US_STATE_ABBR = set('''al ak az ar ca co ct de fl ga hi id il in ia ks ky la me md ma mi mn ms mo
+    mt ne nv nh nj nm ny nc nd oh ok or pa ri sc sd tn tx ut vt va wa wv wi wy dc'''.split())
+_COUNTRY_SYNONYMS = {
+    'uk': 'united kingdom', 'u k': 'united kingdom', 'england': 'united kingdom',
+    'scotland': 'united kingdom', 'wales': 'united kingdom', 'great britain': 'united kingdom',
+    'usa': 'united states', 'us': 'united states', 'u s': 'united states', 'u s a': 'united states',
+    'czechia': 'czech republic', 'turkiye': 'turkey',
+}
+_PLACEHOLDERS = {'unknown', 'n a', 'na', 'none', 'not specified', 'various', 'multiple locations'}
+
+
+def _fold(s):
+    """Lower-case and strip accents: 'Osnabrück' -> 'osnabruck'."""
+    return unicodedata.normalize('NFKD', (s or '').lower()).encode('ascii', 'ignore').decode()
+
+
+def _name_tokens(norm):
+    return frozenset(_COMPANY_ALIASES.get(t, t) for t in _fold(norm).split())
+
+
+def _one_edit_apart(a, b):
+    if abs(len(a) - len(b)) > 1:
+        return False
+    if len(a) == len(b):
+        return sum(x != y for x, y in zip(a, b)) <= 1
+    short, long_ = (a, b) if len(a) < len(b) else (b, a)
+    return any(long_[:i] + long_[i + 1:] == short for i in range(len(long_)))
+
+
+def same_company(a_norm, b_norm):
+    """Two normalized company names that plausibly name the same company.
+
+    Equal word sets, or one name's words all appearing in the other ("Stoke
+    Space" / "Stoke Space Technologies", "Raytheon" / "Raytheon RTX"), or a
+    one-letter typo in the first word with the rest equal ("Erail" / "Exail").
+    The shorter name must contain a distinctive word, so a stray "Aerospace"
+    can't match every aerospace company.
+    """
+    A, B = _name_tokens(a_norm), _name_tokens(b_norm)
+    if not A or not B:
+        return False
+    if A == B:
+        return True
+    small = A if len(A) < len(B) else B
+    if (A <= B or B <= A) and small - _GENERIC_NAME_WORDS:
+        return True
+    fa, fb = _fold(a_norm).split()[0], _fold(b_norm).split()[0]
+    return (len(fa) >= 5 and len(fb) >= 5 and _one_edit_apart(fa, fb)
+            and A - {_COMPANY_ALIASES.get(fa, fa)} == B - {_COMPANY_ALIASES.get(fb, fb)})
+
+
+def _place(location):
+    """(city, country) from a "City, ST, Country"-style string; either may be None."""
+    parts = [re.sub(r'[^a-z0-9 ]', ' ', _fold(p)).strip() for p in (location or '').split(',')]
+    parts = [re.sub(r'\s+', ' ', p) for p in parts if p]
+    if not parts or parts[0] in _PLACEHOLDERS or parts[0].startswith('multiple'):
+        return None, None
+    last = parts[-1]
+    country = _COUNTRY_SYNONYMS.get(last, last)
+    if last in _US_STATE_ABBR or last in _US_STATE_NAMES:
+        country = 'united states'
+    city = parts[0] if len(parts) >= 2 else None
+    # "Colorado, USA" names a state, not a city. (Three-part strings keep their
+    # first part: "New York, NY, USA" and "Washington, DC, USA" are cities.)
+    if city and len(parts) == 2 and (city in _US_STATE_NAMES or city in _US_STATE_ABBR):
+        city = None
+    return city, country
+
+
+def _same_place(a_loc, b_loc):
+    """'same', 'different', or 'unknown' — whether two locations agree."""
+    ca, na = _place(a_loc)
+    cb, nb = _place(b_loc)
+    if na and nb and na != nb:
+        return 'different'
+    if ca and cb:
+        if ca == cb:
+            return 'same'
+        # One names a region the other sits in: "Saxony, Germany" vs "Leipzig, Saxony, Germany"
+        if ca in _fold(b_loc) or cb in _fold(a_loc):
+            return 'unknown'
+        return 'different'
+    return 'unknown'
+
+
+def _title_words(title, exclude):
+    words = set()
+    for w in re.findall(r'[a-z0-9]+', _fold(title)):
+        if len(w) < 3 or w in _TITLE_STOPWORDS or w in exclude or re.fullmatch(r'\d+[kmb]?', w):
+            continue
+        words.add(w[:5])  # crude stem: "expands"/"expansion", "invests"/"investment"
+    return words
+
+
+def title_similarity(a, b):
+    """Share of meaningful headline words two records have in common (0-1).
+
+    Both companies' own name words are left out, so two "Northrop Grumman
+    builds…" headlines are not similar just for naming the same company.
+    """
+    exclude = _name_tokens(a['norm']) | _name_tokens(b['norm'])
+    A, B = _title_words(a.get('title'), exclude), _title_words(b.get('title'), exclude)
+    return len(A & B) / len(A | B) if A and B else 0.0
+
+
+def _converted(raw):
+    return bool(raw) and detect_currency(raw) != 'USD'
+
+
+def match_pair(a, b, window_days=WINDOW_DAYS, tolerance=AMOUNT_TOLERANCE):
+    """Day gap if two enriched records look like the same deal, else None.
+
+    - Different city or country means a different deal, unless the amounts
+      are identical (a buyer and its target reported from their own HQs).
+    - Amounts within 5%, or 12% when either was converted from another
+      currency (FX drift: "€1B" vs "$1.16B"); 60 days instead of 30 when the
+      place agrees too (a deal re-reported weeks later).
+    - With an amount missing on either side, the place must agree and the
+      headlines must be similar. The old rule matched any two no-amount cards
+      from one company, e.g. Northrop's Utah and Florida sites.
+    """
+    if same_group(a, b) or not same_company(a['norm'], b['norm']):
+        return None
+    if not (a['date'] and b['date']):
+        return None
+    gap = abs((a['date'] - b['date']).days)
+    place = _same_place(a.get('location'), b.get('location'))
+    xa, xb = a['amount_num'], b['amount_num']
+    if xa and xb:
+        diff = abs(xa - xb) / max(xa, xb)
+        if diff <= SAME_AMOUNT:
+            # Round figures recur ($100M), so the 60-day window needs more than
+            # the amount: the same place, or an unclear place plus a similar
+            # headline. Without this, four RTX "$100M" cards chained together
+            # over three months through one card located only as "USA".
+            extended = place == 'same' or (
+                place == 'unknown' and title_similarity(a, b) >= MIN_TITLE_SIMILARITY_SAME_CITY)
+            return gap if gap <= (EXTENDED_WINDOW_DAYS if extended else window_days) else None
+        if place == 'different':
+            return None
+        tol = CONVERTED_TOLERANCE if (_converted(a.get('amount_raw')) or _converted(b.get('amount_raw'))) else tolerance
+        if diff <= tol:
+            return gap if gap <= (EXTENDED_WINDOW_DAYS if place == 'same' else window_days) else None
+        # Two reports of one deal can disagree on the figure ($3.1M vs $3.4M)
+        if (diff <= CONVERTED_TOLERANCE and place == 'same' and gap <= window_days
+                and title_similarity(a, b) >= MIN_TITLE_SIMILARITY):
+            return gap
+        return None
+    if place == 'different' or gap > window_days:
+        return None
+    needed = MIN_TITLE_SIMILARITY_SAME_CITY if place == 'same' else MIN_TITLE_SIMILARITY
+    return gap if title_similarity(a, b) >= needed else None
+
+
+def find_pairs(recs, window_days=WINDOW_DAYS, tolerance=AMOUNT_TOLERANCE,
+               dismissed=None, involving=None):
+    """(i, j, gap) for every pair of records that look like the same deal.
+
+    Only plausible pairs are examined: records sharing a distinctive company
+    word, plus records with identical amounts (typo'd names share no word).
+    `dismissed` holds frozenset({id_a, id_b}) pairs Sam marked "not a
+    duplicate"; `involving`, if given, restricts results to pairs touching
+    those record indices (the triage bucket only cares about queue items).
+    """
+    buckets = {}
+    for i, r in enumerate(recs):
+        for t in _name_tokens(r['norm']):
+            if len(t) >= 3 and t not in _GENERIC_NAME_WORDS:
+                buckets.setdefault(t, []).append(i)
+    candidates = set()
+    for idxs in buckets.values():
+        for x in range(len(idxs)):
+            for y in range(x + 1, len(idxs)):
+                candidates.add((idxs[x], idxs[y]))
+    by_amount = sorted((r['amount_num'], i) for i, r in enumerate(recs) if r['amount_num'])
+    for k, (amt, i) in enumerate(by_amount):
+        for amt2, j in by_amount[k + 1:]:
+            if amt2 > amt * (1 + SAME_AMOUNT):
+                break
+            candidates.add((min(i, j), max(i, j)))
+
+    pairs = []
+    for i, j in candidates:
+        if involving is not None and i not in involving and j not in involving:
+            continue
+        a, b = recs[i], recs[j]
+        if dismissed and frozenset((a['id'], b['id'])) in dismissed:
+            continue
+        gap = match_pair(a, b, window_days, tolerance)
+        if gap is not None:
+            pairs.append((i, j, gap))
+    return pairs
+
+
+def _components(n, pairs):
+    """Union-find: lists of record indices connected by at least one pair."""
+    parent = list(range(n))
+
+    def find(x):
+        while parent[x] != x:
+            parent[x] = parent[parent[x]]
+            x = parent[x]
+        return x
+
+    for i, j, _ in pairs:
+        parent[find(i)] = find(j)
+    comps = {}
+    for i, j, _ in pairs:
+        comps.setdefault(find(i), set()).update((i, j))
+    return [sorted(c) for c in comps.values()]
+
+
+def find_clusters(deals, window_days=WINDOW_DAYS, tolerance=AMOUNT_TOLERANCE,
+                  dismissed=None):
+    """Group published deals into duplicate clusters.
 
     Args:
         deals: list of dicts, each with keys:
             id, company, amount (raw string or None), date (datetime or None),
-            title, source
+            title, source, location, and optionally group_key
         window_days: max day-gap for two cards to be a dup pair
         tolerance: amount match tolerance (fraction)
+        dismissed: set of frozenset({id_a, id_b}) pairs marked "not a duplicate"
 
     Returns dict with:
-        likely:   list of clusters that contain >=1 matching pair
-        distinct: list of multi-card same-company clusters with NO matching pair
+        likely:   clusters containing >= 1 matching pair (see match_pair)
+        distinct: multi-card same-company groups with NO matching pair
         overcount: estimated double-counted dollars across likely-dup pairs
 
     Each cluster is a dict:
@@ -249,7 +506,6 @@ def find_clusters(deals, window_days=WINDOW_DAYS, tolerance=AMOUNT_TOLERANCE):
         flagged_ids (set of ids in >=1 pair)
     Nothing is mutated; input deals are read only.
     """
-    # enrich
     recs = []
     for d in deals:
         recs.append({
@@ -257,43 +513,39 @@ def find_clusters(deals, window_days=WINDOW_DAYS, tolerance=AMOUNT_TOLERANCE):
             'company': d.get('company') or d.get('title') or '(unknown)',
             'norm': normalize_company(d.get('company') or d.get('title')),
             'amount_num': parse_amount(d.get('amount')),
+            'amount_raw': d.get('amount'),
             'date': d.get('date'),
             'title': d.get('title') or d.get('company') or '',
             'source': d.get('source') or '',
+            'location': d.get('location') or '',
             'group_key': d.get('group_key'),
         })
 
-    groups = {}
-    for r in recs:
-        if r['norm']:
-            groups.setdefault(r['norm'], []).append(r)
+    pairs = find_pairs(recs, window_days, tolerance, dismissed=dismissed)
 
-    likely, distinct, overcount = [], [], 0.0
-    for norm, entries in groups.items():
-        if len(entries) < 2:
-            continue
-        entries.sort(key=lambda x: x['date'] or datetime.min)
-        pairs = []
-        for i in range(len(entries)):
-            for j in range(i + 1, len(entries)):
-                a, b = entries[i], entries[j]
-                if same_group(a, b):
-                    continue
-                gap = abs((a['date'] - b['date']).days) if (a['date'] and b['date']) else 9999
-                if gap <= window_days and amounts_match(a['amount_num'], b['amount_num'], tolerance):
-                    pairs.append((a, b, gap))
-        if pairs:
-            flagged = set()
-            for a, b, _ in pairs:
-                flagged.add(a['id'])
-                flagged.add(b['id'])
-                amt = min(x for x in (a['amount_num'], b['amount_num']) if x) if (a['amount_num'] or b['amount_num']) else 0
-                overcount += amt or 0
-            likely.append({'company': entries[0]['company'], 'entries': entries,
-                           'pairs': pairs, 'flagged_ids': flagged})
-        else:
-            distinct.append({'company': entries[0]['company'], 'entries': entries,
-                             'pairs': [], 'flagged_ids': set()})
+    likely, overcount = [], 0.0
+    in_pair = set()
+    for comp in _components(len(recs), pairs):
+        members = set(comp)
+        entries = sorted((recs[i] for i in comp), key=lambda x: x['date'] or datetime.min)
+        cpairs = [(recs[i], recs[j], gap) for i, j, gap in pairs if i in members]
+        flagged = {r['id'] for r in entries}
+        in_pair |= members
+        for a, b, _ in cpairs:
+            amts = [x for x in (a['amount_num'], b['amount_num']) if x]
+            overcount += min(amts) if amts else 0
+        likely.append({'company': entries[0]['company'], 'entries': entries,
+                       'pairs': cpairs, 'flagged_ids': flagged})
+
+    # Same-company groups with no matching pair, for a manual look.
+    groups = {}
+    for i, r in enumerate(recs):
+        if r['norm'] and i not in in_pair:
+            groups.setdefault(r['norm'], []).append(r)
+    distinct = [{'company': e[0]['company'],
+                 'entries': sorted(e, key=lambda x: x['date'] or datetime.min),
+                 'pairs': [], 'flagged_ids': set()}
+                for e in groups.values() if len(e) > 1]
 
     likely.sort(key=lambda c: -len(c['pairs']))
     distinct.sort(key=lambda c: -len(c['entries']))
@@ -395,6 +647,7 @@ def find_queue_duplicates(queue_items, published_items,
             'company': d.get('company') or d.get('title') or '(unknown)',
             'norm': normalize_company(d.get('company') or d.get('title')),
             'amount_num': parse_amount(d.get('amount')),
+            'amount_raw': d.get('amount'),
             'date': d.get('date'),
             'title': d.get('title') or d.get('company') or '',
             'source': d.get('source') or '',
@@ -406,46 +659,16 @@ def find_queue_duplicates(queue_items, published_items,
     recs = [enrich(d, 'queue') for d in queue_items] + \
            [enrich(d, 'published') for d in published_items]
 
-    # group by company, then union matched pairs into connected components
-    by_company = {}
-    for r in recs:
-        if r['norm']:
-            by_company.setdefault(r['norm'], []).append(r)
+    # Pairs are found by the shared rules (match_pair), but only pairs that
+    # touch a queue item: published-vs-published duplicates are the Published
+    # Dup Check's job, and skipping them keeps the triage page load cheap.
+    n_queue = len(queue_items)
+    pairs = find_pairs(recs, window_days, tolerance, involving=set(range(n_queue)))
 
     groups, flagged_ids = [], set()
-    for norm, entries in by_company.items():
-        if len(entries) < 2:
-            continue
-        n = len(entries)
-        parent = list(range(n))
-
-        def find(x):
-            while parent[x] != x:
-                parent[x] = parent[parent[x]]
-                x = parent[x]
-            return x
-
-        def union(a, b):
-            parent[find(a)] = find(b)
-
-        pair_gaps = []
-        for i in range(n):
-            for j in range(i + 1, n):
-                a, b = entries[i], entries[j]
-                if same_group(a, b):
-                    continue
-                gap = abs((a['date'] - b['date']).days) if (a['date'] and b['date']) else 9999
-                if gap <= window_days and amounts_match(a['amount_num'], b['amount_num'], tolerance):
-                    union(i, j)
-                    pair_gaps.append((i, j, gap))
-        if not pair_gaps:
-            continue
-
-        # collect connected components that contain >= 1 matched pair
-        comps = {}
-        for idx in range(n):
-            comps.setdefault(find(idx), []).append(entries[idx])
-
+    if pairs:
+        comps = {k: [recs[i] for i in comp]
+                 for k, comp in enumerate(_components(len(recs), pairs))}
         for root, members in comps.items():
             if len(members) < 2:
                 continue

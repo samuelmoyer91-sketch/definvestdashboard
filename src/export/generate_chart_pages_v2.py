@@ -438,6 +438,7 @@ def generate_indicators_page():
                 <p class="indicators-subtitle">{cinfo['subtitle']}</p>
                 <p>{desc}</p>
                 <p class="indicators-source">Source: {source_display}</p>
+                <p class="indicators-source" id="through_{cid}"></p>
             </div>
         </div>""")
 
@@ -511,6 +512,17 @@ def generate_indicators_page():
                             }}
                         }});
                         if (col) col.classList.remove('is-loading');
+                        // The page-level "Last updated" stamp is when the data was
+                        // fetched, not how recent it is, so a chart that stopped
+                        // updating still looked current. Show the newest point.
+                        const lastPoint = data.data[data.data.length - 1];
+                        const through = document.getElementById('through_{cid}');
+                        if (through && lastPoint) {{
+                            const d = new Date(lastPoint.date + 'T00:00:00');
+                            through.textContent = 'Data through ' + (limitedDataChart
+                                ? String(d.getFullYear())
+                                : d.toLocaleDateString('en-US', {{ month: 'short', year: 'numeric' }}));
+                        }}
                     }})
                     .catch(err => {{
                         console.error('Could not load {cid}:', err);

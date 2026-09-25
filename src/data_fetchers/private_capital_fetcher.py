@@ -40,12 +40,23 @@ def fetch_private_capital_data(excel_file=None, output_dir=None):
         print("Reading Excel file...")
         df = pd.read_excel(excel_file, sheet_name='Sheet3', header=None)
 
+        # Year rows start at spreadsheet row 17 (index 16) and run until the
+        # first blank year cell. This used to be a fixed range of five rows, so
+        # adding 2025 meant editing code as well as the sheet; now a new row
+        # typed directly under 2024 is picked up. (The second table further
+        # down starts after a blank row, so it is never read by mistake.)
+        year_rows = []
+        idx = 16
+        while idx < len(df) and pd.notna(df.iloc[idx, 2]):
+            year_rows.append(idx)
+            idx += 1
+
         # Extract Public Defense Companies data (rows 15-20, columns 2-3)
         print("Fetching Public Defense Companies data...")
         pdc_data = []
-        for idx in range(16, 21):  # Rows 16-20 (0-indexed)
+        for idx in year_rows:  # Rows 16-20 (0-indexed)
             year = int(df.iloc[idx, 2])
-            value = int(df.iloc[idx, 3])
+            value = float(df.iloc[idx, 3])
             pdc_data.append({
                 'date': f'{year}-12-31',
                 'value': float(value)
@@ -63,15 +74,15 @@ def fetch_private_capital_data(excel_file=None, output_dir=None):
 
         pdc_file = output_dir / 'public_defense_companies.json'
         with open(pdc_file, 'w') as f:
-            json.dump(pdc_output, f, indent=2)
+            json.dump(pdc_output, f, indent=2, allow_nan=False)
         print(f"  ✓ Saved {len(pdc_data)} Public Defense Companies data points to {pdc_file.name}")
 
         # Extract Venture Capital data (rows 15-20, column 4)
         print("Fetching VC investment data...")
         vc_data = []
-        for idx in range(16, 21):
+        for idx in year_rows:
             year = int(df.iloc[idx, 2])
-            value = int(df.iloc[idx, 4])
+            value = float(df.iloc[idx, 4])
             vc_data.append({
                 'date': f'{year}-12-31',
                 'value': float(value)
@@ -89,15 +100,15 @@ def fetch_private_capital_data(excel_file=None, output_dir=None):
 
         vc_file = output_dir / 'vc_defense.json'
         with open(vc_file, 'w') as f:
-            json.dump(vc_output, f, indent=2)
+            json.dump(vc_output, f, indent=2, allow_nan=False)
         print(f"  ✓ Saved {len(vc_data)} VC data points to {vc_file.name}")
 
         # Extract M&A data (rows 15-20, column 5)
         print("Fetching M&A activity data...")
         ma_data = []
-        for idx in range(16, 21):
+        for idx in year_rows:
             year = int(df.iloc[idx, 2])
-            value = int(df.iloc[idx, 5])
+            value = float(df.iloc[idx, 5])
             ma_data.append({
                 'date': f'{year}-12-31',
                 'value': float(value)
@@ -115,7 +126,7 @@ def fetch_private_capital_data(excel_file=None, output_dir=None):
 
         ma_file = output_dir / 'ma_defense.json'
         with open(ma_file, 'w') as f:
-            json.dump(ma_output, f, indent=2)
+            json.dump(ma_output, f, indent=2, allow_nan=False)
         print(f"  ✓ Saved {len(ma_data)} M&A data points to {ma_file.name}")
 
         print(f"\n✓ Fetched all private capital data successfully (Public Defense Companies, VC, M&A)")

@@ -5,6 +5,12 @@ on:
     - cron: '0 11 * * *'  # Daily at 11:00 UTC (6 AM ET)
   workflow_dispatch:
 
+# Shared with fetch.yml (feed reads between ingests) so the two never write
+# raw_items at the same time.
+concurrency:
+  group: pipeline-db
+  cancel-in-progress: false
+
 jobs:
   ingest:
     runs-on: ubuntu-latest

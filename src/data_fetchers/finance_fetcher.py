@@ -56,17 +56,26 @@ def fetch_stock_data(ticker, period='5y', output_dir=None):
         stock = yf.Ticker(ticker)
         hist = stock.history(period=period)
 
-        # Convert to list of dicts
+        # Convert to list of dicts, skipping any day Yahoo returns without
+        # prices. One such row (ITA, 2021-09-24) was written out as NaN, which
+        # is not valid JSON to a browser, and it broke the ITA chart on both
+        # chart pages until 2026-09-25. The FRED fetchers already skip these.
         data_list = []
+        skipped = 0
         for date, row in hist.iterrows():
+            if row[['Open', 'High', 'Low', 'Close']].isna().any():
+                skipped += 1
+                continue
             data_list.append({
                 'date': date.strftime('%Y-%m-%d'),
                 'open': float(row['Open']),
                 'high': float(row['High']),
                 'low': float(row['Low']),
                 'close': float(row['Close']),
-                'volume': int(row['Volume'])
+                'volume': int(row['Volume']) if pd.notna(row['Volume']) else 0
             })
+        if skipped:
+            print(f"  ⚠ {ticker}: skipped {skipped} day(s) with no prices")
 
         # Get metadata
         info = stock.info
@@ -155,7 +164,7 @@ def fetch_all_financial_data(api_key=None, output_dir=None):
         if data:
             output_file = output_dir / f'{ticker.lower()}.json'
             with open(output_file, 'w') as f:
-                json.dump(data, f, indent=2)
+                json.dump(data, f, indent=2, allow_nan=False)
             print(f"  ✓ Saved {data['data_points']} data points to {output_file.name}")
             results[ticker] = data['data_points']
         else:
@@ -168,7 +177,7 @@ def fetch_all_financial_data(api_key=None, output_dir=None):
             if data:
                 output_file = output_dir / f'{series_id.lower()}.json'
                 with open(output_file, 'w') as f:
-                    json.dump(data, f, indent=2)
+                    json.dump(data, f, indent=2, allow_nan=False)
                 print(f"  ✓ Saved {data['data_points']} data points to {output_file.name}")
                 results[series_id] = data['data_points']
             else:
@@ -186,7 +195,7 @@ def fetch_all_financial_data(api_key=None, output_dir=None):
 
     summary_file = output_dir / 'finance_summary.json'
     with open(summary_file, 'w') as f:
-        json.dump(summary, f, indent=2)
+        json.dump(summary, f, indent=2, allow_nan=False)
 
     print(f"\n✓ Fetched {len(results)} financial instruments")
     print(f"✓ Saved summary to {summary_file.name}")

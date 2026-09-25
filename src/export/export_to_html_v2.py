@@ -108,6 +108,9 @@ _EUROPE = ('uk united kingdom england scotland wales northern ireland germany fr
 _MIDEAST = 'israel turkey türkiye saudi arabia qatar jordan egypt lebanon'.split()
 _APAC = ('india china japan taiwan singapore australia vietnam malaysia philippines indonesia '
          'thailand pakistan').split()
+# The US is its own region (above); everything else in the hemisphere goes here.
+# Canada alone is ~27 deals, which is why it earns a region instead of "Other".
+_AMERICAS = ('canada mexico brazil argentina chile colombia peru greenland').split()
 
 _MULTIWORD = {
     'united kingdom': 'Europe', 'northern ireland': 'Europe', 'czech republic': 'Europe',
@@ -115,6 +118,7 @@ _MULTIWORD = {
     'saudi arabia': 'Middle East', 'united arab emirates': 'Middle East',
     'south korea': 'Asia-Pacific', 'new zealand': 'Asia-Pacific', 'sri lanka': 'Asia-Pacific',
     'south africa': 'Other', 'costa rica': 'Other',
+    'french guiana': 'Other Americas',
 }
 _CANON = {'uk': 'United Kingdom', 'usa': 'United States', 'us': 'United States',
           'u.s.': 'United States', 'u.s.a.': 'United States', 'united states': 'United States',
@@ -132,7 +136,7 @@ _US_STATE_NAMES = set(('alabama alaska arizona arkansas california colorado conn
 _US_STATE_ABBR = set(('AL AK AZ AR CA CO CT DE FL GA HI ID IL IN IA KS KY LA ME MD MA MI MN MS MO MT '
                       'NE NV NH NJ NM NY NC ND OH OK OR PA RI SC SD TN TX UT VT VA WA WV WI WY DC').split())
 
-REGION_ORDER = ['United States', 'Europe', 'Middle East', 'Asia-Pacific', 'Other']
+REGION_ORDER = ['United States', 'Europe', 'Middle East', 'Asia-Pacific', 'Other Americas', 'Other']
 
 
 def location_region(location):
@@ -172,7 +176,23 @@ def location_region(location):
         return 'Middle East', _CANON.get(ll, last.title())
     if ll in _APAC:
         return 'Asia-Pacific', _CANON.get(ll, last.title())
+    if ll in _AMERICAS:
+        return 'Other Americas', _CANON.get(ll, last.title())
     return 'Other', _CANON.get(ll, last.title())
+
+
+def deal_date(master, raw):
+    """The date a card shows and sorts by.
+
+    The article's own date first; deals added without one (manual
+    submissions, backfills) fall back to when the deal was published or
+    curated. Using raw.published_date alone printed "Date unknown" on six
+    large deals and — because the query sorted on it — filed them on the last
+    page of the tracker.
+    """
+    return (raw.published_date if raw and raw.published_date else None) or \
+           (master.published_at if master and master.published_at else None) or \
+           (master.curated_at if master and master.curated_at else None)
 
 
 def is_known(val):
@@ -180,8 +200,13 @@ def is_known(val):
     return bool(val) and str(val).strip().lower() not in _UNKNOWN_VALUES
 
 def e(val):
-    """HTML-escape a value for safe embedding in markup."""
-    return html_module.escape(str(val)) if val else ''
+    """HTML-escape a value for safe embedding in markup.
+
+    Unescapes first, so text stored with entities already in it (old RSS
+    headlines hold "&amp;") is escaped once rather than twice — twice showed a
+    literal "&amp;" on the page. Plain text is unaffected.
+    """
+    return html_module.escape(html_module.unescape(str(val))) if val else ''
 
 
 def extract_domain(url):
@@ -249,7 +274,10 @@ def generate_deals_html(output_file=None, deals_per_page=10):
             RawItem, MasterItem.item_id == RawItem.id
         ).outerjoin(
             AIExtraction, AIExtraction.item_id == RawItem.id
-        ).order_by(RawItem.published_date.desc()).all()
+        ).all()
+        # Newest first by the date each card shows (see deal_date); anything
+        # still undated sorts last rather than first.
+        deals.sort(key=lambda d: deal_date(d[0], d[1]) or datetime.min, reverse=True)
 
         print(f"Found {len(deals)} deals in master list")
 
@@ -396,7 +424,8 @@ def generate_html_page(deals, deals_per_page=10):
         const sectorAliases = {{
             'ai': 'ai-ml',
             'materials': 'advanced-materials',
-            'mineral-refining': 'advanced-materials'
+            'mineral-refining': 'advanced-materials',
+            'intelligence': 'sensors-isr'
         }};
         const capitalAliases = {{
             'corporate-investment': 'internal-self-funded',
@@ -622,7 +651,8 @@ def generate_deal_card(master, raw, ai):
     """Generate HTML for a single deal card with improved UX"""
 
     # Extract date
-    date_str = raw.published_date.strftime('%b %d, %Y') if raw.published_date else 'Date unknown'
+    shown = deal_date(master, raw)
+    date_str = shown.strftime('%b %d, %Y') if shown else 'Date unknown'
 
     # Extract company name from AI or master
     company_name = (ai.company if ai and ai.company else
@@ -649,7 +679,10 @@ def generate_deal_card(master, raw, ai):
 
     # Build data attributes for filtering
     def slugify(val):
-        return re.sub(r'[\s/]+', '-', val.strip().lower())
+        # Any run of non-alphanumerics becomes one hyphen. The old pattern only
+        # replaced spaces and slashes, so "Corporate M&A" slugged to
+        # "corporate-m&a" and showed as raw code in the capital filter.
+        return re.sub(r'[^a-z0-9]+', '-', val.strip().lower()).strip('-')
 
     sectors_attr = ''
     if sectors:

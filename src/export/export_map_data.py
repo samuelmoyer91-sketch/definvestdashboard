@@ -29,7 +29,11 @@ def export_map_data(output_file='github_site/deals/map-data.json'):
         for item in items:
             raw = item.raw_item
             url = item.source_url or (raw.canonical_url if raw else None) or ""
-            pub_date = raw.published_date.strftime('%b %d, %Y') if raw and raw.published_date else ""
+            # Same fallback as the deals page (export_to_html_v2.deal_date): deals
+            # added without an article date show when they were curated instead.
+            when = (raw.published_date if raw and raw.published_date else None) or \
+                   item.published_at or item.curated_at
+            pub_date = when.strftime('%b %d, %Y') if when else ""
 
             features.append({
                 "lat": item.latitude,

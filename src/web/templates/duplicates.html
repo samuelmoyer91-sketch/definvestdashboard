@@ -18,6 +18,14 @@
     padding: 3px 9px; font-size: 12px; cursor: pointer;
 }
 .remove-deal.quiet { background: none; color: #bf616a; border: 1px solid #bf616a; }
+.cluster-head {
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 10px; flex-wrap: wrap; margin-bottom: 10px;
+}
+.not-dup {
+    background: none; color: #4c566a; border: 1px solid #aab2bf; border-radius: 3px;
+    padding: 3px 9px; font-size: 12px; cursor: pointer;
+}
 
 /* Phones: the table was wider than the screen, which shrank the page and
    made the Remove buttons tiny. Each row becomes a small stacked card:
@@ -38,25 +46,26 @@
     .c-title { grid-area: title; font-size: 15px; }
     .c-act { grid-area: act; }
     .remove-deal { width: 100%; min-height: 44px; font-size: 15px; }
+    .not-dup { min-height: 40px; font-size: 14px; }
 }
 </style>
 
 <h2 style="margin-bottom: 8px;">Duplicate Check</h2>
 
 <p class="help-long" style="color: #666; margin-bottom: 20px; font-size: 14px; max-width: 760px;">
-    Deals that look like the same underlying event — same company, matching dollar
-    amount within {{ window_days }} days (±{{ tolerance_pct }}%). Rows marked
-    <span style="color:#bf616a; font-weight:700;">&raquo;</span> are the ones matched
-    as likely duplicates; others share the company name but were judged distinct
-    (e.g. different facilities that happen to share an amount). Within each cluster
-    the <span style="color:#88c540; font-weight:700;">&#10003;</span> row is the
-    best source — keep that one and remove the rest.
+    Deals that look like the same underlying event: the same company (allowing for
+    name variants and typos), the same place, and either a matching amount or, when
+    an amount is missing, a similar headline. Within each group the
+    <span style="color:#88c540; font-weight:700;">&#10003;</span> row is the best
+    source — keep that one and remove the rest. If a group isn't a duplicate, press
+    <strong>Not duplicates</strong> and it won't be flagged again.
     <strong>Remove</strong> is reversible: deals go to
     <a href="/removed">Removed</a>, not the bin.
 </p>
 <p class="help-short" style="color: #666; margin-bottom: 14px; font-size: 14px;">
     Keep the <span style="color:#88c540; font-weight:700;">&#10003;</span> row and remove
-    the rest. Removed deals go to <a href="/removed">Removed</a> and can be restored.
+    the rest, or press <strong>Not duplicates</strong>. Removed deals go to
+    <a href="/removed">Removed</a> and can be restored.
 </p>
 
 <div class="card" style="margin-bottom: 24px; display: flex; gap: 32px; flex-wrap: wrap;">
@@ -73,12 +82,18 @@
 {% endif %}
 
 {% for cluster in likely %}
-<div class="card" style="border-left: 4px solid #bf616a; margin-bottom: 16px;">
-    <div style="font-weight: 600; font-size: 15px; margin-bottom: 10px;">
-        {{ cluster.company }}
-        <span style="font-weight: normal; font-size: 13px; color: #888;">
-            — {{ cluster.entries | length }} cards, {{ cluster.pairs | length }} matching pair(s)
-        </span>
+<div class="card dup-cluster" style="border-left: 4px solid #bf616a; margin-bottom: 16px;">
+    <div class="cluster-head">
+        <div style="font-weight: 600; font-size: 15px;">
+            {{ cluster.company }}
+            <span style="font-weight: normal; font-size: 13px; color: #888;">
+                — {{ cluster.entries | length }} cards
+            </span>
+        </div>
+        <button type="button" class="not-dup"
+                data-ids="{% for d in cluster.entries %}{{ d.id }}{% if not loop.last %},{% endif %}{% endfor %}">
+            Not duplicates
+        </button>
     </div>
     <table class="dup-table">
         {% for d in cluster.entries %}
@@ -133,6 +148,28 @@
 {% endif %}
 
 <script>
+// "Not duplicates" records every pair in the group as distinct, then hides the
+// group; it won't be flagged again.
+document.addEventListener('click', function (e) {
+    const btn = e.target.closest('.not-dup');
+    if (!btn) return;
+    const card = btn.closest('.dup-cluster');
+    btn.disabled = true;
+    btn.textContent = '...';
+    fetch('/duplicates/dismiss', {
+        method: 'POST',
+        headers: {'X-Requested-With': 'XMLHttpRequest'},
+        body: new URLSearchParams({ids: btn.dataset.ids})
+    }).then(function (r) {
+        if (!r.ok && r.status !== 204) throw new Error('HTTP ' + r.status);
+        if (card) card.style.display = 'none';
+    }).catch(function (err) {
+        btn.disabled = false;
+        btn.textContent = 'Retry';
+        console.error('Dismiss failed', err);
+    });
+});
+
 // Remove strikes the row out immediately rather than reloading the report —
 // a reload would re-cluster everything and lose your place on a long page.
 document.addEventListener('click', function (e) {

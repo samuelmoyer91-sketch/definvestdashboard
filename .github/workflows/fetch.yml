@@ -1,0 +1,49 @@
+name: Fetch Feeds
+
+# Reads the RSS feeds between daily ingests. Three busy feeds list only their
+# latest 10-20 items and publish more than that per day: PR Newswire A&D,
+# Pulse 2.0 and Defence Industry Europe returned only new items on 10 of 10
+# days checked (2026-09-25). A once-a-day read never saw the rest; both of
+# Arxis's September acquisitions were missed that way. Items found here wait
+# as status 'new' for the daily ingest (ingest.yml) to screen, scrape and
+# summarise. No AI calls, so these runs cost nothing but Actions minutes.
+#
+# Scheduled off the hour (:17) because GitHub delays top-of-the-hour jobs, and
+# skipping 11:00 UTC, when ingest.yml reads the feeds itself.
+
+on:
+  schedule:
+    - cron: '17 3,7,15,19,23 * * *'
+  workflow_dispatch:
+
+# Shared with ingest.yml so the two never write raw_items at the same time.
+concurrency:
+  group: pipeline-db
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Fetch RSS feeds
+        env:
+          TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+          TURSO_REMOTE_ONLY: '1'
+        run: python src/ingest/rss_fetcher.py

@@ -1,0 +1,5 @@
+# Cloudflare Pages redirects (https://developers.cloudflare.com/pages/configuration/redirects/)
+# The Market Overview page was retired on 2026-09-25: it was unlinked, two of
+# its charts were broken, and its market charts duplicate the Indicators page.
+/charts/market-overview       /charts/indicators  301
+/charts/market-overview.html  /charts/indicators  301

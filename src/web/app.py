@@ -53,7 +53,7 @@ logging.getLogger().addHandler(_recent_logs)
 
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
-from src.database import RawItem, ArticleContent, AIExtraction, MasterItem, RejectedItem, Investor, DealInvestor, ApiUsageLog, get_session, sync_turso
+from src.database import RawItem, ArticleContent, AIExtraction, MasterItem, RejectedItem, Investor, DealInvestor, ApiUsageLog, DupDismissal, get_session, sync_turso
 from src.database.models import (_reset_turso_connection, set_interactive_mode,
                                  keepalive as db_keepalive, SPLIT_FRAGMENT,
                                  EXTRACTION_REFUSED)
@@ -1578,10 +1578,11 @@ async def duplicates(request: Request, session=Depends(get_db)):
         'date': r.curated_at or r.published_at,
         'title': r.title or r.company,
         'source': r.source_url,
+        'location': r.location,
         'group_key': f"art:{split_parent_id or r.item_id}",
     } for r, split_parent_id in rows]
 
-    result = dedup.find_clusters(deals)
+    result = dedup.find_clusters(deals, dismissed=_dismissed_pairs(session))
 
     # Pre-format for the template (Jinja can't call our helpers easily)
     for bucket in (result['likely'], result['distinct']):
@@ -1608,6 +1609,42 @@ async def duplicates(request: Request, session=Depends(get_db)):
         "window_days": dedup.WINDOW_DAYS,
         "tolerance_pct": int(dedup.AMOUNT_TOLERANCE * 100),
     })
+
+
+def _dismissed_pairs(session):
+    """Pairs of published deals marked "not a duplicate", as frozensets of ids.
+
+    Tolerates the table not existing yet (it is created by create_all on the
+    first connection after deploy), so the page never 500s over it.
+    """
+    try:
+        return {frozenset((d.deal_a, d.deal_b)) for d in session.query(DupDismissal).all()}
+    except Exception:
+        session.rollback()
+        return set()
+
+
+@app.post("/duplicates/dismiss")
+async def dismiss_duplicates(request: Request, ids: str = Form(...), session=Depends(get_db)):
+    """Mark every pair within a duplicate cluster as "not a duplicate".
+
+    The cluster then stops showing on /duplicates. Nothing about the deals
+    themselves changes. Undo is by deleting rows from dup_dismissals (rare
+    enough not to need a page).
+    """
+    deal_ids = sorted({int(x) for x in ids.split(',') if x.strip().isdigit()})
+    if len(deal_ids) < 2:
+        return HTMLResponse(content="Need at least two deals", status_code=400)
+    existing = _dismissed_pairs(session)
+    for i, a in enumerate(deal_ids):
+        for b in deal_ids[i + 1:]:
+            if frozenset((a, b)) not in existing:
+                session.add(DupDismissal(deal_a=a, deal_b=b))
+    session.commit()
+    mark_dirty()
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return Response(status_code=204)
+    return RedirectResponse(url="/duplicates", status_code=303)
 
 
 @app.post("/master/{master_id}/remove")

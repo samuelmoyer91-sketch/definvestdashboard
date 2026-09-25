@@ -137,7 +137,7 @@ def fetch_fred_data(api_key=None, output_dir=None):
             # Save to JSON file
             output_file = output_dir / f'{series_id.lower()}.json'
             with open(output_file, 'w') as f:
-                json.dump(output, f, indent=2)
+                json.dump(output, f, indent=2, allow_nan=False)
 
             print(f"  ✓ Saved {len(data_list)} data points to {output_file.name}")
             results[series_id] = len(data_list)
@@ -155,7 +155,7 @@ def fetch_fred_data(api_key=None, output_dir=None):
 
     summary_file = output_dir / 'fred_summary.json'
     with open(summary_file, 'w') as f:
-        json.dump(summary, f, indent=2)
+        json.dump(summary, f, indent=2, allow_nan=False)
 
     print(f"\n✓ Fetched {len(results)} FRED series")
     print(f"✓ Saved summary to {summary_file.name}")
