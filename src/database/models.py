@@ -25,6 +25,12 @@ Base = declarative_base()
 # RawItem.canonical_url and the /split route depend on the exact string.
 SPLIT_FRAGMENT = '#split-'
 
+# RawItem.status for an article the model refused to extract (in practice,
+# paywall-scrambled text). Refused items are not retried by the summarizer
+# and are exempt from triage's all-Unknown filter, so they reach Sam as a card
+# to judge by hand instead of vanishing.
+EXTRACTION_REFUSED = 'extraction_refused'
+
 # Turso/LibSQL connection cache
 _turso_engine = None
 _session_factory = None

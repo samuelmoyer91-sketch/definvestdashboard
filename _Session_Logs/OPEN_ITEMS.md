@@ -93,15 +93,20 @@ understands English, singular, spelled-out magnitudes:
 `\bmillion\b` does not match "million**s**"; nothing matches `Milliarden`,
 `Mrd.`, or a `€` amount. Decimal commas (`6,3`) compound it.
 
-**Partly mitigated already:** 6 of the 7 local-language European feeds carry
+**Mitigated:** the 6 local-language European feeds carry
 `skip_relevance_filter: true`, which is why this has not shown up as missing
-deals. **But `Alert: Central/Eastern European Defense` has the flag `false`** —
-any local-language item on that feed is scored, hits 0.00, and is auto-rejected.
-That is the live exposure.
+deals.
 
-Fix has two halves: add `€`/`£` and German/French magnitude words to
-`deal_indicator_patterns` (the mechanism now exists), and decide whether the CEE
-Alerts feed should carry the skip flag like its siblings.
+**Correction, 2026-09-24:** this entry used to call the CEE Alerts feed (flag
+`false`) "the live exposure". Checked against 59 ingest logs (Jul 28 – Sep 24):
+that feed produced **9 items in total and auto-rejected none**. Its query is
+deliberately English (see its `notes` in `config/feeds.json`), so the flag
+was never the problem and was NOT changed. The real finding is that the feed
+is **nearly silent**; widening its query is the lever if CEE coverage matters.
+
+Remaining fix, if wanted: add `€`/`£` and German/French magnitude words to
+`deal_indicator_patterns` (the mechanism exists). Low value while the skip
+flags cover the local-language feeds.
 
 ### 2. `amounts_match` misses one-sided amounts
 [dedup.py:194](src/utils/dedup.py:194) — returns `False` when one side has a
@@ -184,9 +189,21 @@ nearly always carries the deal (company, amount, investors).
    extraction spend rose from ~$0.3–0.5 (July) to ~$1.0–1.1; roughly half of
    today's is the retries.
 
-**Fix direction (not built):** when scraped text turns into gibberish, keep
-only the readable lead. Stop retrying after N refusals, and surface a refused
-item in triage rather than hiding it. Then re-run the 29 once.
+**Fix BUILT 2026-09-24 (verify after the first live run):**
+- `src/utils/text_quality.py::readable_part` finds the point where the text
+  turns into random letters (vowel share of Latin letters, word-level change
+  point, snapped to a sentence end) and the summarizer sends only the part
+  before it. Tested: cuts 0 of 1,637 stored articles and 0 of 32 live
+  EN/DE/FR articles; cuts all 6 refused samples and the 9 of 14 live Sifted
+  articles that are scrambled, exactly at the scramble. Cyrillic, Hebrew and
+  Arabic are ignored rather than read as consonants.
+- A refusal sets `RawItem.status = 'extraction_refused'`
+  (`models.EXTRACTION_REFUSED`): no daily retries, and triage shows the card
+  with a notice instead of hiding it. A later clean extraction resets it to
+  `scraped`.
+- The 29 stuck items are still `scraped` + incomplete, so the next ingest
+  retries each once with the trimmed text. **Check that run:** the refusal
+  count should drop from 29 to near 0 and they should appear in triage.
 
 ### 7. Feed concentration
 Two Google Alerts feeds are the only volatile sources — "Private Equity Defense"
@@ -279,7 +296,12 @@ item 7.
     type could become tap-to-toggle tags instead of 33 checkboxes.
   - **D.** Swipe to accept/reject. Needs an undo first — nothing can be undone
     today — so it only makes sense after C.
-  Sam to decide after a few evenings on the new layout.
+  Sam to decide after a few evenings on the new layout. (2026-09-24: Sam
+  passed on C for now, even though 54% of accepts go through untouched.)
+- **Debt capital type** (added 2026-09-24). Only NEW extractions and hand
+  edits use it: existing debt deals (e.g. "Airbus Secures €3B EIB Loan") keep
+  their old tags until someone backfills them. Transaction type still has no
+  debt option, so a loan is labelled with the nearest existing type.
 - Editorial "so what" framing per section (2026-03-02).
 - Chart descriptions on the indicators page could tighten further.
 - Map State/District dropdowns are US-congressional-district-based and stay
@@ -303,6 +325,10 @@ item 7.
 | Summary failures reported no cause | `_describe_stop` reports `stop_reason` + refusal `category` (`00925e9`) | 2026-08-08 |
 | The `$` deal-indicator regex | Replaced by a named `$amount` pattern — see the note below | 07-26, 07-27, 07-28, 07-29 |
 | Triage unusable on a phone | Phone layout via `@media (max-width: 640px)` in `triage.html` + `base.html`; Accept/Reject pinned to the bottom of an open card; the "$ €" display fixed. Measured at 375px wide | 2026-09-24 |
+| Accept/Reject waited on the server | Card leaves on tap; comes back with a message if the save fails (`saveDecision` in triage.html) | 2026-09-24 |
+| "Self-funded" investor retyped by hand | Triage pre-fills the company's own name (Sam overrode "Self-funded" 21/21 times) | 2026-09-24 |
+| "Unknown" location looked up by hand | Prompt now gives the company HQ when known with confidence (was hand-filled 29/33 times) | 2026-09-24 |
+| Possible Dups unusable on a phone | Rows stack as cards under 640px; desktop unchanged | 2026-09-24 |
 | Currency code copied per page (#14, #15) | One shared `_currency_input.html` now used by triage, item-detail and edit. Item-detail no longer strips symbols; edit no longer turns `C$`/`A$` into `C`/`A` | 2026-09-24 |
 
 ### Multi-deal roundups — shipped 2026-08-08, and the framing was wrong

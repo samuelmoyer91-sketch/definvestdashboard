@@ -3,15 +3,83 @@
 {% block title %}Possible Duplicates - Defense Capital Tracker{% endblock %}
 
 {% block content %}
+<style>
+.help-short { display: none; }
+.dup-group { margin-bottom: 18px; }
+.dup-group-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    flex-wrap: wrap; gap: 8px; margin-bottom: 10px;
+}
+.dup-company { font-weight: 600; font-size: 15px; }
+.dup-kind { font-size: 12px; color: #888; }
+.dup-badge { padding: 2px 8px; border-radius: 4px; }
+.dup-published {
+    background: #f4f5f7; border: 1px dashed #ccc; border-radius: 6px;
+    padding: 8px 12px; margin-bottom: 8px; font-size: 13px; color: #555;
+}
+.keep-best {
+    display: block; margin: 6px 0 12px 0; padding: 8px 12px;
+    background: #fffaf0; border-radius: 6px; font-size: 13px;
+}
+.keep-best select { padding: 3px 6px; margin: 0 6px; max-width: 100%; }
+.keep-best .btn { padding: 4px 12px; }
+.keep-best-note { color: #999; font-size: 11px; margin-top: 4px; }
+.dup-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.dup-row { border-top: 1px solid #eee; }
+.dup-row td { padding: 8px; }
+.c-date, .c-amt, .c-src, .c-link, .c-act { white-space: nowrap; }
+.c-date { color: #666; }
+.c-amt { font-weight: 600; }
+.c-src { color: #888; font-size: 12px; }
+.c-link a { font-size: 12px; }
+.dup-sub { color: #888; font-size: 12px; }
+.dup-insight { color: #999; font-size: 12px; margin-top: 2px; }
+.dup-actions { display: flex; gap: 4px; }
+.dup-btn { color: #fff; padding: 3px 10px; font-size: 12px; }
+.dup-btn.reject { background: #bf616a; }
+.dup-btn.keep { background: #a3be8c; }
+
+/* Phones: the six-column table was wider than the screen, which zoomed the
+   whole page out. Each row becomes a small stacked card instead:
+   date · amount · source / headline / original + the two buttons. */
+@media (max-width: 640px) {
+    .help-long { display: none; }
+    .help-short { display: block; }
+    .dup-table, .dup-table tbody { display: block; }
+    .dup-row {
+        display: grid; grid-template-columns: auto auto 1fr;
+        grid-template-areas: "date amt src" "title title title" "link act act";
+        gap: 4px 10px; align-items: center; padding: 10px 0;
+    }
+    .dup-row td { padding: 0; }
+    .c-date { grid-area: date; }
+    .c-amt { grid-area: amt; }
+    .c-src { grid-area: src; text-align: right; white-space: normal; }
+    .c-title { grid-area: title; font-size: 15px; }
+    .c-link { grid-area: link; }
+    .c-link a { font-size: 14px; }
+    .c-act { grid-area: act; }
+    .dup-actions { gap: 8px; }
+    .dup-actions form { flex: 1; }
+    .dup-btn { width: 100%; font-size: 15px; }
+    .keep-best select { display: block; width: 100%; margin: 6px 0; padding: 10px; font-size: 16px; }
+    .keep-best .btn { width: 100%; }
+}
+</style>
+
 <h2 style="margin-bottom: 8px;">Possible Duplicates</h2>
 
-<p style="color: #666; margin-bottom: 20px; font-size: 14px; max-width: 780px;">
+<p class="help-long" style="color: #666; margin-bottom: 20px; font-size: 14px; max-width: 780px;">
     These triage items look like the same deal as something already published, or as
     another item in the queue — so they've been routed here instead of cluttering your
     main queue. Nothing is removed automatically. For each group, reject the dups or
     <strong>Keep</strong> anything that's actually a distinct deal (it returns to the
     main queue). Watch the <strong>location</strong> column — same company + same amount
     but different cities usually means different facilities, not a duplicate.
+</p>
+<p class="help-short" style="color: #666; margin-bottom: 14px; font-size: 14px;">
+    Reject the dups; <strong>Keep</strong> anything that's a distinct deal. Different
+    cities usually means different facilities.
 </p>
 
 <div class="card" style="margin-bottom: 24px; display: flex; gap: 32px; flex-wrap: wrap;">
@@ -24,15 +92,15 @@
 {% endif %}
 
 {% for g in groups %}
-<div class="card" style="border-left: 4px solid {% if g.type == 'matches_published' %}#bf616a{% else %}#ebcb8b{% endif %}; margin-bottom: 18px;">
+<div class="card dup-group" style="border-left: 4px solid {% if g.type == 'matches_published' %}#bf616a{% else %}#ebcb8b{% endif %};">
 
-    <div style="display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
-        <div style="font-weight:600; font-size:15px;">{{ g.company }}</div>
-        <div style="font-size:12px; color:#888;">
+    <div class="dup-group-head">
+        <div class="dup-company">{{ g.company }}</div>
+        <div class="dup-kind">
             {% if g.type == 'matches_published' %}
-            <span style="background:#bf616a; color:#fff; padding:2px 8px; border-radius:4px;">Matches a published deal</span>
+            <span class="dup-badge" style="background:#bf616a; color:#fff;">Matches a published deal</span>
             {% else %}
-            <span style="background:#ebcb8b; color:#333; padding:2px 8px; border-radius:4px;">Queue cluster — keep best source</span>
+            <span class="dup-badge" style="background:#ebcb8b; color:#333;">Queue cluster — keep best source</span>
             {% endif %}
             <span style="margin-left:8px;">{{ g.reason }}</span>
         </div>
@@ -40,7 +108,7 @@
 
     {# Type 1: published anchor(s), greyed, non-actionable #}
     {% for p in g.published %}
-    <div style="background:#f4f5f7; border:1px dashed #ccc; border-radius:6px; padding:8px 12px; margin-bottom:8px; font-size:13px; color:#555;">
+    <div class="dup-published">
         <span style="font-weight:600; color:#444;">✓ ALREADY PUBLISHED:</span>
         {{ p.title }}
         <span style="color:#888;"> — {{ p.amount_fmt }} · {{ p.date_fmt }}{% if p.location %} · {{ p.location }}{% endif %}</span>
@@ -50,43 +118,45 @@
 
     {# Group-level convenience for queue-only clusters (keep one, reject the rest) #}
     {% if g.type == 'queue_only' and g.queue | length > 1 %}
-    <form method="post" action="/reject-dup-group" style="margin:6px 0 12px 0; padding:8px 12px; background:#fffaf0; border-radius:6px; font-size:13px;">
+    <form method="post" action="/reject-dup-group" class="keep-best">
         <input type="hidden" name="reject_ids" value="{% for q in g.queue %}{{ q.id }}{% if not loop.last %},{% endif %}{% endfor %}">
         <input type="hidden" name="dup_of" value="{{ g.company }}">
         <span style="color:#555;">Keep best source:</span>
-        <select name="keep_id" style="padding:3px 6px; margin:0 6px;">
+        <select name="keep_id">
             {% for q in g.queue %}
             <option value="{{ q.id }}">{{ q.source }} — {{ q.title[:50] }}{% if loop.first %}  ✓ recommended{% endif %}</option>
             {% endfor %}
         </select>
-        <button type="submit" class="btn btn-primary" style="padding:4px 12px;">Keep this, reject the rest</button>
-        <div style="color:#999; font-size:11px; margin-top:4px;">Ranked: direct publisher &gt; has $ amount &gt; trade press &gt; earliest to report. Override with the dropdown.</div>
+        <button type="submit" class="btn btn-primary">Keep this, reject the rest</button>
+        <div class="keep-best-note">Ranked: direct publisher &gt; has $ amount &gt; trade press &gt; earliest to report. Override with the dropdown.</div>
     </form>
     {% endif %}
 
     {# Each queue dup, with per-item actions #}
-    <table style="width:100%; border-collapse:collapse; font-size:13px;">
+    <table class="dup-table">
         {% for q in g.queue %}
-        <tr style="border-top:1px solid #eee;">
-            <td style="padding:8px; white-space:nowrap; color:#666;">{{ q.date_fmt }}</td>
-            <td style="padding:8px; white-space:nowrap; font-weight:600;">{{ q.amount_fmt }}</td>
-            <td style="padding:8px;">
+        <tr class="dup-row">
+            <td class="c-date">{{ q.date_fmt }}</td>
+            <td class="c-amt">{{ q.amount_fmt }}</td>
+            <td class="c-title">
                 {{ q.title }}
-                {% if q.location %}<div style="color:#888; font-size:12px;">📍 {{ q.location }}</div>{% endif %}
-                {% if q.insight %}<div style="color:#999; font-size:12px; margin-top:2px;">{{ q.insight[:120] }}{% if q.insight|length > 120 %}…{% endif %}</div>{% endif %}
+                {% if q.location %}<div class="dup-sub">📍 {{ q.location }}</div>{% endif %}
+                {% if q.insight %}<div class="dup-insight">{{ q.insight[:120] }}{% if q.insight|length > 120 %}…{% endif %}</div>{% endif %}
             </td>
-            <td style="padding:8px; white-space:nowrap; color:#888; font-size:12px;">{{ q.source }}</td>
-            <td style="padding:8px; white-space:nowrap;">
-                <a href="{{ q.url }}" target="_blank" style="font-size:12px;">original</a>
+            <td class="c-src">{{ q.source }}</td>
+            <td class="c-link">
+                <a href="{{ q.url }}" target="_blank">original</a>
             </td>
-            <td style="padding:8px; white-space:nowrap;">
-                <form method="post" action="/reject-dup/{{ q.id }}" style="display:inline;">
-                    <input type="hidden" name="dup_of" value="{{ g.company }}">
-                    <button type="submit" class="btn" style="background:#bf616a; color:#fff; padding:3px 10px; font-size:12px;">Reject as dup</button>
-                </form>
-                <form method="post" action="/keep-dup/{{ q.id }}" style="display:inline;">
-                    <button type="submit" class="btn" style="background:#a3be8c; color:#fff; padding:3px 10px; font-size:12px;">Keep</button>
-                </form>
+            <td class="c-act">
+                <div class="dup-actions">
+                    <form method="post" action="/reject-dup/{{ q.id }}">
+                        <input type="hidden" name="dup_of" value="{{ g.company }}">
+                        <button type="submit" class="btn dup-btn reject">Reject as dup</button>
+                    </form>
+                    <form method="post" action="/keep-dup/{{ q.id }}">
+                        <button type="submit" class="btn dup-btn keep">Keep</button>
+                    </form>
+                </div>
             </td>
         </tr>
         {% endfor %}

@@ -262,6 +262,12 @@
                             Public Markets
                         </label>
                         <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                            <input type="checkbox" name="capital_source" value="Debt"
+                                   {% if 'Debt' in current_cap_list %}checked{% endif %}
+                                   style="margin-right: 5px; width: 14px; height: 14px;">
+                            Debt
+                        </label>
+                        <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
                             <input type="checkbox" name="capital_source" value="Internal/Self-funded"
                                    {% if 'Internal/Self-funded' in current_cap_list %}checked{% endif %}
                                    style="margin-right: 5px; width: 14px; height: 14px;">

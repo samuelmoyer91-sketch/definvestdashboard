@@ -445,6 +445,7 @@ def generate_html_page(deals, deals_per_page=10):
                 'corporate-m-a': 'Corporate M&A',
                 'government-contract': 'Government Support',
                 'public-markets': 'Public Markets',
+                'debt': 'Debt',
                 'internal-self-funded': 'Internal/Self-Funded',
                 'fund-raise': 'Fund Raise',
                 'family-office': 'Family Office',

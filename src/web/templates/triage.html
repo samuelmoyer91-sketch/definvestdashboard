@@ -89,6 +89,10 @@
     position: sticky; bottom: -24px; background: #fff; padding: 8px 0;
 }
 .queue-note { font-size: 14px; font-weight: 400; color: #666; }
+.refused-note {
+    margin-top: 10px; padding: 8px 10px; font-size: 13px; color: #7a4b00;
+    background: #fff4e0; border-left: 3px solid #e0a030; border-radius: 4px;
+}
 
 /* Phones */
 @media (max-width: 640px) {
@@ -177,6 +181,13 @@
             {% endif %}
         </div>
 
+        {% if item.status == 'extraction_refused' %}
+        <div class="refused-note">
+            ⚠ The AI declined to read this article, so nothing is filled in.
+            Check the original, then fill in by hand or reject.
+        </div>
+        {% endif %}
+
         <!-- AI One-liner Summary -->
         {% if item.ai_extraction %}
         <div style="margin-top: 10px; font-size: 14px; color: #333; font-weight: 500;">
@@ -207,13 +218,15 @@
 
         <!-- Collapsible Article Preview -->
         {% if item.article_content and item.article_content.clean_text %}
+        {# Paywall-scrambled text is dropped here as it is for the AI. #}
+        {% set preview_text = item.article_content.clean_text | readable %}
         <details style="margin-bottom: 12px; border: 1px solid #e0e0e0; border-radius: 4px; padding: 8px 12px; background: #f9f9f9;">
             <summary style="cursor: pointer; font-weight: 600; color: #5e81ac; font-size: 14px;">
-                📄 Article Preview ({{ "{:,}".format(item.article_content.clean_text | length) }} characters)
+                📄 Article Preview ({{ "{:,}".format(preview_text | length) }} characters)
             </summary>
             <div class="preview-body">
-                {{ item.article_content.clean_text[:6000] }}
-                {% if item.article_content.clean_text | length > 6000 %}
+                {{ preview_text[:6000] }}
+                {% if preview_text | length > 6000 %}
                 <p style="color: #999; margin-top: 12px; font-style: italic;">... (showing first 6,000 characters)</p>
                 {% endif %}
             </div>
@@ -255,8 +268,16 @@
                             Investors / Acquirer
                             {% if item.ai_extraction and item.ai_extraction.investors %}<span class="ai-badge">AI</span>{% endif %}
                         </label>
+                        {# Sam's convention: a self-funded deal names the company itself
+                           as the investor. The AI writes "Self-funded" instead, and he
+                           replaced it by hand on 20 of 21 accepts (Apr-Jul 2026). #}
+                        {% set ai_investors = item.ai_extraction.investors if item.ai_extraction and item.ai_extraction.investors else '' %}
+                        {% if ai_investors | trim | lower in ['self-funded', 'self funded', 'self-financed', 'internal', 'internal/self-funded']
+                              and item.ai_extraction.company and item.ai_extraction.company | lower not in ['unknown', 'none'] %}
+                            {% set ai_investors = item.ai_extraction.company %}
+                        {% endif %}
                         <input type="text" name="investors"
-                               value="{{ item.ai_extraction.investors if item.ai_extraction and item.ai_extraction.investors else '' }}"
+                               value="{{ ai_investors }}"
                                class="field{% if item.ai_extraction and item.ai_extraction.investors %} ai-populated{% endif %}"
                                placeholder="e.g., McNally Capital, Andreessen Horowitz">
                     </div>
@@ -334,6 +355,11 @@
                             <input type="checkbox" name="capital_source" value="Public Markets"
                                    {% if 'Public Markets' in ai_cap_list %}checked{% endif %}>
                             Public Markets
+                        </label>
+                        <label class="check">
+                            <input type="checkbox" name="capital_source" value="Debt"
+                                   {% if 'Debt' in ai_cap_list %}checked{% endif %}>
+                            Debt
                         </label>
                         <label class="check">
                             <input type="checkbox" name="capital_source" value="Internal/Self-funded"
@@ -603,30 +629,41 @@ function updateTriageCount(delta) {
     }
 }
 
-function acceptItem(id, formEl) {
-    fetch('/accept/' + id, {
-        method: 'POST',
-        // Tells the server to answer 204 instead of a 303 back to "/". Without
-        // this, fetch follows the redirect and downloads the entire queue page
-        // on every accept, just to discard it.
-        headers: {'X-Requested-With': 'XMLHttpRequest'},
-        body: new FormData(formEl),
-        redirect: 'follow'
-    }).then(response => {
+// Accept and Reject take the card away the moment Sam decides, rather than
+// after the server answers: an accept takes ~1.7s, and the first one after a
+// deploy has taken 22s. If the save fails, the card comes back and he is told,
+// so nothing disappears without being saved.
+function takeCard(id) {
+    const card = document.getElementById('item-' + id);
+    if (card) card.style.display = 'none';
+    updateTriageCount(-1);
+    return card;
+}
+
+function giveCardBack(card, what, detail) {
+    if (card) card.style.display = '';
+    updateTriageCount(+1);
+    alert(what + ' did not save (' + detail + '). The card is back — try again.');
+}
+
+function saveDecision(id, url, options, what) {
+    const card = takeCard(id);
+    // X-Requested-With tells the server to answer 204 instead of a 303 back
+    // to "/". Without it, fetch follows the redirect and downloads the whole
+    // queue page on every decision, just to discard it.
+    options.method = 'POST';
+    options.headers = Object.assign({'X-Requested-With': 'XMLHttpRequest'}, options.headers || {});
+    fetch(url, options).then(response => {
         if (response.ok) {
-            const card = document.getElementById('item-' + id);
-            if (card) {
-                card.style.transition = 'opacity 0.3s';
-                card.style.opacity = '0';
-                setTimeout(() => card.remove(), 300);
-            }
-            updateTriageCount(-1);
+            if (card) card.remove();
         } else {
-            alert('Accept failed (status ' + response.status + '). Please reload and try again.');
+            giveCardBack(card, what, 'status ' + response.status);
         }
-    }).catch(err => {
-        alert('Network error: ' + err);
-    });
+    }).catch(() => giveCardBack(card, what, 'network error'));
+}
+
+function acceptItem(id, formEl) {
+    saveDecision(id, '/accept/' + id, {body: new FormData(formEl)}, 'Accept');
 }
 
 function rejectItem(id) {
@@ -654,32 +691,10 @@ function submitReject() {
 
     const body = new URLSearchParams();
     body.append('rejection_reason', finalReason);
-
-    fetch('/reject/' + id, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            // See acceptItem: without this the server 303s to "/" and fetch
-            // downloads the whole queue page only to throw it away.
-            'X-Requested-With': 'XMLHttpRequest'
-        },
-        body: body.toString(),
-        redirect: 'follow'
-    }).then(response => {
-        if (response.ok) {
-            const card = document.getElementById('item-' + id);
-            if (card) {
-                card.style.transition = 'opacity 0.3s';
-                card.style.opacity = '0';
-                setTimeout(() => card.remove(), 300);
-            }
-            updateTriageCount(-1);
-        } else {
-            alert('Reject failed (status ' + response.status + '). Please reload and try again.');
-        }
-    }).catch(err => {
-        alert('Network error: ' + err);
-    });
+    saveDecision(id, '/reject/' + id, {
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: body.toString()
+    }, 'Reject');
 }
 </script>
 {% include "_currency_input.html" %}

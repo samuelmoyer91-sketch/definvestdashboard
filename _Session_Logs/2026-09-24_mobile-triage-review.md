@@ -122,3 +122,33 @@ Findings worth keeping:
 - Pipeline: 0 failed ingest runs in September; 5 of ~95 since late June,
   all transient.
 - Stale: memory `project_current_state.md` (July). Marked stale in the index.
+
+## Built: refinements Sam approved from the review (1, 2, 4, 6) + Debt + dups page
+Sam passed on 3 (quick accept) and 5 (currency round 2) for now.
+1. **Sifted fix.** New `src/utils/text_quality.py`. The summarizer trims the
+   scrambled text; a refusal marks the item `extraction_refused` (not retried,
+   shown in triage with a notice); the article preview is trimmed too. Took
+   three iterations to get right:
+   - Cutting at sentence breaks was too coarse: the scramble often starts
+     mid-sentence.
+   - A "whole text looks scrambled → drop it" rule wiped the readable lead,
+     because a long scramble drags the average down.
+   - A plain difference of vowel shares let short headlines win.
+   Final version: a size-weighted change point snapped to a sentence end.
+   Tested on 1,637 stored and 32 live articles (0 false cuts) and 15 scrambled
+   Sifted texts (all cut at the exact boundary). One false cut in the stored
+   set came from Arabic boilerplate being counted as consonants; fixed by
+   counting Latin letters only. End-to-end pipeline test on a throwaway SQLite
+   database with a simulated AI: trims 6,126 → 413 chars, a refusal marks the
+   item, the next run skips it, a later success restores it, and the triage
+   query shows it.
+2. **Instant Accept/Reject**: optimistic removal with rollback. Tested:
+   slow success, server error, offline.
+4. **Self-funded → company name** pre-filled in triage. **HQ fallback** added
+   to the LOCATION instruction (Sam approved this prompt change).
+6. **CEE feed flag: NOT changed.** 59 logs show 9 items and 0 auto-rejects
+   since launch, so the backlog premise was wrong. Corrected OPEN_ITEMS #1.
+- **Debt** capital type: AI option list + definition, triage/master/edit
+  forms, public-site filter label (`export_to_html_v2.py`).
+- **Possible Dups phone layout**: table rows stack into cards under 640px,
+  44px buttons, short help text; desktop unchanged (checked side by side).

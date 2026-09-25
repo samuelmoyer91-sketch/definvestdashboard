@@ -14,7 +14,7 @@ from datetime import datetime
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
 from src.database import RawItem, ArticleContent, AIExtraction, ApiUsageLog, get_session
-from src.database.models import _reset_turso_connection
+from src.database.models import _reset_turso_connection, EXTRACTION_REFUSED
 from src.utils.ai_summarizer import summarize_deal_article, format_summary_for_display
 from src.utils.pricing import calculate_cost
 
@@ -51,10 +51,14 @@ def generate_summaries(limit=5, force_regenerate=False, item_ids=None):
             ).limit(limit).all()
         else:
             # Only generate for items without complete summaries
-            # Include items with no AI extraction OR incomplete extractions
+            # Include items with no AI extraction OR incomplete extractions,
+            # but not refused ones: a refusal repeats on the same text, and
+            # retrying them daily is how 29 refused articles came to be re-sent
+            # every morning. They wait in triage for a human instead.
             from sqlalchemy import or_
             return query.filter(
                 ArticleContent.scrape_success == True,
+                RawItem.status != EXTRACTION_REFUSED,
                 or_(
                     AIExtraction.id == None,  # No AI extraction yet
                     AIExtraction.summary_complete == False,  # Incomplete extraction
@@ -127,6 +131,14 @@ def generate_summaries(limit=5, force_regenerate=False, item_ids=None):
                 cap_src = cap_src_raw if cap_src_raw else None
             else:
                 cap_src = None
+
+            # Record a refusal on the item, and clear it once the item extracts
+            # cleanly (a manual re-run after a fix).
+            if summary.get('refused'):
+                item.status = EXTRACTION_REFUSED
+                print(f"  ⊘ Refused — shown in triage for review, not retried")
+            elif summary.get('summary_complete') and item.status == EXTRACTION_REFUSED:
+                item.status = 'scraped'
 
             if extraction and extraction.summary_complete and not summary.get('summary_complete'):
                 # A failed extraction must NEVER overwrite a good one. This bit

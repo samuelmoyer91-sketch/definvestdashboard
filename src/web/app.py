@@ -55,7 +55,9 @@ sys.path.append(str(Path(__file__).parent.parent.parent))
 
 from src.database import RawItem, ArticleContent, AIExtraction, MasterItem, RejectedItem, Investor, DealInvestor, ApiUsageLog, get_session, sync_turso
 from src.database.models import (_reset_turso_connection, set_interactive_mode,
-                                 keepalive as db_keepalive, SPLIT_FRAGMENT)
+                                 keepalive as db_keepalive, SPLIT_FRAGMENT,
+                                 EXTRACTION_REFUSED)
+from src.utils.text_quality import readable_part
 from src.utils.investor_parser import parse_investors, slugify
 
 _TOKEN_EXPIRY = 24 * 60 * 60  # 24 hours
@@ -869,6 +871,8 @@ async def telegram_webhook(request: Request):
 templates_dir = Path(__file__).parent / "templates"
 templates_dir.mkdir(exist_ok=True)
 templates = Jinja2Templates(directory=str(templates_dir))
+# Article previews drop paywall-scrambled text, same as the summarizer does.
+templates.env.filters['readable'] = readable_part
 
 
 # Marker appended to RawItem.relevance_flags when Sam confirms a flagged item
@@ -1014,9 +1018,13 @@ def _triage_queue_items(session):
         # hide a card Sam explicitly acted on: if a split's re-extraction comes
         # back empty, the card has to stay visible so the failure is obvious
         # and fixable, rather than the action appearing to do nothing.
+        # Hide cards whose extraction found nothing — except refused ones,
+        # which carry an empty extraction too but may well be real deals the
+        # model could not read; those are shown for Sam to judge.
         ~(
             (AIExtraction.id != None) &
             (RawItem.split_instruction == None) &
+            (RawItem.status != EXTRACTION_REFUSED) &
             func.lower(func.coalesce(AIExtraction.company, '')).in_(['unknown', 'none', '']) &
             func.lower(func.coalesce(AIExtraction.deal_amount, '')).in_(['unknown', '']) &
             func.lower(func.coalesce(AIExtraction.deal_type, '')).in_(['unknown', ''])

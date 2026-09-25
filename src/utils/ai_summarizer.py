@@ -14,6 +14,8 @@ import os
 import json
 from anthropic import Anthropic
 
+from src.utils.text_quality import readable_part
+
 
 def _describe_stop(message):
     """Explain why a response carried no usable text.
@@ -66,6 +68,15 @@ def summarize_deal_article(article_text, article_title, article_url, focus=None)
     # Initialize Claude client
     client = Anthropic(api_key=api_key)
 
+    # Paywalled sources (Sifted) scramble everything after the lead paragraph.
+    # Sent whole, the scramble reads as obfuscated text and the request is
+    # refused; the readable lead alone usually states the whole deal.
+    readable = readable_part(article_text or '')
+    if readable != article_text:
+        print(f"  ✂ Using the readable {len(readable):,} of {len(article_text):,} chars "
+              f"(the rest is paywall-scrambled)")
+        article_text = readable
+
     # When this pass is one of several over a roundup, scope it up front —
     # before the field list — so the whole extraction is framed by it.
     # The final sentence matters most: without it the model borrows a
@@ -97,7 +108,7 @@ Extract the following information (use "Unknown" if not found):
 
 1. TITLE: Write a concise analyst-style headline (5-10 words). Always lead with the company name. Use present-tense action verbs: "Raises", "Acquires", "Builds", "Invests", "Opens". Include the dollar amount when known. Strip all journalistic fluff — no "to meet growing demand", no source attributions, no filler. Use industry shorthand where appropriate (e.g., "PE Fund", "PNT", "Space Tech"). Never be vague — always name the company (not "Startup raises..." or "Company confirms..."). Never use county names — use the state name or abbreviation instead (e.g., "Alabama Facility" not "Pike County Facility"). Examples: "Safran Acquires Syntony for PNT", "GRVTY Invests $8M in Virginia Facility", "Veritas Raises $15.3B PE Fund for Defense Investments", "GE Aerospace Builds Manufacturing Facilities". Do NOT copy the article headline — rewrite it shorter and cleaner.
 2. COMPANY NAME: The company being invested in or acquired
-3. CAPITAL TYPE: Choose ALL that apply from: Seed, Venture Capital, Private Equity, Corporate M&A, Government Support, Public Markets, Internal/Self-funded, Fund Raise. Most deals have one type, but select multiple when genuinely applicable (e.g., a round with both VC and Government/Contract components). "Seed" = pre-Series A/angel. "Venture Capital" = Series A through late-stage VC rounds. "Private Equity" = PE acquisitions, PE growth equity. "Corporate M&A" = operating company acquires another (no PE sponsor). "Government Support" = government contracts, SBIR, grants, government equity stakes. "Public Markets" = IPO, SPAC, secondary offerings. "Internal/Self-funded" = capex, facility builds from balance sheet. "Fund Raise" = VC or PE fund raising capital from LPs (e.g., "Veritas raises $15B fund"), NOT deploying capital into a company. Return as array.
+3. CAPITAL TYPE: Choose ALL that apply from: Seed, Venture Capital, Private Equity, Corporate M&A, Government Support, Public Markets, Debt, Internal/Self-funded, Fund Raise. Most deals have one type, but select multiple when genuinely applicable (e.g., a round with both VC and Government/Contract components). "Seed" = pre-Series A/angel. "Venture Capital" = Series A through late-stage VC rounds. "Private Equity" = PE acquisitions, PE growth equity. "Corporate M&A" = operating company acquires another (no PE sponsor). "Government Support" = government contracts, SBIR, grants, government equity stakes. "Public Markets" = IPO, SPAC, secondary offerings. "Debt" = capital that must be repaid: loans, credit facilities, venture debt, private credit, bonds or notes — including loans from public lenders such as the EIB or a national development bank (add "Government Support" too when a government lends or guarantees). "Internal/Self-funded" = capex, facility builds from balance sheet. "Fund Raise" = VC or PE fund raising capital from LPs (e.g., "Veritas raises $15B fund"), NOT deploying capital into a company. Return as array.
 4. TRANSACTION TYPE: Choose exactly one from: "Equity Funding Round", "Acquisition", "Merger", "IPO", "Strategic Partnership", "Internal Investment", "Contract/Award", "Government Support", "Fund Raise". "Equity Funding Round" = company raises equity capital (Seed through late-stage VC, PE growth equity). "Acquisition" = one company buys another outright. "Merger" = two companies combine. "IPO" = company goes public. "Strategic Partnership" = joint venture, teaming agreement, licensing deal, or non-equity collaboration. "Internal Investment" = company invests in itself from its own balance sheet (facilities, R&D capex). "Contract/Award" = routine government procurement contract, SBIR/STTR award, or government grant — the government is buying a deliverable or rewarding a small R&D project. "Government Support" = government makes a direct investment in a company's productive capacity — Title III of the Defense Production Act, Industrial Base Fund investments, DIU OTAs with capital/equity components, AFWERX STRATFI/TACFI, or similar programs where DoD is funding a company to build or expand a capability (not just buying a deliverable). Non-US equivalents count identically: European Defence Fund (EDF), EDIRPA, EDIP, ASAP ammunition-production funding, NATO Innovation Fund investments, UK National Security Strategic Investment Fund, and national ministry-of-defence capacity or industrial-base awards (e.g. German BMVg, French DGA) are all "Government Support" when they fund a company to build or expand capability — do NOT default these to "Contract/Award" just because a government is the counterparty. "Fund Raise" = VC/PE fund raising LP capital. Return as a single string.
 5. SECTORS: Choose ALL that apply (return as array). Options: Autonomous Systems/Drones, AI/ML, Quantum, Software/IT, Cybersecurity, Communications, Sensors/ISR, Electronic Warfare, Space/Satellites, Aerospace, Propulsion/Engines, Maritime/Naval, Ground Vehicles, Munitions/Weapons, Semiconductors/Electronics, Advanced Materials, Critical Minerals, Energy/Power, Manufacturing/Production, Logistics/Sustainment, Biotech/Medical, Other.
    Tag by technology area, not just activity — most deals get 2-4 tags. Guidance on the less obvious ones:
@@ -113,7 +124,7 @@ Extract the following information (use "Unknown" if not found):
    - Semiconductors/Electronics covers both true chips/fabs AND board-level electronics (PCBs, wiring, RF/EW electronics).
 6. DEAL AMOUNT: Dollar value if mentioned (e.g., "$300M" or "$4.7B")
 7. INVESTORS/ACQUIRERS: Key firms or companies involved. Return as a clean comma-separated list of names only — no descriptions, no parentheticals, no "led by", "backed by", "with participation from", or other connective language. Example: "8VC, Lux Capital, Founders Fund". For self-funded/internal deals, return the company name.
-8. LOCATION: Where the company is headquartered or where the deal/project is located. Format as "City, State, Country" for US locations (e.g., "San Diego, CA, USA") or "City, Country" for international (e.g., "London, UK"). Never use county names — if only a county is mentioned, use the state abbreviation only (e.g., "AL, USA"). Use null if not mentioned.
+8. LOCATION: Where the company is headquartered or where the deal/project is located. Format as "City, State, Country" for US locations (e.g., "San Diego, CA, USA") or "City, Country" for international (e.g., "London, UK"). Never use county names — if only a county is mentioned, use the state abbreviation only (e.g., "AL, USA"). If the article does not say where the company or deal is, give the company's headquarters city if you know it with confidence (e.g., Anduril → "Costa Mesa, CA, USA"); use null only when you do not know. Never invent a location.
 9. STRATEGIC SIGNIFICANCE: In 1-2 sentences, describe specifically what the company will do with this capital — which products, programs, facilities, or capabilities it will fund or develop. Name them explicitly; do not generalize. Be factual and specific. Do not restate the deal structure, explain who the investor is, or add context about market trends. Write in third person present tense. Example style: "AeroVironment is expanding domestic manufacturing capacity for directed energy laser systems, anti-drone systems, and laser communications, with $6 million in state and local co-investment." For ACQUISITIONS and PRIVATE EQUITY deals, always write from the perspective of the acquired/target company — what the target will now be able to build, expand, or develop with this backing. Never frame the commentary around the acquirer's or PE firm's strategy (do NOT write "this helps [firm] build out its platform for..." or "expands [acquirer]'s portfolio in..."). The question is always: how does this capital help the TARGET company grow or do something it could not before? Name the target's products, programs, or capabilities, not the buyer's.
 
 10. DEAL STATUS: Classify the certainty of this deal as exactly one of:
@@ -221,6 +232,10 @@ Special handling for EARNINGS CALLS, ANNUAL REPORTS, and INVESTOR PRESENTATIONS:
             'strategic_significance': None,
             'market_implications': None,
             'summary_complete': False,
+            # A refusal is deterministic — the same text is refused every
+            # time — so the caller stops retrying it; any other failure may be
+            # transient and is retried on the next run.
+            'refused': getattr(message, 'stop_reason', None) == 'refusal',
             'input_tokens': getattr(usage, 'input_tokens', 0),
             'output_tokens': getattr(usage, 'output_tokens', 0),
             'error': f"{type(e).__name__}: {e}"
