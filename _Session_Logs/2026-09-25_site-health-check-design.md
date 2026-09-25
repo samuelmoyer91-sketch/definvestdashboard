@@ -29,3 +29,31 @@ Findings are in OPEN_ITEMS #18. Method notes for next time:
   to see whether a miss was never ingested, screened out, or rejected.
 - Compare against the previous export to spot removals: 8 Northrop deals were
   removed today.
+
+## Acting on it (Sam: "for #12 fix however you see fit; otherwise do all of this and push")
+All shipped: `a43a5b5` (code), `da34a76` (reviewed data file), and the hourly fetch
+schedule. Verified live after publish 36141883085: ITA renders, all 17 charts show
+"Data through", 404 is real, Market Overview redirects, no "Date unknown" and no
+"&amp;", Corporate M&A label fixed, "Other Americas" region (37), junk countries
+gone, AMRC $68.6M (from £54M), Metallium $49.5M (from A$75M), 68 titles live.
+Details and what's still open are in OPEN_ITEMS #18, #19 and 2+3.
+
+Decisions I made:
+- **#12 (AI currency)**: the prompt now asks for the article's own currency and
+  says never to convert, because the dashboard converts at display time.
+  TITLE_RULES was pulled into a constant, shared with fill_missing_titles.py;
+  the rendered prompt was diffed to confirm only the two intended lines changed.
+- **2025 private-capital figures NOT entered.** The sheet has no sources, and
+  published figures differ roughly 15x by definition. Made the loader
+  row-driven and labelled the charts "Data through 2024" instead.
+- **Two title drafts rewritten in review** (RTX, Curtiss-Wright): they asserted
+  figures the cards don't carry. Added Metallium A$ and Pine Bluff AR fixes
+  found during that review.
+- **Coverage "misses" were feed overflow**, not missing sources.
+  Hourly fetch.yml (public repo, so free minutes).
+- **Northrop**: 8 removals at 02:56 UTC, reason 'duplicate' (Duplicate Check
+  clean-up). Left for Sam; they can be restored from /removed.
+- **Push quirk**: the keychain credential helper hung, so I pushed via
+  `gh auth git-credential` (gh is logged in with repo+workflow scope).
+
+Close-out: code, data, publish, issues and logs are all pushed.

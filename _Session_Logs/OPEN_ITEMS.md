@@ -143,7 +143,14 @@ Page problems Sam raised: no "not a duplicate" dismissal (judged pairs
 stay forever), a table that overflows on phones (the Remove buttons exist
 but are tiny), and a noisy "94 companies judged distinct" list.
 
-**Sam's call, 2026-09-24: bare minimum for now.** Shipped only the phone
+**SHIPPED 2026-09-25 (Sam: "do all of this").** `dedup.find_pairs`/`match_pair`:
+24/26 verified pairs, 0/14 false matches, 42→40 clusters on 945 deals, 15 ms. Tuning
+notes are in the constants' comments. The remaining misses are by design: CSG/NVD
+(one amount, dissimilar headlines) and Perpetua (two towns given for one plant).
+"Not duplicates" stores pairs in `dup_dismissals`. **Sam's one-time clear-out of
+~40 groups is pending.**
+
+**Previously, Sam's call on 2026-09-24: bare minimum for now.** Shipped only the phone
 layout (`abe2056`). NOT built, and the proposal stands: the matching overhaul
 above (tune out the 2 false flags first; it also changes what the pre-triage
 bucket holds back), a "Not a duplicate" dismissal (needs a small new table),
@@ -290,7 +297,7 @@ daily through yesterday).
 phone, and it grows by ~150–180 deals a month. Not urgent. Worth watching as
 part of a site health check.
 
-### 18. Public-site health check findings — verified 2026-09-25 (nothing fixed yet)
+### 18. Public-site health check findings — verified 2026-09-25, ACTED ON same day (see below)
 Full check against the live site; details in `_Session_Logs/2026-09-25_site-health-check-design.md`.
 - **ITA chart broken** on both Indicators ("Data unavailable") and Market Overview:
   `data/ita.json` has one `NaN` row (2021-09-24), which browsers reject as JSON.
@@ -332,6 +339,36 @@ Full check against the live site; details in `_Session_Logs/2026-09-25_site-heal
   - Phone layouts fine; source links 58/60 live.
   - Few false positives (6, all legacy Jan–Feb).
 - Map: 90 of 868 pins (10%) sit on a country or state centre (see #9).
+
+**Outcome, 2026-09-25 (commits `a43a5b5`, `da34a76`):**
+- Fixed and verified: the ITA chart (NaN rows skipped, all data files refuse NaN),
+  "Data through" on every chart, date fallback + sort (no "Date unknown"),
+  filter labels, the "Other Americas" region, single escaping, home page scope
+  text, the real 404 page, Market Overview retired (301 to Indicators), and the
+  prompt keeping original currencies. 73 reviewed data fixes: 68 titles, AMRC
+  £54M, Metallium A$75M, three location typos. 6 stale issues closed.
+- **Northrop removals**: all 8 went at 02:56 UTC as reason 'duplicate' — Duplicate
+  Check clean-up of a false alarm, it seems. Not restored; Sam to decide.
+- **Still open:**
+  - The 2025 private-capital figures. The spreadsheet has no sources, and
+    published figures differ widely by definition (JPM/PitchBook broad $55B for
+    2021 vs Crunchbase narrow ~$3B). The loader now reads any new row, and the
+    charts say "Data through 2024".
+  - Page weight (#17).
+- The coverage misses were feed overflow, not missing sources. See #19.
+
+### 19. Busy feeds overflowed their daily read — fix shipped 2026-09-25, verify
+PR Newswire A&D, Pulse 2.0 and Defence Industry Europe returned only new items on
+10 of 10 days: each lists its latest 10–20 items and publishes more per day, so a
+once-a-day read missed the rest. Both Arxis add-ons (Sep 3, on PR Newswire and
+Pulse 2.0) were lost that way. (Defense Unicorns $136M was a January deal from
+before those feeds existed, not a current gap.) `fetch.yml` now reads all feeds
+hourly at :17 (skipping 11:00, when the ingest reads them), sharing a concurrency
+lock with the ingest. The first manual run, after an 11.5h gap, showed Pulse 2.0 no
+longer overflowing (16/20 already seen) but PR Newswire still 20/20 new, which is
+why the schedule went hourly rather than every 4h. **Verify in a few days:** those three feeds should start showing
+duplicates in their "Saved N new items, skipped D duplicates" log lines. If they
+still come back all-new, read more often or page deeper (WordPress `?paged=2`).
 ---
 
 ## EXTERNAL — real, but not verifiable from the repo
@@ -432,6 +469,9 @@ item 7.
 | "Unknown" location looked up by hand | Prompt now gives the company HQ when known with confidence (was hand-filled 29/33 times) | 2026-09-24 |
 | Possible Dups unusable on a phone | Rows stack as cards under 640px; desktop unchanged | 2026-09-24 |
 | Published Dup Check unusable on a phone | Same stacked-card layout, full-width Remove (`abe2056`) | 2026-09-24 |
+| Published-site health check #18 fixes | See #18 outcome; live-verified after publish | 2026-09-25 |
+| Duplicate matching caught 1/27 | Reworked matcher + "Not duplicates" (items 2+3) | 2026-09-25 |
+| Stale "pipeline failed" issues | Closed #1, #2, #5–#8 with a note | 2026-09-25 |
 | No way to retry refused articles | `reextract_items.py --refused [--apply]` | 2026-09-24 |
 | Currency code copied per page (#14, #15) | One shared `_currency_input.html` now used by triage, item-detail and edit. Item-detail no longer strips symbols; edit no longer turns `C$`/`A$` into `C`/`A` | 2026-09-24 |
 
