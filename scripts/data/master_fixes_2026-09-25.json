@@ -1,0 +1,513 @@
+[
+ {
+  "id": 581,
+  "field": "investment_amount",
+  "old": "$54",
+  "new": "£54,000,000",
+  "why": "AMRC COMPASS facility is £54M (themanufacturer.com, compositesuk.co.uk); the million was lost"
+ },
+ {
+  "id": 48,
+  "field": "investment_amount",
+  "old": "$75,000,000",
+  "new": "A$75,000,000",
+  "why": "Metallium's raise is A$75M (its own headline); the currency symbol was dropped"
+ },
+ {
+  "id": 714,
+  "field": "location",
+  "old": "North Bethesda, MD, UDA",
+  "new": "North Bethesda, MD, USA",
+  "why": "typo 'UDA' showed as a junk country in the region filter"
+ },
+ {
+  "id": 156,
+  "field": "location",
+  "old": "Yateley, Hampshire, United Kingdon",
+  "new": "Yateley, Hampshire, United Kingdom",
+  "why": "typo showed as a separate country in the region filter"
+ },
+ {
+  "id": 62,
+  "field": "location",
+  "old": "Pine Bluff, AK, USA",
+  "new": "Pine Bluff, AR, USA",
+  "why": "Pine Bluff is in Arkansas (AR), not Alaska (AK)"
+ },
+ {
+  "id": 1,
+  "field": "title",
+  "old": "",
+  "new": "McNally Capital Acquires ATS, PT6A MRO Specialist",
+  "why": "headline: McNally Capital Acquires PT6A MRO Specialist ATS - ePlaneAI"
+ },
+ {
+  "id": 2,
+  "field": "title",
+  "old": "",
+  "new": "Karman Files for US IPO",
+  "why": "headline: Trive-Backed Space and Defense Firm Karman Files for US IPO"
+ },
+ {
+  "id": 3,
+  "field": "title",
+  "old": "",
+  "new": "McNally Capital Invests in Airforce Turbine Service",
+  "why": "headline: McNally Capital Makes Strategic Investment in Airforce Turbine Service, a Leading Global ..."
+ },
+ {
+  "id": 4,
+  "field": "title",
+  "old": "",
+  "new": "Howard Hughes Acquires Vantage Group Holdings for $2.1B",
+  "why": "headline: Vantage Group Holdings to be acquired by Howard Hughes for $2.1B"
+ },
+ {
+  "id": 5,
+  "field": "title",
+  "old": "",
+  "new": "Nukkleus Acquires Star 26 Capital for $250M",
+  "why": "headline: Nukkleus Inc. Receives Shareholder Approval to Acquire Star 26 Capital Inc."
+ },
+ {
+  "id": 6,
+  "field": "title",
+  "old": "",
+  "new": "Aretum Acquires Veterans Engineering for Federal IT",
+  "why": "headline: Aretum Announces Acquisition of Veterans Engineering, Expanding Federal IT, Cyber, and ..."
+ },
+ {
+  "id": 7,
+  "field": "title",
+  "old": "",
+  "new": "CVC Acquires Smiths Detection for £2B",
+  "why": "headline: CVC To Acquire Smiths Detection For £2 Billion"
+ },
+ {
+  "id": 8,
+  "field": "title",
+  "old": "",
+  "new": "Electrosoft Services Raises Investment from DigitalNet.ai",
+  "why": "headline: Holland & Knight Advises Electrosoft Services in Strategic Investment from DigitalNet.ai"
+ },
+ {
+  "id": 9,
+  "field": "title",
+  "old": "",
+  "new": "Greenbriar Launches Applied Aerospace & Defense",
+  "why": "headline: Greenbriar unveils Applied Aerospace & Defense"
+ },
+ {
+  "id": 10,
+  "field": "title",
+  "old": "",
+  "new": "Synergy ECP Acquires NetServices for Defense IT",
+  "why": "headline: Synergy ECP Expands Defense & Intelligence Capabilities With NetServices Acquisition"
+ },
+ {
+  "id": 11,
+  "field": "title",
+  "old": "",
+  "new": "Hanwha Systems Invests $190M in South Korea Facility",
+  "why": "headline: Hanwha Systems Completes Major Expansion of Gumi Production Facility"
+ },
+ {
+  "id": 12,
+  "field": "title",
+  "old": "",
+  "new": "Palladyne AI Acquires GuideTech, Warnke, and MKR Fabricators",
+  "why": "headline: Palladyne AI Establishes Vertically Integrated U.S. Defense Technology Pioneer Through ..."
+ },
+ {
+  "id": 13,
+  "field": "title",
+  "old": "",
+  "new": "Kratos Opens 60,000 Sq Ft Jerusalem Microwave Facility",
+  "why": "headline: Kratos Opens New 60000 Sq Ft Jerusalem Facility for Microwave Electronics Division"
+ },
+ {
+  "id": 14,
+  "field": "title",
+  "old": "",
+  "new": "Phoenix Tailings Builds New Hampshire Rare Earth Refinery",
+  "why": "headline: Rare earth refinery in N.H. challenges China — in a small way"
+ },
+ {
+  "id": 15,
+  "field": "title",
+  "old": "",
+  "new": "Valinor Enterprises Raises $54M Series A for Defense Tech",
+  "why": "headline: Valinor Enterprises: $54 Million Series A Raised To Expand Defense-Tech Holding Company Model"
+ },
+ {
+  "id": 16,
+  "field": "title",
+  "old": "",
+  "new": "Andreessen Horowitz Raises $15B for Defense, Infrastructure",
+  "why": "headline: Andreessen Horowitz raises $15 billion, as VC firm goes big in infrastructure, defense"
+ },
+ {
+  "id": 17,
+  "field": "title",
+  "old": "",
+  "new": "Arxis Acquires Micro-Tronics for Elastomeric Components",
+  "why": "headline: Arxis buys Arizona-based elastomeric, metal component maker"
+ },
+ {
+  "id": 18,
+  "field": "title",
+  "old": "",
+  "new": "Cambium Raises $100M for Advanced Materials Manufacturing",
+  "why": "headline: Advanced materials firm Cambium raises $100 million"
+ },
+ {
+  "id": 19,
+  "field": "title",
+  "old": "",
+  "new": "Terra Industries Raises $11.75M for African Defense Infrastructure",
+  "why": "headline: Terra Industries Raises $11.75M as Defense Capital Expands Into African Security Infrastructure"
+ },
+ {
+  "id": 20,
+  "field": "title",
+  "old": "",
+  "new": "Harmattan AI Raises $200M Series B, Becomes Unicorn",
+  "why": "headline: Harmattan AI raises $200M Series B led by Dassault Aviation, becomes defense unicorn"
+ },
+ {
+  "id": 21,
+  "field": "title",
+  "old": "",
+  "new": "Aurex Acquires Alpha 2 for Space Cybersecurity",
+  "why": "headline: Aurex Acquires Alpha 2"
+ },
+ {
+  "id": 22,
+  "field": "title",
+  "old": "",
+  "new": "Kratos Defense Opens Alabama Facility for Hypersonic Systems",
+  "why": "headline: Kratos Defense (KTOS) adds 40000-sq-ft facility in Birmingham"
+ },
+ {
+  "id": 23,
+  "field": "title",
+  "old": "",
+  "new": "Velo3D Wins $32.6M Defense Manufacturing Contract",
+  "why": "headline: Velo3D Awarded New $32.6M Contract to Support Defense Manufacturing"
+ },
+ {
+  "id": 24,
+  "field": "title",
+  "old": "",
+  "new": "SkyFi Raises $12.7M in Series A Round",
+  "why": "headline: Space Startup SkyFi Raises $12.7 Million In Series A Round"
+ },
+ {
+  "id": 25,
+  "field": "title",
+  "old": "",
+  "new": "Nukkleus Acquires Star 26 Capital for $21M",
+  "why": "headline: Nukkleus Inc. Completes Strategic Acquisition of Star 26 Capital, Expanding Defense AI and ..."
+ },
+ {
+  "id": 26,
+  "field": "title",
+  "old": "",
+  "new": "StirlingX Raises $11M to Scale UK Drone Operations",
+  "why": "headline: StirlingX Raises $11 Million to Scale Drone Operations in the UK"
+ },
+ {
+  "id": 27,
+  "field": "title",
+  "old": "",
+  "new": "Magnet Defense Acquires Metal Shark",
+  "why": "headline: Magnet Defense acquires Metal Shark"
+ },
+ {
+  "id": 28,
+  "field": "title",
+  "old": "",
+  "new": "Karman Acquires Seemann Composites, Material Sciences for $220M",
+  "why": "headline: Karman Space and Defense acquires Gulfport's Seemann Composites, Material Sciences"
+ },
+ {
+  "id": 29,
+  "field": "title",
+  "old": "",
+  "new": "Conco Invests $98M in Indiana Artillery Facility",
+  "why": "headline: U.S. Army and Conco inaugurate new artillery container facility in Indiana"
+ },
+ {
+  "id": 30,
+  "field": "title",
+  "old": "",
+  "new": "SAU Tech Invests $20M in Arkansas Defense Center",
+  "why": "headline: SAU Tech in Camden announces $20 million expansion for defense manufacturing center of ..."
+ },
+ {
+  "id": 32,
+  "field": "title",
+  "old": "",
+  "new": "Hypersonica Raises $23M for Hypersonic Missiles",
+  "why": "headline: German startup aims to deliver European hypersonic strike by 2029"
+ },
+ {
+  "id": 33,
+  "field": "title",
+  "old": "",
+  "new": "Novaria Group Acquires Plasma Ruggedized Solutions",
+  "why": "headline: Fort Worth's Novaria Group Acquires California-Based Plasma Ruggedized Solutions"
+ },
+ {
+  "id": 34,
+  "field": "title",
+  "old": "",
+  "new": "NHV Acquisition Sparks Belgian Military Security Probe",
+  "why": "headline: Belgian military intelligence probes Chinese-linked acquisition of helicopter company"
+ },
+ {
+  "id": 35,
+  "field": "title",
+  "old": "",
+  "new": "Machina Labs Raises $124M for California Factory",
+  "why": "headline: Machina Labs raises $124 million to scale manufacturing infrastructure"
+ },
+ {
+  "id": 36,
+  "field": "title",
+  "old": "",
+  "new": "Orion Acquires J.E. McAmis for $60M",
+  "why": "headline: Orion acquires J.E. McAmis"
+ },
+ {
+  "id": 37,
+  "field": "title",
+  "old": "",
+  "new": "nLIGHT Raises $175M for Laser Defense Expansion",
+  "why": "headline: nLIGHT Equity Raise Fuels Defense Laser Expansion And Execution Focus"
+ },
+ {
+  "id": 38,
+  "field": "title",
+  "old": "",
+  "new": "Novaria Acquires Plasma Ruggedized Solutions",
+  "why": "headline: Arcline-backed Novaria snaps up coatings provider Plasma Ruggedized Solutions"
+ },
+ {
+  "id": 39,
+  "field": "title",
+  "old": "",
+  "new": "MASNA Ventures Launches $100M Defense VC Fund",
+  "why": "headline: First Saudi Arabian Defense VC Fund Launched"
+ },
+ {
+  "id": 40,
+  "field": "title",
+  "old": "",
+  "new": "RAVE Aerospace Acquired by Kingswood Capital Management",
+  "why": "headline: Connected seatback at the fore as RAVE Aerospace enters new era"
+ },
+ {
+  "id": 41,
+  "field": "title",
+  "old": "",
+  "new": "WCM Invests $17.9M in Kratos Defense",
+  "why": "headline: WCM Investment Management LLC Makes New Investment in Kratos Defense & Security ..."
+ },
+ {
+  "id": 42,
+  "field": "title",
+  "old": "",
+  "new": "CesiumAstro Raises $470M Series C",
+  "why": "headline: CesiumAstro Raises $270M Series C"
+ },
+ {
+  "id": 43,
+  "field": "title",
+  "old": "",
+  "new": "Sodern America Expands Aerospace Operations in Colorado",
+  "why": "headline: Sodern America selects Colorado for aerospace expansion"
+ },
+ {
+  "id": 44,
+  "field": "title",
+  "old": "",
+  "new": "IonQ Acquires Skyloom for Quantum Networking",
+  "why": "headline: IonQ Completes Skyloom Acquisition: Advancing Quantum Networking"
+ },
+ {
+  "id": 45,
+  "field": "title",
+  "old": "",
+  "new": "HKIC Targets $8B for Aerospace, AI Growth",
+  "why": "headline: Hong Kong's US$8 billion wealth fund eyes fintech, aerospace and AI for growth"
+ },
+ {
+  "id": 46,
+  "field": "title",
+  "old": "",
+  "new": "RTX Q4 2025: Defense Demand Drives Record Backlog",
+  "why": "headline: RTX Q4 Deep Dive: Commercial and Defense Demand Drive Momentum, Margin Expansion ... | edited in review: draft claimed 'Invests $10B', which the summary doesn't support; kept to what the source says"
+ },
+ {
+  "id": 47,
+  "field": "title",
+  "old": "",
+  "new": "Century Aluminum Builds First US Smelter in 50 Years",
+  "why": "headline: Century Aluminum Joins EGA Project to Build First U.S. Smelter in Almost 50 Years"
+ },
+ {
+  "id": 48,
+  "field": "title",
+  "old": "",
+  "new": "Metallium Raises A$75M for Critical Minerals Processing",
+  "why": "headline: Metallium Announces Completion of A$75 Million Strategic Capital Raise Led by U.S. Institutions"
+ },
+ {
+  "id": 50,
+  "field": "title",
+  "old": "",
+  "new": "JJG Aero Raises $30M from Norwest",
+  "why": "headline: PE-backed aerospace parts maker JJG Aero raises $30 mn"
+ },
+ {
+  "id": 51,
+  "field": "title",
+  "old": "",
+  "new": "iSpace Raises $729M for Reusable Rockets",
+  "why": "headline: China's iSpace launch firm raises record $729 million for reusable rockets"
+ },
+ {
+  "id": 52,
+  "field": "title",
+  "old": "",
+  "new": "Chapco Opens 150,000 SqFt Connecticut Facility",
+  "why": "headline: Chapco announces new 150000 sqft manufacturing facility. Strengthens support for ..."
+ },
+ {
+  "id": 53,
+  "field": "title",
+  "old": "",
+  "new": "Hanwha Aerospace Builds Artillery Plant in Romania",
+  "why": "headline: South Korea's Hanwha Begins Construction of Artillery Plant in Romania"
+ },
+ {
+  "id": 54,
+  "field": "title",
+  "old": "",
+  "new": "Material Hybrid Manufacturing Raises $7.1M for 3D-Printed Drone Batteries",
+  "why": "headline: Startup Raises Funds To 3D Print Conformal Drone Batteries"
+ },
+ {
+  "id": 55,
+  "field": "title",
+  "old": "",
+  "new": "Curtiss-Wright Reports Record Q4 and Full-Year 2025 Results",
+  "why": "headline: Curtiss-Wright Reports Fourth Quarter and Full-Year 2025 Financial Results | edited in review: draft added '$4.1B in Orders', a figure not on the card"
+ },
+ {
+  "id": 56,
+  "field": "title",
+  "old": "",
+  "new": "Echodyne Opens Washington Radar Manufacturing Facility",
+  "why": "headline: Echodyne to Open Major New Manufacturing Facility to Meet Rapidly Growing Global Demand"
+ },
+ {
+  "id": 57,
+  "field": "title",
+  "old": "",
+  "new": "By Light Acquires Dignitas Technologies for Modeling & Simulation",
+  "why": "headline: By Light Closes Dignitas Technologies Acquisition to Strengthen Modeling & Simulation Portfolio"
+ },
+ {
+  "id": 58,
+  "field": "title",
+  "old": "",
+  "new": "Integrate Raises $17M for Defense Project Management",
+  "why": "headline: Integrate Raises $17M To Modernize Defense Projects"
+ },
+ {
+  "id": 60,
+  "field": "title",
+  "old": "",
+  "new": "NUBURU Acquires Equity Stake in Heckler & Koch",
+  "why": "headline: NUBURU buys strategic equity stake in Heckler & Koch"
+ },
+ {
+  "id": 61,
+  "field": "title",
+  "old": "",
+  "new": "Mecad USA Invests $13.4M in Oklahoma Facility",
+  "why": "headline: Mecad USA Selects Oklahoma's Port of Catoosa for U.S. Headquarters, Bringing nearly 300 Jobs"
+ },
+ {
+  "id": 62,
+  "field": "title",
+  "old": "",
+  "new": "Hanwha Defense Builds $1.3B Munitions Facility in Arkansas",
+  "why": "headline: Defense contractor to build $1.3 billion munitions facility in Pine Bluff"
+ },
+ {
+  "id": 63,
+  "field": "title",
+  "old": "",
+  "new": "AxioAero Group Acquires Airway Aerospace MRO",
+  "why": "headline: AxioAero Group Acquires Airway Aerospace LLC"
+ },
+ {
+  "id": 65,
+  "field": "title",
+  "old": "",
+  "new": "Edson Manufacturing Invests $4M in Connecticut Facility",
+  "why": "headline: After decades of growth, Wolcott fastener manufacturer adds new facility in $4M expansion"
+ },
+ {
+  "id": 66,
+  "field": "title",
+  "old": "",
+  "new": "AAR Expands Oklahoma MRO Facility, Adds 200 Jobs",
+  "why": "headline: AAR expansion brings new jobs and added capacity to OKC aviation"
+ },
+ {
+  "id": 67,
+  "field": "title",
+  "old": "",
+  "new": "AMTEC Opens $21M Wisconsin Munitions Facility",
+  "why": "headline: The Army and AMTEC unveil new production line and testing range in Wisconsin"
+ },
+ {
+  "id": 68,
+  "field": "title",
+  "old": "",
+  "new": "Northwood Space Raises $100M, Wins $49M Space Force Deal",
+  "why": "headline: Northwood Space raises $100 million Series B, lands $49 million Space Force deal"
+ },
+ {
+  "id": 70,
+  "field": "title",
+  "old": "",
+  "new": "Anduril Invests $1B in California Facility",
+  "why": "headline: Governor Newsom highlights Anduril Industries' $1 billion expansion in Southern California"
+ },
+ {
+  "id": 71,
+  "field": "title",
+  "old": "",
+  "new": "Janicki Industries Scouts $200M Montana Facility",
+  "why": "headline: Company confirms East Helena, Butte scouted for possible $200M manufacturing facility"
+ },
+ {
+  "id": 72,
+  "field": "title",
+  "old": "",
+  "new": "Grid Aero Raises $20M Series A for Autonomous Logistics",
+  "why": "headline: Aerospace & Defense Startup Grid Aero Raises $20M Series A to Scale Long-Range ..."
+ },
+ {
+  "id": 74,
+  "field": "title",
+  "old": "",
+  "new": "D-Orbit Raises $128M from Azimut Group",
+  "why": "headline: Azimut Group invests $128 million in D-Orbit"
+ }
+]
