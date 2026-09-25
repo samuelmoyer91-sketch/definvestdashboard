@@ -187,6 +187,21 @@ summarizer prompt (make it emit a city), not in `geocode_locations.py`.
 [app.py:854](src/web/app.py:854) — one-line change to 10 (faster) or 50 (more
 context). Flagged 2026-07-26, never tuned.
 
+### 14. The item-detail page still strips currency symbols — verified 2026-09-24
+[item_detail.html:204](src/web/templates/item_detail.html:204) has its own copy
+of the old `formatCurrencyInput`, the one that turned "€300M" into a bare
+`300,000,000`. That's the bug behind item 0, fixed in `triage.html` in August
+but not here. **Low exposure:** `/accept` only writes when the item isn't
+already accepted, and `/item/N` is reached almost only from Accepted Items. It
+bites only if an *un-accepted* item is accepted from its detail page. The fix is
+to reuse `triage.html`'s `splitCurrency` helper.
+
+### 15. The edit page shows "$ €300,000,000" — verified 2026-09-24
+[edit.html:60](src/web/templates/edit.html:60): the same fixed "$" box the
+triage form had. It's display-only: the page has no amount formatter, so the
+stored symbol survives. Fix: hide the box when the value carries its own
+currency, as `triage.html` now does.
+
 ---
 
 ## EXTERNAL — real, but not verifiable from the repo
@@ -246,6 +261,14 @@ item 7.
 
 - **Should multi-deal roundups be summarized at all**, or detected and routed
   out? Item 4 makes them *possible*; this decides whether they're *wanted*.
+- **Phone triage, next round** (2026-09-24). The basics shipped (see DONE). Not
+  yet built, in order of value:
+  - **C.** Show the AI summary sentence on the closed card, and add a "Quick
+    accept" for cards whose AI fields are already right. Sector and capital
+    type could become tap-to-toggle tags instead of 33 checkboxes.
+  - **D.** Swipe to accept/reject. Needs an undo first — nothing can be undone
+    today — so it only makes sense after C.
+  Sam to decide after a few evenings on the new layout.
 - Editorial "so what" framing per section (2026-03-02).
 - Chart descriptions on the indicators page could tighten further.
 - Map State/District dropdowns are US-congressional-district-based and stay
@@ -268,6 +291,7 @@ item 7.
 | Actions on deprecated Node 20 | Bumped to checkout@v7 / setup-python@v7 / upload-artifact@v7 in `6d81bb2` | 2026-08-08 |
 | Summary failures reported no cause | `_describe_stop` reports `stop_reason` + refusal `category` (`00925e9`) | 2026-08-08 |
 | The `$` deal-indicator regex | Replaced by a named `$amount` pattern — see the note below | 07-26, 07-27, 07-28, 07-29 |
+| Triage unusable on a phone | Phone layout via `@media (max-width: 640px)` in `triage.html` + `base.html`; Accept/Reject pinned to the bottom of an open card; the "$ €" display fixed. Measured at 375px wide | 2026-09-24 |
 
 ### Multi-deal roundups — shipped 2026-08-08, and the framing was wrong
 

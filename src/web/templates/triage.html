@@ -32,6 +32,96 @@
 .item-expanded {
     display: none;
 }
+
+/* Curation form. These were inline styles on every field; they live here so
+   the phone rules at the bottom can override them (an inline style beats any
+   stylesheet rule). */
+.deal-form { background: #f8f9fa; padding: 14px; border-radius: 6px; margin-bottom: 10px; }
+.field-label { display: block; font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #555; }
+.field { width: 100%; padding: 7px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; font-family: inherit; }
+.field-lg { padding: 10px; font-size: 14px; }
+.field-sm { font-size: 12px; }
+.field-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 10px; }
+.currency-prefix {
+    padding: 7px 10px; background: #e9ecef; border: 1px solid #ddd; border-right: none;
+    border-radius: 4px 0 0 4px; font-size: 13px; font-weight: 600; color: #333;
+}
+.currency-prefix[hidden] { display: none; }
+.currency-prefix + .field { border-radius: 0 4px 4px 0; }
+.currency-prefix[hidden] + .field { border-radius: 4px; }
+.check-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px 8px;
+    padding: 6px 10px; background: #f9f9f9; border-radius: 4px;
+}
+.check { display: flex; align-items: center; font-size: 12px; cursor: pointer; }
+.check input { margin-right: 5px; width: 14px; height: 14px; flex-shrink: 0; }
+.preview-body {
+    margin-top: 12px; padding: 12px; background: white; border-radius: 4px;
+    max-height: 350px; overflow-y: auto; font-size: 13px; line-height: 1.7; color: #333;
+}
+
+/* Accept / Reject / Cancel. position: sticky keeps the bar on the bottom edge
+   of the screen for as long as its card is open and in view, then lets it sit
+   in its normal place at the end of the card. The negative margin stretches
+   its background to the card's edges so fields scroll cleanly underneath. */
+.action-bar {
+    position: sticky; bottom: 0; z-index: 5;
+    display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+    background: white; border-top: 1px solid #eee;
+    margin: 0 -20px; padding: 10px 20px;
+}
+
+/* Reject dialog */
+.reject-dialog {
+    background: #fff; border-radius: 8px; padding: 24px; max-width: 420px; width: 90%;
+    /* dvh = the height actually visible between Safari's toolbars; plain vh
+       overshoots it on iPhone. The vh line is the fallback for older browsers. */
+    max-height: 90vh; max-height: 90dvh;
+    overflow-y: auto; box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+.reason { display: flex; align-items: flex-start; gap: 8px; cursor: pointer; font-size: 14px; }
+.reason input { margin-top: 3px; width: 15px; height: 15px; flex-shrink: 0; }
+/* Pinned to the bottom of the dialog, so Reject stays on screen when the
+   reason list is taller than the phone. The bottom offset cancels the
+   dialog's own padding so the bar sits flush with its edge. */
+.dialog-actions {
+    display: flex; gap: 10px; align-items: center; margin-top: 18px;
+    position: sticky; bottom: -24px; background: #fff; padding: 8px 0;
+}
+.queue-note { font-size: 14px; font-weight: 400; color: #666; }
+
+/* Phones */
+@media (max-width: 640px) {
+    /* 16px is the threshold below which iPhone Safari zooms the page on
+       focus — and it does not zoom back out afterwards. */
+    input.field, textarea.field { font-size: 16px; padding: 10px; }
+    .currency-prefix { font-size: 16px; padding: 10px 12px; }
+    .field-label { font-size: 12px; }
+    .deal-form { padding: 10px; }
+    /* Side by side, each field got ~140px — too narrow to read an investor list. */
+    .field-pair { grid-template-columns: 1fr; gap: 10px; }
+    /* Four columns forced the page wider than the phone, which made the phone
+       zoom the whole page out. Two columns, and a finger-sized row each.
+       minmax(0, 1fr) lets a long label wrap instead of widening its column. */
+    .check-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 8px; padding: 4px 8px; }
+    .check { font-size: 14px; line-height: 1.25; min-height: 42px; }
+    .check input { width: 22px; height: 22px; margin-right: 8px; }
+    .preview-body { font-size: 15px; }
+    .summary-field { min-height: 7.5em; }
+    .queue-note { display: block; font-size: 13px; line-height: 1.4; margin-top: 2px; }
+
+    .item-actions { flex-wrap: wrap; }
+    .item-actions .btn-primary { flex: 1; }
+    .action-bar { margin: 0 -14px; padding: 8px 14px; }
+    .action-bar .btn { flex: 1; }
+
+    .reject-dialog { padding: 16px; width: 94%; }
+    .dialog-actions { bottom: -16px; margin-top: 10px; }
+    .dialog-actions button { flex: 1; }
+    .reason { padding: 3px 0; line-height: 1.35; }
+    .reason input { width: 22px; height: 22px; margin-top: 0; }
+    .reject-dialog button { min-height: 44px; }
+}
 </style>
 
 <div class="stats">
@@ -48,7 +138,7 @@
 <h2 style="margin-bottom: 20px;">
     Triage Queue
     {% if showing_count and total_items > showing_count %}
-    <span style="font-size:14px; font-weight:400; color:#666;">
+    <span class="queue-note">
         — showing the {{ showing_count }} most recent of {{ total_items }}; the next ones load as you clear these
     </span>
     {% endif %}
@@ -121,7 +211,7 @@
             <summary style="cursor: pointer; font-weight: 600; color: #5e81ac; font-size: 14px;">
                 📄 Article Preview ({{ "{:,}".format(item.article_content.clean_text | length) }} characters)
             </summary>
-            <div style="margin-top: 12px; padding: 12px; background: white; border-radius: 4px; max-height: 350px; overflow-y: auto; font-size: 13px; line-height: 1.7; color: #333;">
+            <div class="preview-body">
                 {{ item.article_content.clean_text[:6000] }}
                 {% if item.article_content.clean_text | length > 6000 %}
                 <p style="color: #999; margin-top: 12px; font-style: italic;">... (showing first 6,000 characters)</p>
@@ -131,63 +221,59 @@
         {% endif %}
 
         <!-- Curation Form -->
-        <form onsubmit="event.preventDefault(); acceptItem({{ item.id }}, this)">
-            <div style="background: #f8f9fa; padding: 14px; border-radius: 6px; margin-bottom: 10px;">
+        <form id="accept-{{ item.id }}" onsubmit="event.preventDefault(); acceptItem({{ item.id }}, this)">
+            <div class="deal-form">
                 <h4 style="margin-bottom: 8px; color: #333; font-size: 15px;">Edit Deal Information</h4>
 
                 <!-- Title -->
                 <div style="margin-bottom: 10px;">
-                    <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #555;">
+                    <label class="field-label">
                         Title
                         {% if item.ai_extraction and item.ai_extraction.title %}<span class="ai-badge">AI</span>{% endif %}
                     </label>
                     <input type="text" name="title"
                            value="{{ item.ai_extraction.title if item.ai_extraction and item.ai_extraction.title else item.title }}"
-                           {% if item.ai_extraction and item.ai_extraction.title %}class="ai-populated"{% endif %}
-                           style="width: 100%; padding: 7px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;"
+                           class="field{% if item.ai_extraction and item.ai_extraction.title %} ai-populated{% endif %}"
                            placeholder="Edit the deal title">
                 </div>
 
                 <!-- Row 1: Company & Investors -->
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 10px;">
+                <div class="field-pair">
                     <div>
-                        <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #555;">
+                        <label class="field-label">
                             Company
                             {% if item.ai_extraction and item.ai_extraction.company %}<span class="ai-badge">AI</span>{% endif %}
                         </label>
                         <input type="text" name="company"
                                value="{{ item.ai_extraction.company if item.ai_extraction and item.ai_extraction.company else '' }}"
-                               {% if item.ai_extraction and item.ai_extraction.company %}class="ai-populated"{% endif %}
-                               style="width: 100%; padding: 7px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;"
+                               class="field{% if item.ai_extraction and item.ai_extraction.company %} ai-populated{% endif %}"
                                placeholder="e.g., Anduril, Shield AI">
                     </div>
 
                     <div>
-                        <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #555;">
+                        <label class="field-label">
                             Investors / Acquirer
                             {% if item.ai_extraction and item.ai_extraction.investors %}<span class="ai-badge">AI</span>{% endif %}
                         </label>
                         <input type="text" name="investors"
                                value="{{ item.ai_extraction.investors if item.ai_extraction and item.ai_extraction.investors else '' }}"
-                               {% if item.ai_extraction and item.ai_extraction.investors %}class="ai-populated"{% endif %}
-                               style="width: 100%; padding: 7px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;"
+                               class="field{% if item.ai_extraction and item.ai_extraction.investors %} ai-populated{% endif %}"
                                placeholder="e.g., McNally Capital, Andreessen Horowitz">
                     </div>
                 </div>
 
                 <!-- Row 2: Deal Amount & Location -->
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 10px;">
+                <div class="field-pair">
                     <div>
-                        <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #555;">
+                        <label class="field-label">
                             Deal Amount
                             {% if item.ai_extraction and item.ai_extraction.deal_amount %}<span class="ai-badge">AI</span>{% endif %}
                         </label>
                         <div style="display: flex; align-items: center;">
-                            <span style="padding: 7px 10px; background: #e9ecef; border: 1px solid #ddd; border-right: none; border-radius: 4px 0 0 4px; font-size: 13px; font-weight: 600; color: #333;">$</span>
+                            <span class="currency-prefix">$</span>
                             <input type="text" name="investment_amount" inputmode="decimal"
                                    value="{{ item.ai_extraction.deal_amount if item.ai_extraction and item.ai_extraction.deal_amount else '' }}"
-                                   {% if item.ai_extraction and item.ai_extraction.deal_amount %}class="ai-populated"{% endif %}
-                                   style="width: 100%; padding: 7px; border: 1px solid #ddd; border-radius: 0 4px 4px 0; font-size: 13px;"
+                                   class="field{% if item.ai_extraction and item.ai_extraction.deal_amount %} ai-populated{% endif %}"
                                    placeholder="e.g., 100,000,000"
                                    oninput="formatCurrencyInput(this)"
                                    onfocus="formatCurrencyInput(this)">
@@ -195,90 +281,78 @@
                     </div>
 
                     <div>
-                        <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #555;">
+                        <label class="field-label">
                             Location
                             {% if item.ai_extraction and item.ai_extraction.location %}<span class="ai-badge">AI</span>{% endif %}
                         </label>
                         <input type="text" name="location"
                                value="{{ item.ai_extraction.location if item.ai_extraction and item.ai_extraction.location else '' }}"
-                               {% if item.ai_extraction and item.ai_extraction.location %}class="ai-populated"{% endif %}
-                               style="width: 100%; padding: 7px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;"
+                               class="field{% if item.ai_extraction and item.ai_extraction.location %} ai-populated{% endif %}"
                                placeholder="e.g., Austin, TX, USA">
                     </div>
                 </div>
 
                 <!-- Row 3: Capital Type (Multi-select) -->
                 <div style="margin-bottom: 10px;">
-                    <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #555;">
+                    <label class="field-label">
                         Capital Type (select all that apply)
                         {% if item.ai_extraction and item.ai_extraction.capital_sources %}<span class="ai-badge">AI</span>{% endif %}
                     </label>
                     {% set ai_cap_list = item.ai_extraction.capital_sources.split(',') | map('trim') | list if item.ai_extraction and item.ai_extraction.capital_sources else [] %}
-                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px 8px; padding: 6px 10px; background: #f9f9f9; border-radius: 4px;">
-                        <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                    <div class="check-grid">
+                        <label class="check">
                             <input type="checkbox" name="capital_source" value="Seed"
-                                   {% if 'Seed' in ai_cap_list %}checked{% endif %}
-                                   style="margin-right: 5px; width: 14px; height: 14px;">
+                                   {% if 'Seed' in ai_cap_list %}checked{% endif %}>
                             Seed
                         </label>
-                        <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                        <label class="check">
                             <input type="checkbox" name="capital_source" value="Venture Capital"
-                                   {% if 'Venture Capital' in ai_cap_list %}checked{% endif %}
-                                   style="margin-right: 5px; width: 14px; height: 14px;">
+                                   {% if 'Venture Capital' in ai_cap_list %}checked{% endif %}>
                             Venture Capital
                         </label>
-                        <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                        <label class="check">
                             <input type="checkbox" name="capital_source" value="Private Equity"
-                                   {% if 'Private Equity' in ai_cap_list %}checked{% endif %}
-                                   style="margin-right: 5px; width: 14px; height: 14px;">
+                                   {% if 'Private Equity' in ai_cap_list %}checked{% endif %}>
                             Private Equity
                         </label>
-                        <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                        <label class="check">
                             <input type="checkbox" name="capital_source" value="Corporate Venture"
-                                   {% if 'Corporate Venture' in ai_cap_list %}checked{% endif %}
-                                   style="margin-right: 5px; width: 14px; height: 14px;">
+                                   {% if 'Corporate Venture' in ai_cap_list %}checked{% endif %}>
                             Corporate Venture
                         </label>
-                        <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                        <label class="check">
                             <input type="checkbox" name="capital_source" value="Corporate M&A"
-                                   {% if 'Corporate M&A' in ai_cap_list %}checked{% endif %}
-                                   style="margin-right: 5px; width: 14px; height: 14px;">
+                                   {% if 'Corporate M&A' in ai_cap_list %}checked{% endif %}>
                             Corporate M&amp;A
                         </label>
-                        <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                        <label class="check">
                             <input type="checkbox" name="capital_source" value="Government Support"
-                                   {% if 'Government Support' in ai_cap_list or 'Government/Contract' in ai_cap_list %}checked{% endif %}
-                                   style="margin-right: 5px; width: 14px; height: 14px;">
+                                   {% if 'Government Support' in ai_cap_list or 'Government/Contract' in ai_cap_list %}checked{% endif %}>
                             Government Support
                         </label>
-                        <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                        <label class="check">
                             <input type="checkbox" name="capital_source" value="Public Markets"
-                                   {% if 'Public Markets' in ai_cap_list %}checked{% endif %}
-                                   style="margin-right: 5px; width: 14px; height: 14px;">
+                                   {% if 'Public Markets' in ai_cap_list %}checked{% endif %}>
                             Public Markets
                         </label>
-                        <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                        <label class="check">
                             <input type="checkbox" name="capital_source" value="Internal/Self-funded"
-                                   {% if 'Internal/Self-funded' in ai_cap_list %}checked{% endif %}
-                                   style="margin-right: 5px; width: 14px; height: 14px;">
-                            Internal/Self-funded
+                                   {% if 'Internal/Self-funded' in ai_cap_list %}checked{% endif %}>
+                            Internal/<wbr>Self-funded
                         </label>
-                        <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                        <label class="check">
                             <input type="checkbox" name="capital_source" value="Fund Raise"
-                                   {% if 'Fund Raise' in ai_cap_list %}checked{% endif %}
-                                   style="margin-right: 5px; width: 14px; height: 14px;">
+                                   {% if 'Fund Raise' in ai_cap_list %}checked{% endif %}>
                             Fund Raise
                         </label>
-                        <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                        <label class="check">
                             <input type="checkbox" name="capital_source" value="Family Office"
-                                   {% if 'Family Office' in ai_cap_list %}checked{% endif %}
-                                   style="margin-right: 5px; width: 14px; height: 14px;">
+                                   {% if 'Family Office' in ai_cap_list %}checked{% endif %}>
                             Family Office
                         </label>
-                        <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                        <label class="check">
                             <input type="checkbox" name="capital_source" value="Strategic Partner"
-                                   {% if 'Strategic Partner' in ai_cap_list %}checked{% endif %}
-                                   style="margin-right: 5px; width: 14px; height: 14px;">
+                                   {% if 'Strategic Partner' in ai_cap_list %}checked{% endif %}>
                             Strategic Partner
                         </label>
                     </div>
@@ -286,142 +360,120 @@
 
                 <!-- Row 5: Sectors (Multi-select) -->
                 <div style="margin-bottom: 10px;">
-                    <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #555;">
+                    <label class="field-label">
                         Sectors/Technology (select all that apply)
                         {% if item.ai_extraction and (item.ai_extraction.sectors or item.ai_extraction.sector) %}<span class="ai-badge">AI</span>{% endif %}
                     </label>
-                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px 8px; padding: 6px 10px; background: #f9f9f9; border-radius: 4px;">
+                    <div class="check-grid">
                         {% set ai_sectors_new = item.ai_extraction.sectors.split(',') if item.ai_extraction and item.ai_extraction.sectors else [] %}
                         {% set ai_sector = item.ai_extraction.sector if item.ai_extraction and item.ai_extraction.sector else '' %}
-                        <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                        <label class="check">
                             <input type="checkbox" name="sectors" value="Autonomous Systems/Drones"
-                                   {% if 'Autonomous Systems/Drones' in ai_sectors_new or 'Autonomous' in ai_sector or 'Drone' in ai_sector or 'UAV' in ai_sector %}checked{% endif %}
-                                   style="margin-right: 5px; width: 14px; height: 14px;">
-                            Autonomous/Drones
+                                   {% if 'Autonomous Systems/Drones' in ai_sectors_new or 'Autonomous' in ai_sector or 'Drone' in ai_sector or 'UAV' in ai_sector %}checked{% endif %}>
+                            Autonomous/<wbr>Drones
                         </label>
-                        <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                        <label class="check">
                             <input type="checkbox" name="sectors" value="AI/ML"
-                                   {% if 'AI/ML' in ai_sectors_new or 'AI' in ai_sector or 'ML' in ai_sector or 'Machine Learning' in ai_sector or 'Artificial Intelligence' in ai_sector %}checked{% endif %}
-                                   style="margin-right: 5px; width: 14px; height: 14px;">
-                            AI/ML
+                                   {% if 'AI/ML' in ai_sectors_new or 'AI' in ai_sector or 'ML' in ai_sector or 'Machine Learning' in ai_sector or 'Artificial Intelligence' in ai_sector %}checked{% endif %}>
+                            AI/<wbr>ML
                         </label>
-                        <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                        <label class="check">
                             <input type="checkbox" name="sectors" value="Space/Satellites"
-                                   {% if 'Space/Satellites' in ai_sectors_new or 'Space' in ai_sector or 'Satellite' in ai_sector or 'Orbit' in ai_sector %}checked{% endif %}
-                                   style="margin-right: 5px; width: 14px; height: 14px;">
-                            Space/Satellites
+                                   {% if 'Space/Satellites' in ai_sectors_new or 'Space' in ai_sector or 'Satellite' in ai_sector or 'Orbit' in ai_sector %}checked{% endif %}>
+                            Space/<wbr>Satellites
                         </label>
-                        <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                        <label class="check">
                             <input type="checkbox" name="sectors" value="Aerospace"
-                                   {% if 'Aerospace' in ai_sectors_new or 'Aerospace' in ai_sector or 'Aircraft' in ai_sector or 'Aviation' in ai_sector %}checked{% endif %}
-                                   style="margin-right: 5px; width: 14px; height: 14px;">
+                                   {% if 'Aerospace' in ai_sectors_new or 'Aerospace' in ai_sector or 'Aircraft' in ai_sector or 'Aviation' in ai_sector %}checked{% endif %}>
                             Aerospace
                         </label>
-                        <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                        <label class="check">
                             <input type="checkbox" name="sectors" value="Cybersecurity"
-                                   {% if 'Cybersecurity' in ai_sectors_new or 'Cyber' in ai_sector or 'Security' in ai_sector %}checked{% endif %}
-                                   style="margin-right: 5px; width: 14px; height: 14px;">
+                                   {% if 'Cybersecurity' in ai_sectors_new or 'Cyber' in ai_sector or 'Security' in ai_sector %}checked{% endif %}>
                             Cybersecurity
                         </label>
-                        <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                        <label class="check">
                             <input type="checkbox" name="sectors" value="Advanced Materials"
-                                   {% if 'Advanced Materials' in ai_sectors_new or 'Material' in ai_sector or 'Composite' in ai_sector %}checked{% endif %}
-                                   style="margin-right: 5px; width: 14px; height: 14px;">
+                                   {% if 'Advanced Materials' in ai_sectors_new or 'Material' in ai_sector or 'Composite' in ai_sector %}checked{% endif %}>
                             Advanced Materials
                         </label>
-                        <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                        <label class="check">
                             <input type="checkbox" name="sectors" value="Semiconductors/Electronics"
-                                   {% if 'Semiconductors/Electronics' in ai_sectors_new or 'Semiconductor' in ai_sector or 'Chip' in ai_sector or 'Electronics' in ai_sector %}checked{% endif %}
-                                   style="margin-right: 5px; width: 14px; height: 14px;">
+                                   {% if 'Semiconductors/Electronics' in ai_sectors_new or 'Semiconductor' in ai_sector or 'Chip' in ai_sector or 'Electronics' in ai_sector %}checked{% endif %}>
                             Semiconductors
                         </label>
-                        <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                        <label class="check">
                             <input type="checkbox" name="sectors" value="Manufacturing/Production"
-                                   {% if 'Manufacturing/Production' in ai_sectors_new or 'Manufacturing' in ai_sector or 'Production' in ai_sector or 'Factory' in ai_sector %}checked{% endif %}
-                                   style="margin-right: 5px; width: 14px; height: 14px;">
+                                   {% if 'Manufacturing/Production' in ai_sectors_new or 'Manufacturing' in ai_sector or 'Production' in ai_sector or 'Factory' in ai_sector %}checked{% endif %}>
                             Manufacturing
                         </label>
-                        <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                        <label class="check">
                             <input type="checkbox" name="sectors" value="Software/IT"
-                                   {% if 'Software/IT' in ai_sectors_new or 'Software' in ai_sector or 'IT' in ai_sector or 'Cloud' in ai_sector %}checked{% endif %}
-                                   style="margin-right: 5px; width: 14px; height: 14px;">
-                            Software/IT
+                                   {% if 'Software/IT' in ai_sectors_new or 'Software' in ai_sector or 'IT' in ai_sector or 'Cloud' in ai_sector %}checked{% endif %}>
+                            Software/<wbr>IT
                         </label>
-                        <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                        <label class="check">
                             <input type="checkbox" name="sectors" value="Munitions/Weapons"
-                                   {% if 'Munitions/Weapons' in ai_sectors_new or 'Munitions' in ai_sector or 'Weapon' in ai_sector or 'Missile' in ai_sector %}checked{% endif %}
-                                   style="margin-right: 5px; width: 14px; height: 14px;">
-                            Munitions/Weapons
+                                   {% if 'Munitions/Weapons' in ai_sectors_new or 'Munitions' in ai_sector or 'Weapon' in ai_sector or 'Missile' in ai_sector %}checked{% endif %}>
+                            Munitions/<wbr>Weapons
                         </label>
-                        <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                        <label class="check">
                             <input type="checkbox" name="sectors" value="Communications"
-                                   {% if 'Communications' in ai_sectors_new or 'Communication' in ai_sector or 'Telecom' in ai_sector or 'Network' in ai_sector %}checked{% endif %}
-                                   style="margin-right: 5px; width: 14px; height: 14px;">
+                                   {% if 'Communications' in ai_sectors_new or 'Communication' in ai_sector or 'Telecom' in ai_sector or 'Network' in ai_sector %}checked{% endif %}>
                             Communications
                         </label>
-                        <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                        <label class="check">
                             <input type="checkbox" name="sectors" value="Electronic Warfare"
-                                   {% if 'Electronic Warfare' in ai_sectors_new or 'Electronic Warfare' in ai_sector or 'EW' in ai_sector or 'Jamming' in ai_sector %}checked{% endif %}
-                                   style="margin-right: 5px; width: 14px; height: 14px;">
+                                   {% if 'Electronic Warfare' in ai_sectors_new or 'Electronic Warfare' in ai_sector or 'EW' in ai_sector or 'Jamming' in ai_sector %}checked{% endif %}>
                             Electronic Warfare
                         </label>
-                        <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                        <label class="check">
                             <input type="checkbox" name="sectors" value="Quantum"
-                                   {% if 'Quantum' in ai_sectors_new or 'Quantum' in ai_sector %}checked{% endif %}
-                                   style="margin-right: 5px; width: 14px; height: 14px;">
+                                   {% if 'Quantum' in ai_sectors_new or 'Quantum' in ai_sector %}checked{% endif %}>
                             Quantum
                         </label>
-                        <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                        <label class="check">
                             <input type="checkbox" name="sectors" value="Sensors/ISR"
-                                   {% if 'Sensors/ISR' in ai_sectors_new or 'Sensor' in ai_sector or 'Radar' in ai_sector or 'ISR' in ai_sector %}checked{% endif %}
-                                   style="margin-right: 5px; width: 14px; height: 14px;">
-                            Sensors/ISR
+                                   {% if 'Sensors/ISR' in ai_sectors_new or 'Sensor' in ai_sector or 'Radar' in ai_sector or 'ISR' in ai_sector %}checked{% endif %}>
+                            Sensors/<wbr>ISR
                         </label>
-                        <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                        <label class="check">
                             <input type="checkbox" name="sectors" value="Propulsion/Engines"
-                                   {% if 'Propulsion/Engines' in ai_sectors_new or 'Propulsion' in ai_sector or 'Engine' in ai_sector %}checked{% endif %}
-                                   style="margin-right: 5px; width: 14px; height: 14px;">
-                            Propulsion/Engines
+                                   {% if 'Propulsion/Engines' in ai_sectors_new or 'Propulsion' in ai_sector or 'Engine' in ai_sector %}checked{% endif %}>
+                            Propulsion/<wbr>Engines
                         </label>
-                        <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                        <label class="check">
                             <input type="checkbox" name="sectors" value="Maritime/Naval"
-                                   {% if 'Maritime/Naval' in ai_sectors_new or 'Maritime' in ai_sector or 'Naval' in ai_sector or 'Ship' in ai_sector %}checked{% endif %}
-                                   style="margin-right: 5px; width: 14px; height: 14px;">
-                            Maritime/Naval
+                                   {% if 'Maritime/Naval' in ai_sectors_new or 'Maritime' in ai_sector or 'Naval' in ai_sector or 'Ship' in ai_sector %}checked{% endif %}>
+                            Maritime/<wbr>Naval
                         </label>
-                        <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                        <label class="check">
                             <input type="checkbox" name="sectors" value="Ground Vehicles"
-                                   {% if 'Ground Vehicles' in ai_sectors_new or 'Vehicle' in ai_sector or 'Armored' in ai_sector %}checked{% endif %}
-                                   style="margin-right: 5px; width: 14px; height: 14px;">
+                                   {% if 'Ground Vehicles' in ai_sectors_new or 'Vehicle' in ai_sector or 'Armored' in ai_sector %}checked{% endif %}>
                             Ground Vehicles
                         </label>
-                        <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                        <label class="check">
                             <input type="checkbox" name="sectors" value="Critical Minerals"
-                                   {% if 'Critical Minerals' in ai_sectors_new or 'Mineral' in ai_sector or 'Rare Earth' in ai_sector %}checked{% endif %}
-                                   style="margin-right: 5px; width: 14px; height: 14px;">
+                                   {% if 'Critical Minerals' in ai_sectors_new or 'Mineral' in ai_sector or 'Rare Earth' in ai_sector %}checked{% endif %}>
                             Critical Minerals
                         </label>
-                        <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                        <label class="check">
                             <input type="checkbox" name="sectors" value="Energy/Power"
-                                   {% if 'Energy/Power' in ai_sectors_new or 'Energy' in ai_sector or 'Nuclear' in ai_sector or 'Battery' in ai_sector %}checked{% endif %}
-                                   style="margin-right: 5px; width: 14px; height: 14px;">
-                            Energy/Power
+                                   {% if 'Energy/Power' in ai_sectors_new or 'Energy' in ai_sector or 'Nuclear' in ai_sector or 'Battery' in ai_sector %}checked{% endif %}>
+                            Energy/<wbr>Power
                         </label>
-                        <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                        <label class="check">
                             <input type="checkbox" name="sectors" value="Logistics/Sustainment"
-                                   {% if 'Logistics/Sustainment' in ai_sectors_new or 'Logistics' in ai_sector or 'Sustainment' in ai_sector or 'MRO' in ai_sector %}checked{% endif %}
-                                   style="margin-right: 5px; width: 14px; height: 14px;">
-                            Logistics/Sustainment
+                                   {% if 'Logistics/Sustainment' in ai_sectors_new or 'Logistics' in ai_sector or 'Sustainment' in ai_sector or 'MRO' in ai_sector %}checked{% endif %}>
+                            Logistics/<wbr>Sustainment
                         </label>
-                        <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
+                        <label class="check">
                             <input type="checkbox" name="sectors" value="Biotech/Medical"
-                                   {% if 'Biotech/Medical' in ai_sectors_new or 'Biotech' in ai_sector or 'Medical' in ai_sector %}checked{% endif %}
-                                   style="margin-right: 5px; width: 14px; height: 14px;">
-                            Biotech/Medical
+                                   {% if 'Biotech/Medical' in ai_sectors_new or 'Biotech' in ai_sector or 'Medical' in ai_sector %}checked{% endif %}>
+                            Biotech/<wbr>Medical
                         </label>
-                        <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
-                            <input type="checkbox" name="sectors" value="Other"
-                                   style="margin-right: 5px; width: 14px; height: 14px;">
+                        <label class="check">
+                            <input type="checkbox" name="sectors" value="Other">
                             Other
                         </label>
                     </div>
@@ -429,57 +481,61 @@
 
                 <!-- Row 6: Summary -->
                 <div style="margin-bottom: 10px;">
-                    <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #555;">
+                    <label class="field-label">
                         Summary
                         {% if item.ai_extraction and item.ai_extraction.strategic_significance %}<span class="ai-badge">AI</span>{% endif %}
                     </label>
                     <textarea name="summary" rows="2"
-                              {% if item.ai_extraction and item.ai_extraction.strategic_significance %}class="ai-populated"{% endif %}
-                              style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; font-family: inherit;"
+                              class="field field-lg summary-field{% if item.ai_extraction and item.ai_extraction.strategic_significance %} ai-populated{% endif %}"
                               placeholder="Brief summary of the deal...">{{ item.ai_extraction.strategic_significance if item.ai_extraction and item.ai_extraction.strategic_significance else '' }}</textarea>
                 </div>
 
                 <!-- Row 7: Internal Notes -->
                 <div style="margin-bottom: 10px;">
-                    <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #555;">
+                    <label class="field-label">
                         Internal Notes
                     </label>
                     <textarea name="notes" rows="1"
-                              style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; font-family: inherit;"
+                              class="field field-lg"
                               placeholder="Any notes for yourself (not public)..."></textarea>
                 </div>
 
                 <!-- Row 8: Source URLs -->
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <div class="field-pair" style="margin-bottom: 0;">
                     <div>
-                        <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #555;">
+                        <label class="field-label">
                             Source URL (override original)
                         </label>
                         <input type="url" name="source_url"
                                value="{{ item.canonical_url }}"
-                               style="width: 100%; padding: 7px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px;"
+                               class="field field-sm"
                                placeholder="https://...">
                         <div style="font-size: 10px; color: #888; margin-top: 2px;">Pre-filled from original article. Replace if you found a better source.</div>
                     </div>
                     <div>
-                        <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #555;">
+                        <label class="field-label">
                             Additional Source (optional)
                         </label>
                         <input type="url" name="additional_source_url"
                                value=""
-                               style="width: 100%; padding: 7px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px;"
+                               class="field field-sm"
                                placeholder="https://...">
                     </div>
                 </div>
             </div>
-
-            <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
-                <button type="submit" class="btn btn-primary">✓ Accept</button>
-                <button type="button" onclick="toggleReview({{ item.id }})" class="btn btn-secondary">Cancel</button>
-            </div>
         </form>
-        <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 6px;">
+
+        <!-- The three decisions, pinned to the bottom of the screen while this
+             card is open so they are reachable without scrolling past every
+             field (see .action-bar). It sits outside the form so it can stick
+             for the whole card; form="accept-N" keeps Accept — and Enter in a
+             text field — submitting that form. -->
+        <div class="action-bar">
+            <button type="submit" form="accept-{{ item.id }}" class="btn btn-primary">✓ Accept</button>
             <button type="button" onclick="rejectItem({{ item.id }})" class="btn btn-danger">✗ Reject</button>
+            <button type="button" onclick="toggleReview({{ item.id }})" class="btn btn-secondary">Cancel</button>
+        </div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 6px;">
             <button type="button" onclick="toggleSplit({{ item.id }})" class="btn btn-secondary">⑂ Re-do as separate deals</button>
             <a href="{{ item.canonical_url }}" target="_blank" class="btn btn-link">View Original</a>
         </div>
@@ -491,13 +547,13 @@
         <form id="split-{{ item.id }}" method="post" action="/split/{{ item.id }}"
               onsubmit="var b=this.querySelector('button[type=submit]'); b.disabled=true; b.textContent='Working…';"
               style="display: none; margin-top: 8px; padding: 10px; background: #f7f7f9; border: 1px solid #ddd; border-radius: 4px;">
-            <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 4px; color: #555;">
+            <label class="field-label">
                 One deal per line (or separate them with semicolons) — each becomes its own card,
                 re-extracted to cover only that deal.
             </label>
             <textarea name="focuses" rows="3" required
                       placeholder="the $135M Texas and New Hampshire munitions investment&#10;the $300M Hägglunds Sweden combat vehicle expansion"
-                      style="width: 100%; padding: 7px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px; font-family: inherit;"></textarea>
+                      class="field field-sm"></textarea>
             <div style="font-size: 10px; color: #888; margin: 4px 0 6px;">
                 The first line replaces this card; the rest are added to the queue. Takes a few seconds per deal.
             </div>
@@ -676,6 +732,11 @@ function formatCurrencyInput(input) {
     // submitted as a bare number and stored as US dollars.
     const [marker, value] = splitCurrency(input.value);
     const keep = (formatted) => { input.value = marker ? marker + formatted : formatted; };
+    // The fixed "$" box in front of the field means "no currency given, so
+    // US dollars" (the server adds the same "$"). Hide it once the value names
+    // its own currency, or it reads "$ €300,000,000".
+    const prefix = input.previousElementSibling;
+    if (prefix && prefix.classList.contains('currency-prefix')) prefix.hidden = !!marker;
 
     // If it looks like AI shorthand (e.g., "$300M"), parse it first
     if (/[KMBT]/i.test(value)) {
@@ -711,7 +772,7 @@ function formatCurrencyInput(input) {
 
 <!-- Reject reason modal -->
 <div id="reject-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:1000; align-items:center; justify-content:center;">
-    <div style="background:#fff; border-radius:8px; padding:24px; max-width:420px; width:90%; box-shadow:0 4px 20px rgba(0,0,0,0.2);">
+    <div class="reject-dialog">
         <h3 style="margin:0 0 4px; font-size:16px;">Why are you rejecting this?</h3>
         <p style="margin:0 0 14px; font-size:12px; color:#888;">Check all that apply.</p>
         <input type="hidden" id="reject-modal-item-id">
@@ -726,18 +787,18 @@ function formatCurrencyInput(input) {
                 ('Duplicate', 'Already tracked')
             ] %}
             {% for value, hint in reject_reasons %}
-            <label style="display:flex; align-items:flex-start; gap:8px; cursor:pointer; font-size:14px;">
-                <input type="checkbox" name="reject-reason" value="{{ value }}" style="margin-top:3px; width:15px; height:15px; flex-shrink:0;">
+            <label class="reason">
+                <input type="checkbox" name="reject-reason" value="{{ value }}">
                 <span><strong>{{ value }}</strong><br><span style="font-size:11px; color:#999;">{{ hint }}</span></span>
             </label>
             {% endfor %}
-            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:14px; padding:7px 8px; background:#f4f7fb; border-radius:5px; border:1px solid #dce4ef;">
-                <input type="checkbox" name="reject-reason" value="International (higher bar)" style="width:15px; height:15px; flex-shrink:0;">
+            <label class="reason" style="align-items:center; padding:7px 8px; background:#f4f7fb; border-radius:5px; border:1px solid #dce4ef;">
+                <input type="checkbox" name="reject-reason" value="International (higher bar)" style="margin-top:0;">
                 <span>🌐 <strong>International</strong> <span style="font-size:11px; color:#999;">— stricter bar (killed here, might keep if US)</span></span>
             </label>
-            <input type="text" id="reject-modal-custom" placeholder="Other / note (optional)…" style="padding:7px 10px; border:1px solid #ccc; border-radius:4px; font-size:14px; margin-top:2px;">
+            <input type="text" id="reject-modal-custom" placeholder="Other / note (optional)…" class="field" style="border-color:#ccc; margin-top:2px;">
         </div>
-        <div style="display:flex; gap:10px; margin-top:18px; align-items:center;">
+        <div class="dialog-actions">
             <button onclick="submitReject()" class="btn btn-danger">Reject</button>
             <button onclick="document.getElementById('reject-modal').style.display='none'" style="background:none; border:none; color:#888; cursor:pointer; font-size:13px;">Cancel</button>
         </div>
