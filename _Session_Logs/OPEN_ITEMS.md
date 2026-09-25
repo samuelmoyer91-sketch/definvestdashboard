@@ -473,6 +473,7 @@ item 7.
 | Duplicate matching caught 1/27 | Reworked matcher + "Not duplicates" (items 2+3) | 2026-09-25 |
 | Stale "pipeline failed" issues | Closed #1, #2, #5–#8 with a note | 2026-09-25 |
 | No way to retry refused articles | `reextract_items.py --refused [--apply]` | 2026-09-24 |
+| Indicator charts: axes showed one year; 3 titles on the wrong data; titles read as the next chart's | `04c8403`: one tick per year; year read from the date string (UTC parse labelled Jan points as the prior year); ADEFNO/ADAPNO/DGORDER retitled; each chart is a titled card. Checked locally at 1280px and 375px. **Live check pending the push + publish** | 2026-09-25 |
 | Currency code copied per page (#14, #15) | One shared `_currency_input.html` now used by triage, item-detail and edit. Item-detail no longer strips symbols; edit no longer turns `C$`/`A$` into `C`/`A` | 2026-09-24 |
 
 ### Multi-deal roundups — shipped 2026-08-08, and the framing was wrong

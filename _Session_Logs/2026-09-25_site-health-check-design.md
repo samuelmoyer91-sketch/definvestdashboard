@@ -57,3 +57,31 @@ Decisions I made:
   `gh auth git-credential` (gh is logged in with repo+workflow scope).
 
 Close-out: code, data, publish, issues and logs are all pushed.
+
+## Indicators charts (Sam: "x axes look funny, not showing years clearly";
+## "confusing which title belongs to which chart")
+Committed `04c8403`; not yet pushed or published.
+- **Axis.** 11 of 17 charts showed only their first year. The old label
+  callback blanked any label whose previous *data point* had the same year;
+  Chart.js then thinned the ticks and kept mostly blanks. It now keeps one
+  tick per year (`afterBuildTicks`), and every other year on phones.
+- **Found on the way:** labels came from `new Date("2019-01-01")`, which is
+  UTC midnight, so Dec 31 2018 in US time zones. Charts began "2018", and every
+  year label sat one month late. The year is now read from the string.
+- **Three titles were on the wrong data.** "Defense Capital Goods Orders"
+  plotted DGORDER (all durable goods, ~$300B/mo, about 20x the defense figure),
+  and "Defense Aircraft Orders" plotted ADEFNO (defense capital goods). Sam's
+  capital-goods description moved to ADEFNO; DGORDER is now "Durable Goods
+  Orders (All Industries)" under Macro Environment; ADAPNO is "Defense
+  Aircraft & Parts Orders". The data files were always named correctly; only
+  the page's titles were swapped.
+- **Title placement.** The title sat in the grey notes box beside the chart.
+  On phones that box stacks *below* the chart, so each title sat directly
+  above the next chart. Each indicator is now one white card: title, then
+  chart, then notes (beside the chart on desktop). Notes text dropped to 14px
+  so the chart leads.
+- Stylesheet link on this page carries a content hash. Cloudflare serves CSS
+  with a 4-hour browser cache, and the new markup would look broken on the
+  old stylesheet.
+- Testing note: with the browser pane hidden, lazy charts never load. I used a
+  scratchpad copy that stubs IntersectionObserver to fire at once.
