@@ -275,6 +275,20 @@ summarizer prompt (make it emit a city), not in `geocode_locations.py`.
 [app.py:854](src/web/app.py:854) — one-line change to 10 (faster) or 50 (more
 context). Flagged 2026-07-26, never tuned.
 
+
+### 16. Private-capital charts stop at 2024 — verified 2026-09-25
+The live `vc_defense.json`, `ma_defense.json` and `public_defense_companies.json`
+all end at 2024-12-31. They come from a hand-maintained Excel file
+(`src/data_fetchers/private_capital_fetcher.py`), so nothing refreshes them
+automatically, and their `last_updated` stamp (the time the fetch ran) says
+"today". Needs the 2025 figures entered once they're published. The FRED and
+market series are current (monthly through Jul/Aug, quarterly through Q2,
+daily through yesterday).
+
+### 17. Deals page is 2.3 MB of HTML — verified 2026-09-25
+`/deals/` renders all 945 cards in one page. That's fine on wifi and slow on a
+phone, and it grows by ~150–180 deals a month. Not urgent. Worth watching as
+part of a site health check.
 ---
 
 ## EXTERNAL — real, but not verifiable from the repo
