@@ -57,9 +57,10 @@
                 <div>
                     <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #555;">Deal Amount</label>
                     <div style="display: flex; align-items: center;">
-                        <span style="padding: 7px 10px; background: #e9ecef; border: 1px solid #ddd; border-right: none; border-radius: 4px 0 0 4px; font-size: 13px; font-weight: 600; color: #333;">$</span>
+                        <span class="currency-prefix" style="padding: 7px 10px; background: #e9ecef; border: 1px solid #ddd; border-right: none; border-radius: 4px 0 0 4px; font-size: 13px; font-weight: 600; color: #333;">$</span>
                         <input type="text" name="investment_amount" inputmode="decimal"
-                               value="{{ master.investment_amount.replace('$', '') if master.investment_amount else '' }}"
+                               value="{{ master.investment_amount or '' }}"
+                               oninput="formatCurrencyInput(this)"
                                style="width: 100%; padding: 7px; border: 1px solid #ddd; border-radius: 0 4px 4px 0; font-size: 13px;"
                                placeholder="e.g., 100,000,000">
                     </div>
@@ -189,4 +190,14 @@
         </div>
     </form>
 </div>
+{% include "_currency_input.html" %}
+<script>
+// Hide the "$" box if the stored amount names its own currency. Deliberately
+// not formatCurrencyInput here: that would rewrite the saved value on load
+// (a stored "Undisclosed" would become blank) before anyone has touched it.
+(function () {
+    const input = document.querySelector('input[name="investment_amount"]');
+    input.previousElementSibling.hidden = !!splitCurrency(input.value)[0];
+})();
+</script>
 {% endblock %}

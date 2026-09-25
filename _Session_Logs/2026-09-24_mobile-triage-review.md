@@ -67,3 +67,16 @@ scrolling an inner box instead of the page.
 
 ## Not yet verified
 Nobody has tried it on a real iPhone. That's the real test, once it's deployed.
+
+## Later: reject popup trimmed, currency forms unified
+- Reject reasons: International dropped; Below threshold + Insufficient detail
+  merged as "Below threshold / too thin"; "Not a capital event" (most used)
+  moved last, next to the Reject button. Old rejections keep their old labels.
+- Currency: the amount-field JS existed in three copies. Now one shared
+  `_currency_input.html`. Closes OPEN_ITEMS #14 (item-detail stripped € £) and
+  #15 (edit showed "$ €…"), plus a bug found on the way: edit's
+  `.replace('$','')` turned `C$10M` into `C10M`. The edit page deliberately
+  does NOT reformat on load, so a stored "Undisclosed" isn't blanked unless
+  someone edits the field. Formatter checked in node against $, €, £, C$, A$,
+  US$, bare numbers.
+- Still open: OPEN_ITEMS #0, the 74 European deals stored as dollars. Next.

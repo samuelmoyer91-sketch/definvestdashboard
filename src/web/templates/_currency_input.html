@@ -1,0 +1,96 @@
+{#- Shared by every form with an amount field: triage.html, item_detail.html,
+    edit.html. There used to be a copy per page, and when the triage copy was
+    fixed (2026-08) the item-detail copy kept silently stripping currency
+    symbols. One copy means one fix.
+
+    Markup contract: the amount <input> calls formatCurrencyInput(this), and
+    may be preceded by a <span class="currency-prefix">$</span>, which is
+    hidden whenever the value names its own currency. -#}
+<script>
+// Currency markers this form understands, longest-first so "US$" beats "$".
+// Kept deliberately in step with FX_RATES in src/utils/dedup.py: conversion to
+// USD happens at DISPLAY time from whatever marker survives in the stored
+// string, so a marker dropped here becomes a deal silently recorded as US
+// dollars — which is how 74 European deals ended up stored as bare numbers,
+// some of them a millionth of their real value.
+const CURRENCY_RE = /^\s*(US\$|C\$|A\$|EUR|GBP|CAD|AUD|JPY|INR|ILS|[€£¥₹₪$])\s*/i;
+
+// -> [marker, rest]. marker is '' when the value carries none.
+function splitCurrency(value) {
+    const m = value.match(CURRENCY_RE);
+    return m ? [m[1], value.slice(m[0].length)] : ['', value.trim()];
+}
+
+function parseDealAmount(value) {
+    // Strip ANY currency marker, not just "$". Stripping only "$" left a
+    // leading "€" in place, which made the anchored shorthand match below fail
+    // and silently dropped the magnitude: "€300 million" became 300.
+    value = splitCurrency(value)[1].trim();
+
+    // Handle shorthand: $300M, $4.7B, $1.5T, $500K
+    const shorthandMatch = value.match(/^([\d,.]+)\s*([KMBT])/i);
+    if (shorthandMatch) {
+        let num = parseFloat(shorthandMatch[1].replace(/,/g, ''));
+        const suffix = shorthandMatch[2].toUpperCase();
+        const multipliers = { 'K': 1e3, 'M': 1e6, 'B': 1e9, 'T': 1e12 };
+        if (multipliers[suffix]) {
+            num *= multipliers[suffix];
+        }
+        return num;
+    }
+
+    // Handle plain numbers (possibly with commas)
+    const cleaned = value.replace(/[^0-9.]/g, '');
+    const num = parseFloat(cleaned);
+    return isNaN(num) ? null : num;
+}
+
+function formatNumberWithCommas(num) {
+    const parts = num.toString().split('.');
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    return parts.join('.');
+}
+
+function formatCurrencyInput(input) {
+    // Hold the currency marker aside and put it back afterwards. The old code
+    // stripped it along with everything else non-numeric, so a euro amount was
+    // submitted as a bare number and stored as US dollars.
+    const [marker, value] = splitCurrency(input.value);
+    const keep = (formatted) => { input.value = marker ? marker + formatted : formatted; };
+    // The fixed "$" box in front of the field means "no currency given, so
+    // US dollars" (the server adds the same "$"). Hide it once the value names
+    // its own currency, or it reads "$ €300,000,000".
+    const prefix = input.previousElementSibling;
+    if (prefix && prefix.classList.contains('currency-prefix')) prefix.hidden = !!marker;
+
+    // If it looks like AI shorthand (e.g., "$300M"), parse it first
+    if (/[KMBT]/i.test(value)) {
+        const parsed = parseDealAmount(value);
+        if (parsed !== null) {
+            keep(formatNumberWithCommas(parsed));
+            return;
+        }
+    }
+
+    // Strip everything except digits, decimal, and commas
+    let cleaned = value.replace(/[^0-9.,]/g, '');
+
+    // Remove commas to get raw number, then reformat
+    let raw = cleaned.replace(/,/g, '');
+
+    // Allow trailing decimal or decimal with digits
+    if (raw === '' || raw === '.') {
+        keep(raw);
+        return;
+    }
+
+    const decimalIndex = raw.indexOf('.');
+    if (decimalIndex !== -1) {
+        const intPart = raw.substring(0, decimalIndex);
+        const decPart = raw.substring(decimalIndex);
+        keep((intPart ? formatNumberWithCommas(parseInt(intPart)) : '0') + decPart);
+    } else {
+        keep(formatNumberWithCommas(parseInt(raw)));
+    }
+}
+</script>

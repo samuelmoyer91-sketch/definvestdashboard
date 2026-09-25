@@ -187,21 +187,6 @@ summarizer prompt (make it emit a city), not in `geocode_locations.py`.
 [app.py:854](src/web/app.py:854) — one-line change to 10 (faster) or 50 (more
 context). Flagged 2026-07-26, never tuned.
 
-### 14. The item-detail page still strips currency symbols — verified 2026-09-24
-[item_detail.html:204](src/web/templates/item_detail.html:204) has its own copy
-of the old `formatCurrencyInput`, the one that turned "€300M" into a bare
-`300,000,000`. That's the bug behind item 0, fixed in `triage.html` in August
-but not here. **Low exposure:** `/accept` only writes when the item isn't
-already accepted, and `/item/N` is reached almost only from Accepted Items. It
-bites only if an *un-accepted* item is accepted from its detail page. The fix is
-to reuse `triage.html`'s `splitCurrency` helper.
-
-### 15. The edit page shows "$ €300,000,000" — verified 2026-09-24
-[edit.html:60](src/web/templates/edit.html:60): the same fixed "$" box the
-triage form had. It's display-only: the page has no amount formatter, so the
-stored symbol survives. Fix: hide the box when the value carries its own
-currency, as `triage.html` now does.
-
 ---
 
 ## EXTERNAL — real, but not verifiable from the repo
@@ -292,6 +277,7 @@ item 7.
 | Summary failures reported no cause | `_describe_stop` reports `stop_reason` + refusal `category` (`00925e9`) | 2026-08-08 |
 | The `$` deal-indicator regex | Replaced by a named `$amount` pattern — see the note below | 07-26, 07-27, 07-28, 07-29 |
 | Triage unusable on a phone | Phone layout via `@media (max-width: 640px)` in `triage.html` + `base.html`; Accept/Reject pinned to the bottom of an open card; the "$ €" display fixed. Measured at 375px wide | 2026-09-24 |
+| Currency code copied per page (#14, #15) | One shared `_currency_input.html` now used by triage, item-detail and edit. Item-detail no longer strips symbols; edit no longer turns `C$`/`A$` into `C`/`A` | 2026-09-24 |
 
 ### Multi-deal roundups — shipped 2026-08-08, and the framing was wrong
 
