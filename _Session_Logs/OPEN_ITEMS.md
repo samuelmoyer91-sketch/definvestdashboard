@@ -51,30 +51,34 @@ companies"), which has not been observed. Deliberately not reworded.
 
 ## LIVE — verified 2026-08-08, items 0/5/6 re-verified 2026-08-12
 
-### 0. Repair the 74 European deals stored in the wrong currency
-Opened 2026-08-08. The *cause* is fixed (`337d21e`); the **existing data is
-not**.
+### 0. European deals stored in the wrong currency — PARTLY DONE 2026-09-24
+The *cause* was fixed 2026-08 (`337d21e`), and every form now shares one
+formatter (`_currency_input.html`). **Data repair, round 1, done 2026-09-24:**
+31 deals corrected via `scripts/fix_currency_amounts.py` from
+`scripts/data/currency_fixes_2026-09-24.json` (old and new values kept there,
+so it can be reversed). Verified by re-export: 31 of 31 match.
 
-Every European deal carrying an amount — 74 of them, measured from
-`exports/deals.csv` — is stored as a bare dollar figure because the triage form
-stripped the currency symbol before submit. Some are also off by a factor of a
-million, where the magnitude went with it:
+How they were found: the curated **titles still carried the currency**
+("Hensoldt Invests €300M…"). Of 48 deals whose title names a non-USD currency
+but whose amount was stored as `$`:
+- 24 had lost only the symbol; 5 had lost the magnitude too (`$300`, `$100`,
+  `$1`, `$4.4`, `$165`). All 29 were fixed.
+- **17 were correct already**: someone had converted them to USD by hand
+  (e.g. €350M stored as $401.5M). **Do not add a symbol to these**; that would
+  double-convert them. They are the rows in the fixes file's source scan
+  marked MISMATCH.
+- 2 were wrong in other ways: EDF (#699) was stored 10x low, and Airbus (#107)
+  was stored as `$530,000` instead of `$530,000,000`. Both fixed.
 
-| Stored | Company | Almost certainly |
-|---|---|---|
-| `$100` | CSG, Bautzen | €100 million |
-| `$300` | Hensoldt, Oberkochen | €300 million |
-| `$3,900,000,000` | "Erail Technologies", Paris | the long-standing Exail euro bug |
+**Still open, round 2:** 53 European-located deals with a `$` amount and
+**no currency in the title**. Some of them really are USD deals. This needs
+the article: re-extract with `scripts/reextract_items.py` and have Sam review
+a list of old versus new. The prompt says *"DEAL AMOUNT: Dollar value if
+mentioned"* and Sam wants that wording kept, so check whether re-extracted
+amounts keep their € before trusting them.
 
-Repair needs the original figure from each article, so it is a re-extraction
-pass plus review, not a query. `scripts/reextract_items.py` can drive it; the
-selection is deals whose `location` is European and whose `investment_amount`
-carries no marker. Note the AI prompt says *"DEAL AMOUNT: Dollar value if
-mentioned"*, which may itself push the model to drop or self-convert
-currencies — worth checking before trusting a bulk re-extraction.
-
-Two of these are visibly absurd on the public site right now, which argues for
-fixing at least those by hand rather than waiting for a full pass.
+Seen in passing: #647 "Erail Technologies" is a misspelled duplicate of the
+Exail/Thales deal (#795, #506, and a $4.5B variant #502).
 
 ### 1. Non-English amount expressions score zero
 Found 2026-08-08 while fixing the `$` indicator (see DONE). The scorer only

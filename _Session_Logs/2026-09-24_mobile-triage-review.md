@@ -80,3 +80,18 @@ Nobody has tried it on a real iPhone. That's the real test, once it's deployed.
   someone edits the field. Formatter checked in node against $, €, £, C$, A$,
   US$, bare numbers.
 - Still open: OPEN_ITEMS #0, the 74 European deals stored as dollars. Next.
+
+## Currency data repair, round 1 (OPEN_ITEMS #0) — done, verified
+- Key insight: the curated titles still carried the currency, so most repairs
+  needed no re-extraction. Scanned all 920 deals; 48 had a non-USD title with a
+  `$` amount.
+- Sam approved 31 writes: 29 symbol/magnitude restorations + EDF (#699, stored
+  10x low) + Airbus (#107, `$530,000` → `$530,000,000`). 17 left alone because
+  they had already been converted to USD by hand; adding € would double-convert.
+- Mechanism: `scripts/fix_currency_amounts.py` via migrate.yml. It only writes
+  if the stored value still equals the reviewed `old` value. The dry run
+  matched 31/31, the real run applied 31/31, and a fresh export confirms
+  31/31.
+- Public site picks the new values up on the next publish (daily 1 AM UTC,
+  or `gh workflow run publish.yml`).
+- Round 2 (53 deals with no currency in the title) logged in OPEN_ITEMS #0.
