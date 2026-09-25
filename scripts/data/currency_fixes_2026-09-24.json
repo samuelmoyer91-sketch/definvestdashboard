@@ -1,0 +1,250 @@
+[
+ {
+  "id": 795,
+  "company": "Exail Technologies SA",
+  "title": "Thales Acquires Exail Technologies for €3.9B",
+  "old": "$3,900,000,000",
+  "new": "€3,900,000,000",
+  "why": "symbol only"
+ },
+ {
+  "id": 783,
+  "company": "Honold Logistik- und Immobilien-Gruppe",
+  "title": "Honold Invests €30M in Memmingen Defense Hub",
+  "old": "$30,000,000",
+  "new": "€30,000,000",
+  "why": "symbol only"
+ },
+ {
+  "id": 694,
+  "company": "FFG Flensburger Fahrzeugbau Gesellschaft mbH",
+  "title": "Deutz Acquires FFG for €1.6B in Defense Push",
+  "old": "$1,600,000,000",
+  "new": "€1,600,000,000",
+  "why": "symbol only"
+ },
+ {
+  "id": 683,
+  "company": "MBDA",
+  "title": "MBDA Invests €5B in Missile Production Capacity",
+  "old": "$5,000,000,000",
+  "new": "€5,000,000,000",
+  "why": "symbol only"
+ },
+ {
+  "id": 674,
+  "company": "ICEYE",
+  "title": "ICEYE Raises €1B Series F at €10B+ Valuation",
+  "old": "$1000000000",
+  "new": "€1,000,000,000",
+  "why": "symbol only"
+ },
+ {
+  "id": 676,
+  "company": "CSG Energetic Materials Germany GmbH",
+  "title": "CSG Acquires Gnaschwitz Site for €100M Munitions Buildout",
+  "old": "$100,000,000",
+  "new": "€100,000,000",
+  "why": "symbol only"
+ },
+ {
+  "id": 662,
+  "company": "CSG",
+  "title": "CSG Acquires German Site, Invests €100M+ in Nitroglycerin",
+  "old": "$100",
+  "new": "€100,000,000",
+  "why": "symbol + magnitude"
+ },
+ {
+  "id": 669,
+  "company": "YIT Lietuva",
+  "title": "YIT Lietuva Builds €29M Lithuanian Tank Facility",
+  "old": "$29,000,000",
+  "new": "€29,000,000",
+  "why": "symbol only"
+ },
+ {
+  "id": 672,
+  "company": "Flensburger Fahrzeugbau Gesellschaft (FFG)",
+  "title": "Deutz Acquires FFG for €1.6B, Enters Defense Systems",
+  "old": "$1,600,000,000",
+  "new": "€1,600,000,000",
+  "why": "symbol only"
+ },
+ {
+  "id": 647,
+  "company": "Erail Technologies",
+  "title": "Thales Acquires Erail Technologies for €3.9B",
+  "old": "$3,900,000,000",
+  "new": "€3,900,000,000",
+  "why": "symbol only"
+ },
+ {
+  "id": 649,
+  "company": "Hensoldt",
+  "title": "Hensoldt Invests €300M in Germany Optronics Campus",
+  "old": "$300",
+  "new": "€300,000,000",
+  "why": "symbol + magnitude"
+ },
+ {
+  "id": 613,
+  "company": "Service d'infrastructure de la défense (SID)",
+  "title": "France Invests €1.5B in Luxeuil Nuclear Air Base",
+  "old": "$1,500,000,000",
+  "new": "€1,500,000,000",
+  "why": "symbol only"
+ },
+ {
+  "id": 615,
+  "company": "Hensoldt",
+  "title": "Hensoldt Invests €300M in Oberkochen Campus",
+  "old": "$300,000,000",
+  "new": "€300,000,000",
+  "why": "symbol only"
+ },
+ {
+  "id": 619,
+  "company": "Rheinmetall",
+  "title": "Rheinmetall Invests €350M in Bavaria Powder Plant",
+  "old": "$350,000,000",
+  "new": "€350,000,000",
+  "why": "symbol only"
+ },
+ {
+  "id": 582,
+  "company": "Brookhouse Aerospace",
+  "title": "Brookhouse Aerospace Invests £165K in New Technologies",
+  "old": "$165",
+  "new": "£165,000",
+  "why": "symbol + magnitude"
+ },
+ {
+  "id": 583,
+  "company": "Broswarm",
+  "title": "Broswarm Raises €1M for Landmine-Detection Radar",
+  "old": "$1",
+  "new": "€1,000,000",
+  "why": "symbol + magnitude"
+ },
+ {
+  "id": 547,
+  "company": "Project Q",
+  "title": "Project Q Raises €15M for HYDRIS Platform",
+  "old": "$15,000,000",
+  "new": "€15,000,000",
+  "why": "symbol only"
+ },
+ {
+  "id": 533,
+  "company": "Emesent",
+  "title": "Emesent Raises A$25M for AI Autonomy Platform",
+  "old": "$25000000",
+  "new": "A$25,000,000",
+  "why": "symbol only"
+ },
+ {
+  "id": 506,
+  "company": "Exail Technologies",
+  "title": "Thales Acquires Exail for €3.9B",
+  "old": "$3,900,000,000",
+  "new": "€3,900,000,000",
+  "why": "symbol only"
+ },
+ {
+  "id": 492,
+  "company": "Next Geosolutions, WSense, Graal Tech, Defcomm",
+  "title": "Fincantieri Acquires Four Underwater Tech Companies for €600M",
+  "old": "$600,000,000",
+  "new": "€600,000,000",
+  "why": "symbol only"
+ },
+ {
+  "id": 469,
+  "company": "STARK",
+  "title": "STARK Raises €500M for European Electronic Warfare Expansion",
+  "old": "$500,000,000",
+  "new": "€500,000,000",
+  "why": "symbol only"
+ },
+ {
+  "id": 443,
+  "company": "DLR (German Aerospace Center)",
+  "title": "DLR Breaks Ground on GOVSATCOM Hub in Cologne with €50M Investment",
+  "old": "$50,000,000",
+  "new": "€50,000,000",
+  "why": "symbol only"
+ },
+ {
+  "id": 444,
+  "company": "Comand AI",
+  "title": "Comand AI Raises €32M Series A for Military AI Planning",
+  "old": "$32,000,000",
+  "new": "€32,000,000",
+  "why": "symbol only"
+ },
+ {
+  "id": 422,
+  "company": "Wall Colmonoy (UK)",
+  "title": "Wall Colmonoy Opens £2.5M Vacuum Investment Casting Facility in Wales",
+  "old": "$2,500,000",
+  "new": "£2,500,000",
+  "why": "symbol only"
+ },
+ {
+  "id": 390,
+  "company": "Isar Aerospace",
+  "title": "Isar Aerospace Raises €270M Series D for Spectrum Production Scale-Up",
+  "old": "$270,000,000",
+  "new": "€270,000,000",
+  "why": "symbol only"
+ },
+ {
+  "id": 337,
+  "company": "PLD Space",
+  "title": "PLD Space Invests €35M in Kourou Launch Infrastructure",
+  "old": "$35,000,000",
+  "new": "€35,000,000",
+  "why": "symbol only"
+ },
+ {
+  "id": 205,
+  "company": "AirHub",
+  "title": "AirHub Raises €4.4M for Defense Drone Software",
+  "old": "$4.4",
+  "new": "€4,400,000",
+  "why": "symbol + magnitude"
+ },
+ {
+  "id": 183,
+  "company": "Vac Aero International Inc.",
+  "title": "Boeing Canada Invests C$7M in Vac Aero",
+  "old": "$7,000,000",
+  "new": "C$7,000,000",
+  "why": "symbol only"
+ },
+ {
+  "id": 122,
+  "company": "Join Capital",
+  "title": "European Investment Fund (EIF) Invests €50M in Join Capital Fund III",
+  "old": "$50000000",
+  "new": "€50,000,000",
+  "why": "symbol only"
+ },
+ {
+  "id": 699,
+  "company": "EDF",
+  "title": "EDF Invests €350M in Belfort Turbine Plant",
+  "old": "$35,000,000",
+  "new": "€350,000,000",
+  "why": "stored 10x low; title says €350M"
+ },
+ {
+  "id": 107,
+  "company": "Airbus",
+  "title": "Airbus Invests €450M in French Helicopter Hub",
+  "old": "$530,000",
+  "new": "$530,000,000",
+  "why": "USD conversion lost its magnitude (€450M ≈ $530M)"
+ }
+]
