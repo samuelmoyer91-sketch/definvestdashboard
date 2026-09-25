@@ -777,14 +777,15 @@ function formatCurrencyInput(input) {
         <p style="margin:0 0 14px; font-size:12px; color:#888;">Check all that apply.</p>
         <input type="hidden" id="reject-modal-item-id">
         <div style="display:flex; flex-direction:column; gap:9px;">
+            {# Ordered for a thumb: the most-used reason sits last, nearest the
+               Reject button. Labels are stored verbatim in rejection_reason. #}
             {% set reject_reasons = [
                 ('Out of scope', 'Not a defense / national-security subject'),
-                ('Not a capital event', 'Commentary, analysis, MOU/partnership with no money, routine contract/award, stock moves'),
-                ('Below threshold', 'A defense capital event, but too weak to include (no/tiny $, not compelling)'),
                 ('Speculative / not closed', 'Rumored, "in talks", planned — not announced/committed'),
-                ('Insufficient detail', 'The article itself is too thin to build a card'),
                 ('Pipeline failure', "Scrape/source broke — you'd have kept it if it worked"),
-                ('Duplicate', 'Already tracked')
+                ('Duplicate', 'Already tracked'),
+                ('Below threshold / too thin', 'Too weak to include (no/tiny $), or the article is too thin to build a card'),
+                ('Not a capital event', 'Commentary, analysis, MOU/partnership with no money, routine contract/award, stock moves')
             ] %}
             {% for value, hint in reject_reasons %}
             <label class="reason">
@@ -792,10 +793,6 @@ function formatCurrencyInput(input) {
                 <span><strong>{{ value }}</strong><br><span style="font-size:11px; color:#999;">{{ hint }}</span></span>
             </label>
             {% endfor %}
-            <label class="reason" style="align-items:center; padding:7px 8px; background:#f4f7fb; border-radius:5px; border:1px solid #dce4ef;">
-                <input type="checkbox" name="reject-reason" value="International (higher bar)" style="margin-top:0;">
-                <span>🌐 <strong>International</strong> <span style="font-size:11px; color:#999;">— stricter bar (killed here, might keep if US)</span></span>
-            </label>
             <input type="text" id="reject-modal-custom" placeholder="Other / note (optional)…" class="field" style="border-color:#ccc; margin-top:2px;">
         </div>
         <div class="dialog-actions">
