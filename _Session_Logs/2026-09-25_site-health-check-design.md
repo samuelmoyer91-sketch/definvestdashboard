@@ -16,3 +16,16 @@ ground the answer:
 - The repo's `github_site/` is frozen at March (468 deals). The live site is
   rebuilt by `publish.yml` and never committed back, so checks must hit the
   live site.
+
+## Health check run (Sam: "do it now, recommendations only, don't fix")
+Findings are in OPEN_ITEMS #18. Method notes for next time:
+- Parse live /deals/ cards (the one card with no data attributes, Karman #2, is
+  easy to miss). Reconcile by *source link*, not title: 68 legacy deals have
+  blank titles.
+- Check chart JSON with a browser-strict parser (Python json accepts NaN;
+  browsers don't). Lazy-loaded charts only fail when scrolled into view.
+- Status codes lie here: missing pages return 200 (the home page).
+- Miss check: web search for ~13 notable deals, then `inspect_item.py <term>`
+  to see whether a miss was never ingested, screened out, or rejected.
+- Compare against the previous export to spot removals: 8 Northrop deals were
+  removed today.

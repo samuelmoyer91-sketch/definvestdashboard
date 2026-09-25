@@ -289,6 +289,49 @@ daily through yesterday).
 `/deals/` renders all 945 cards in one page. That's fine on wifi and slow on a
 phone, and it grows by ~150–180 deals a month. Not urgent. Worth watching as
 part of a site health check.
+
+### 18. Public-site health check findings — verified 2026-09-25 (nothing fixed yet)
+Full check against the live site; details in `_Session_Logs/2026-09-25_site-health-check-design.md`.
+- **ITA chart broken** on both Indicators ("Data unavailable") and Market Overview:
+  `data/ita.json` has one `NaN` row (2021-09-24), which browsers reject as JSON.
+  `finance_fetcher.py` has no NaN guard. The file was clean on 2026-07-03.
+- **Market Overview page**: not linked from anywhere, ITA/comparison charts broken,
+  links to a `defense-spending.html` that doesn't exist.
+- **Soft 404**: any missing URL serves the home page with HTTP 200 (there is no 404.html),
+  so broken links are invisible.
+- **Display defects**:
+  - AMRC #581 shows "$54" (should be about £54M).
+  - The "Corporate M&A" filter label shows as `corporate-m&a` on 163 deals:
+    `slugify` keeps "&", but the label map expects `corporate-m-a`. One raw
+    `intelligence` sector entry too.
+  - Region filter puts Canada (27) under "Other" and lists junk countries "Uda" and
+    "United Kingdon".
+  - 6 undated deals (Saronic $600M, Mach $300M, Cambridge Aerospace $300M…) sort to
+    pages 94–95 of 95.
+  - 4 headlines show a literal "&amp;".
+  - 68 early deals have no curated title and show the raw article headline.
+- **Home page scope text is outdated**: it says U.S.-only and "excludes foreign
+  defense markets"; about a third of deals are non-US (Europe alone 187).
+- **The AI still writes "$" for euro amounts**: Klaipeda #956's extraction returned
+  `$100M` for "EUR100 Million". This comes from the "DEAL AMOUNT: Dollar value" prompt
+  wording, which Sam chose to keep in August. DECISION.
+- **Coverage**: 9 of 13 notable Aug–Sep deals are on the site. Never ingested:
+  Defense Unicorns $136M Series B, Arxis's StratEdge and Schatz Bearing add-ons.
+  Aurelius–Marshall Aerospace was ingested and rejected by Sam.
+- **9 deals removed on 2026-09-25**: Hensoldt #649 (a real duplicate) plus 8 distinct-
+  looking Northrop Grumman deals (#212, #437, #557, #692, #739, #760, #884, #930).
+  Sam to confirm intent; they can be restored from /removed.
+- **Housekeeping**: 6 stale open "pipeline failed" issues (#1, #2, #5–#8). The publish
+  cron "01:00 UTC" starts at a median 4.5h late (max 11h).
+- **Healthy**:
+  - All pages, data files and domains up; certificate valid to Nov 14.
+  - 30/30 publishes succeeded.
+  - Site ↔ database 945/945 exact.
+  - FRED and market data current.
+  - Filters, search, paging and map all work; 16/17 charts render.
+  - Phone layouts fine; source links 58/60 live.
+  - Few false positives (6, all legacy Jan–Feb).
+- Map: 90 of 868 pins (10%) sit on a country or state centre (see #9).
 ---
 
 ## EXTERNAL — real, but not verifiable from the repo
