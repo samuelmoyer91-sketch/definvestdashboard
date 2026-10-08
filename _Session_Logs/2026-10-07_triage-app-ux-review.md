@@ -185,3 +185,11 @@ Built (`cd76c0d`, not yet pushed), Sam: "go with your recommendations":
   only for deals linked to a junk record or rewritten; then deletes junk records
   with no deals. On the scratch copy: 2 summaries, 24 lists, 22 rebuilds, 9
   records removed; second run finds nothing.
+
+## Shipped
+Pushed `411d66f`; Railway deploy success. Live clean-up: preview matched the
+scratch run (2 summaries #94 and #1117; 23 investor lists; 22 deals' records
+rebuilt, incl. #48 and #51 gaining records for their named investors; 7 junk
+records), applied, and a third run found nothing left. The public site picks up
+the two summary fixes on the next publish (01:00 UTC). New cards get the new AI
+instructions from the next pipeline run; cards already queued are cleaned on display.
