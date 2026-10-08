@@ -152,3 +152,36 @@ Wrote `scripts/extraction_quality.py` (read-only): AI blank-location rate by
 deal type and what happened to those cards, notes-about-missing-info by field,
 investor placeholders. Tested on the Feb local copy (runs; data too old to
 mean anything). Needs a push to run on live data. Recommendations to Sam in chat.
+
+## Report run (36716270958 -> run 37716270958) and build
+Live, last 30 days, 1,047 extractions: AI left location blank on 61 (6%):
+acquisitions 17%, mergers 38%, funding rounds 12%, everything else <5%. Of the
+61: 38 rejected, 14 pending, 8 ACCEPTED WITH NO LOCATION, 1 typed in. Notes about
+the article: 22 summaries (2%, 2 accepted), always a trailing ", though ... not
+disclosed in available reporting." clause. Investors: 80 "Unknown", 15 blank.
+Decision: automatic web lookup (1c) NOT built — ~2 cards a day, and the slips
+are a review problem, not a volume problem.
+
+Built (`cd76c0d`, not yet pushed), Sam: "go with your recommendations":
+- `src/utils/field_hygiene.py`: is_placeholder / clean_value, strip_source_notes
+  (only sentences that name the source AND say something is missing; cuts the
+  trailing clause, else drops the sentence; untouched text returned verbatim),
+  is_unnamed_group, clean_investor_text (keeps "(lead)").
+  Tested: 11/11 note cases; on 1,029 published summaries it changes exactly the
+  2 known ones. First version wrongly caught "areas without cellular coverage"
+  and collapsed paragraph breaks — both fixed.
+- Investor parser drops placeholders/unnamed groups, keeps names inside group
+  phrases. 24/24 cases; on all published deals only 22 parse differently, every
+  drop a placeholder or group.
+- Prompt: null not "Unknown"; named investors only; no comments on the article.
+- Applied at save (generate_ai_summaries), display (Jinja filters for cards
+  already queued), accept and edit (server side).
+- Triage: "No location" tag; red "Location needed" box; Look up button (web
+  search for "<company>" headquarters); Accept confirms when location empty;
+  investors placeholder "None named" (the grey example read like data).
+- `scripts/clean_placeholder_fields.py`: dry run by default. Rewrites investor
+  TEXT only when a part is a placeholder/unnamed group (wordy lists like "Led by
+  X with participation from Y" keep their wording); rebuilds investor records
+  only for deals linked to a junk record or rewritten; then deletes junk records
+  with no deals. On the scratch copy: 2 summaries, 24 lists, 22 rebuilds, 9
+  records removed; second run finds nothing.
