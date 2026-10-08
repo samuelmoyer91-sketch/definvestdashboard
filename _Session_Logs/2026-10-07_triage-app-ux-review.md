@@ -114,3 +114,41 @@ Built and tested locally (scratch DB, 375px):
   Strategic Partner (and offered "Government/Contract"), so saving dropped them.
   Rebuilt both as the triage lists; legacy "Government/Contract" shows as
   Government Support. Round-trip tested: load → save unchanged → identical row.
+
+## D pushed (`05a4174`, Railway deploy success). Sam's next three issues
+Sam: (1) many cards lack a location and he won't accept without one, so he looks
+them up; (2) the AI sometimes writes "the article did not have X", which he
+fears accepting unnoticed; (3) what happens with an ambiguous investor? He'd
+rather it be empty. Asked for ideas; investigated, nothing built yet.
+
+How it works today: the AI's values go straight into the form boxes (no
+clean-up); the prompt says 'use "Unknown" if not found' and nothing forbids
+commentary; whatever is in a box is saved on Accept. Investors are split into
+investor records on accept with no placeholder filtering.
+
+Measured on the 1,029 published deals (export 37713296704):
+- 75 published with no location (blank or "Unknown"); 2-6% a month since July,
+  6 already in October (#1118/#1119 Ondas acquisitions, #1061 Flow Engineering,
+  #1057 Armadin, #1019, #1020). So the "no location, no accept" rule is slipping,
+  mostly on small acquisition targets and startups. An empty box shows grey
+  example text "e.g., Austin, TX, USA", which reads like a value on a phone.
+- Reusing a company's earlier location is a bad fill: only 23% of deals are
+  repeat companies and the earlier city matched in 27/135 — Sam records where the
+  money goes (facility), not HQ. Ruled out.
+- 2 published summaries carry notes: #94 "Unknown - article content not
+  accessible due to paywall restriction", #1117 "...not detailed in available content."
+- 14 published deals have investor "Unknown" (it is an investor record with 13
+  deals); generic groups ("Institutional investors", "family offices") also
+  became records. parse_investors keeps "Unknown", "N/A", "Undisclosed
+  investors" and whole phrases like "Valor Equity Partners and other
+  undisclosed investors" as single investors, so that deal is missing from
+  Valor's page. Public site hides "Unknown" (is_known) but not the phrases.
+- Web search for an automatic location lookup: $10 per 1,000 searches plus
+  tokens — estimated 3-5¢ per lookup.
+- Dead code found: GET /api/action (email approve links) creates deals with no
+  location or title; nothing generates those links any more.
+
+Wrote `scripts/extraction_quality.py` (read-only): AI blank-location rate by
+deal type and what happened to those cards, notes-about-missing-info by field,
+investor placeholders. Tested on the Feb local copy (runs; data too old to
+mean anything). Needs a push to run on live data. Recommendations to Sam in chat.
