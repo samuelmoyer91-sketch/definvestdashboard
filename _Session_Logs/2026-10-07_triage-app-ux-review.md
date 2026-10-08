@@ -91,3 +91,26 @@ Built and tested locally (scratch DB, 375px):
 - Old headlines with `<b>` tags / `&amp;` (pre-cleaning feed titles) now go
   through `striptags`; the old page rendered them as HTML with `| safe`.
 - Saving an edit returns to the list page you came from, search included.
+
+## C pushed (`880b694`); D built
+- **D12 Costs:** checked Anthropic's published rates (claude-api reference,
+  cached 2026-10-06): Sonnet 5 is $2/$10 per MTok, so `pricing.py` was right and
+  my review's "costs understated since Sept" warning was wrong — the stale part
+  was the code comment claiming an intro price. Haiku 4.5 corrected to $1/$5
+  (no longer used). Page labels now say Sonnet 5 for both steps.
+- **D13 phone polish:** grouped menu (Daily / Deals / Explore / Admin) with the
+  current page highlighted; 44px Menu button; every field 16px on phones (global
+  rule, stops iOS focus-zoom); Sectors hides two wide columns on phones; Costs and
+  investor-detail tables scroll inside their card; Investors table tightened.
+  All 16 pages measured at 375px: none wider than the screen.
+- **Item detail:** the legacy "Accept & Curate" form now shows only for undecided
+  items. Accepted → "Edit this deal"; removed → link to Removed; rejected → reason
+  and pointer to Restore. Submitting it on an accepted deal would have re-accepted
+  it with the form's older fields.
+- **Edit form data bug (pre-existing):** sector labels were a 13-item list
+  beside 22 values since the 2026-07-04 taxonomy expansion, so most boxes were
+  labelled with the wrong sector (in the old /master inline editor too). Capital
+  types in `edit.html` lacked Government Support, Corporate Venture, Family Office,
+  Strategic Partner (and offered "Government/Contract"), so saving dropped them.
+  Rebuilt both as the triage lists; legacy "Government/Contract" shows as
+  Government Support. Round-trip tested: load → save unchanged → identical row.

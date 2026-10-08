@@ -4,6 +4,13 @@
 
 {% block content %}
 <style>
+/* Phones: wide tables scroll sideways inside their card instead of
+   stretching the whole page. */
+@media (max-width: 640px) {
+    .card table { display: block; overflow-x: auto; }
+}
+</style>
+<style>
 .deal-table th {
     padding: 10px 14px;
     font-size: 11px;

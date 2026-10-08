@@ -1372,13 +1372,15 @@ async def view_item(request: Request, item_id: int, session=Depends(get_db)):
     article = session.query(ArticleContent).filter_by(item_id=item_id).first()
     ai_extraction = session.query(AIExtraction).filter_by(item_id=item_id).first()
     master = session.query(MasterItem).filter_by(item_id=item_id).first()
+    rejected = session.query(RejectedItem).filter_by(item_id=item_id).first()
 
     return templates.TemplateResponse("item_detail.html", {
         "request": request,
         "item": item,
         "article": article,
         "ai_extraction": ai_extraction,
-        "master": master
+        "master": master,
+        "rejected": rejected,
     })
 
 

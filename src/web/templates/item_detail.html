@@ -73,6 +73,25 @@
     {% endif %}
 </div>
 
+{# This older accept form is only for items still awaiting a decision. It was
+   shown for every item, so on an accepted deal (linked from investor pages)
+   submitting it re-accepted the deal with this form's older fields, dropping
+   its sectors and capital types. #}
+{% if master %}
+<div class="card" style="border-left: 4px solid #4c9173;">
+    {% if master.removed_at %}
+    This deal was accepted, then removed{% if master.removed_reason %} ({{ master.removed_reason }}){% endif %}.
+    <a href="/removed">Removed deals →</a>
+    {% else %}
+    Already accepted. <a href="/edit/{{ master.id }}">Edit this deal →</a>
+    {% endif %}
+</div>
+{% elif rejected %}
+<div class="card" style="border-left: 4px solid #bf616a;">
+    Rejected {{ rejected.rejected_at.strftime('%b %-d, %Y') if rejected.rejected_at else '' }}{% if rejected.rejection_reason %}: {{ rejected.rejection_reason }}{% endif %}.
+    To reconsider it, use <strong>Restore to queue</strong> on <a href="/rejected">Rejected Items</a>.
+</div>
+{% else %}
 <div class="card">
     <h3 style="margin-bottom: 15px;">Accept & Curate</h3>
     <form method="post" action="/accept/{{ item.id }}">
@@ -178,6 +197,7 @@
         </div>
     </form>
 </div>
+{% endif %}
 
 {% include "_currency_input.html" %}
 <script>

@@ -21,14 +21,18 @@
             margin-bottom: 30px;
         }
         header h1 { font-size: 24px; font-weight: 600; }
-        nav { margin-top: 15px; }
+        nav { margin-top: 15px; display: flex; flex-wrap: wrap; gap: 6px 34px; }
+        .nav-group { display: flex; flex-wrap: wrap; gap: 6px 20px; }
+        .nav-label { display: none; }
         nav a {
             color: #88c0d0;
             text-decoration: none;
-            margin-right: 20px;
             font-size: 14px;
+            padding-bottom: 2px;
+            border-bottom: 2px solid transparent;
         }
         nav a:hover { color: #a3d5eb; }
+        nav a.active { color: #fff; border-bottom-color: #88c540; }
         .card {
             background: white;
             border-radius: 8px;
@@ -154,6 +158,7 @@
                button so the queue starts near the top of the screen. */
             .nav-toggle {
                 display: block;
+                min-height: 44px;
                 background: none;
                 border: 1px solid #88c0d0;
                 color: #88c0d0;
@@ -161,9 +166,20 @@
                 padding: 6px 12px;
                 font-size: 14px;
             }
+            /* Open menu: four labelled groups, two links per row, each a
+               full-height tap target. */
             nav { display: none; margin-top: 8px; }
-            header.nav-open nav { display: flex; flex-wrap: wrap; }
-            nav a { margin-right: 0; padding: 8px 14px 8px 0; font-size: 15px; }
+            header.nav-open nav { display: block; }
+            .nav-group { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; margin-bottom: 6px; }
+            .nav-label {
+                display: block; grid-column: 1 / -1; margin-top: 6px;
+                font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: #8a97a8;
+            }
+            nav a { padding: 11px 0; font-size: 15px; border-bottom: 0; }
+            nav a.active { color: #fff; font-weight: 600; }
+            /* iOS zooms the page when a field under 16px gets focus, and many
+               pages set smaller fonts inline; !important beats inline styles. */
+            input:not([type=checkbox]):not([type=radio]), select, textarea { font-size: 16px !important; }
             .card { padding: 14px; margin-bottom: 12px; }
             .btn { min-height: 44px; font-size: 15px; }
             .stats {
@@ -196,19 +212,24 @@
                 <button type="button" class="nav-toggle" aria-label="Menu"
                         onclick="this.closest('header').classList.toggle('nav-open')">Menu</button>
             </div>
+            {# Grouped by how often each page is used; the current page is highlighted. #}
+            {% set path = request.url.path if request else '' %}
+            {% set nav_groups = [
+                ('Daily', [('/', 'Triage Queue'), ('/possible-duplicates', 'Dups: In Queue')]),
+                ('Deals', [('/master', 'Accepted Items'), ('/duplicates', 'Dups: Published'),
+                           ('/rejected', 'Rejected Items'), ('/removed', 'Removed'), ('/excluded', 'Excluded')]),
+                ('Explore', [('/investors', 'Investors'), ('/sectors', 'Sectors'), ('/map', 'Map')]),
+                ('Admin', [('/stats', 'Statistics'), ('/costs', 'Costs')]),
+            ] %}
             <nav>
-                <a href="/">Triage Queue</a>
-                <a href="/possible-duplicates">Dups: In Queue</a>
-                <a href="/master">Accepted Items</a>
-                <a href="/duplicates">Dups: Published</a>
-                <a href="/rejected">Rejected Items</a>
-                <a href="/removed">Removed</a>
-                <a href="/excluded">Excluded</a>
-                <a href="/investors">Investors</a>
-                <a href="/sectors">Sectors</a>
-                <a href="/map">Map</a>
-                <a href="/stats">Statistics</a>
-                <a href="/costs">Costs</a>
+                {% for label, links in nav_groups %}
+                <div class="nav-group">
+                    <span class="nav-label">{{ label }}</span>
+                    {% for href, text in links %}
+                    <a href="{{ href }}"{% if path == href or (href != '/' and path.startswith(href + '/')) %} class="active" aria-current="page"{% endif %}>{{ text }}</a>
+                    {% endfor %}
+                </div>
+                {% endfor %}
             </nav>
         </div>
     </header>

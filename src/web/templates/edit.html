@@ -4,10 +4,15 @@
 
 {% block content %}
 <style>
-/* Phones: the fields carry inline 12-13px fonts, and iOS zooms the page on
-   focus for anything under 16px. !important is needed to beat inline styles. */
+/* Phones: the field layout is inline-styled for desktop (4-column checkbox
+   grids, 14px boxes), which ran 180px off a phone screen. !important beats the
+   inline styles. Same treatment as the triage form. */
 @media (max-width: 640px) {
-    .edit-form input:not([type=checkbox]), .edit-form textarea { font-size: 16px !important; }
+    .edit-form div[style*="repeat(4, 1fr)"] { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+    .edit-form label { overflow-wrap: anywhere; }
+    .edit-form div[style*="1fr 1fr"] { grid-template-columns: 1fr !important; }
+    .edit-form label[style*="cursor: pointer"] { font-size: 14px !important; padding: 6px 0; }
+    .edit-form input[type=checkbox] { width: 22px !important; height: 22px !important; flex-shrink: 0; }
 }
 </style>
 <h2 style="margin-bottom: 20px;">Edit Deal</h2>
@@ -87,60 +92,21 @@
                 <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #555;">Capital Type (select all that apply)</label>
                 {% set current_cap_list = master.capital_sources.split(',') | map('trim') | list if master.capital_sources else [] %}
                 <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px 8px; padding: 6px 10px; background: #f9f9f9; border-radius: 4px;">
+                    {# Same options, values and order as the triage form. This page used to
+                       offer "Government/Contract" and lacked Government Support,
+                       Corporate Venture, Family Office and Strategic Partner, so
+                       saving a deal dropped any of those it carried. #}
+                    {% set cap_options = ['Seed', 'Venture Capital', 'Private Equity', 'Corporate Venture', 'Corporate M&A',
+                                          'Government Support', 'Public Markets', 'Debt', 'Internal/Self-funded',
+                                          'Fund Raise', 'Family Office', 'Strategic Partner'] %}
+                    {% for opt in cap_options %}
                     <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
-                        <input type="checkbox" name="capital_source" value="Seed"
-                               {% if 'Seed' in current_cap_list %}checked{% endif %}
+                        <input type="checkbox" name="capital_source" value="{{ opt }}"
+                               {% if opt in current_cap_list or (opt == 'Government Support' and 'Government/Contract' in current_cap_list) %}checked{% endif %}
                                style="margin-right: 5px; width: 14px; height: 14px;">
-                        Seed
+                        {{ opt }}
                     </label>
-                    <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
-                        <input type="checkbox" name="capital_source" value="Venture Capital"
-                               {% if 'Venture Capital' in current_cap_list %}checked{% endif %}
-                               style="margin-right: 5px; width: 14px; height: 14px;">
-                        Venture Capital
-                    </label>
-                    <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
-                        <input type="checkbox" name="capital_source" value="Private Equity"
-                               {% if 'Private Equity' in current_cap_list %}checked{% endif %}
-                               style="margin-right: 5px; width: 14px; height: 14px;">
-                        Private Equity
-                    </label>
-                    <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
-                        <input type="checkbox" name="capital_source" value="Corporate M&A"
-                               {% if 'Corporate M&A' in current_cap_list %}checked{% endif %}
-                               style="margin-right: 5px; width: 14px; height: 14px;">
-                        Corporate M&amp;A
-                    </label>
-                    <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
-                        <input type="checkbox" name="capital_source" value="Government/Contract"
-                               {% if 'Government/Contract' in current_cap_list %}checked{% endif %}
-                               style="margin-right: 5px; width: 14px; height: 14px;">
-                        Government/Contract
-                    </label>
-                    <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
-                        <input type="checkbox" name="capital_source" value="Public Markets"
-                               {% if 'Public Markets' in current_cap_list %}checked{% endif %}
-                               style="margin-right: 5px; width: 14px; height: 14px;">
-                        Public Markets
-                    </label>
-                    <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
-                        <input type="checkbox" name="capital_source" value="Debt"
-                               {% if 'Debt' in current_cap_list %}checked{% endif %}
-                               style="margin-right: 5px; width: 14px; height: 14px;">
-                        Debt
-                    </label>
-                    <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
-                        <input type="checkbox" name="capital_source" value="Internal/Self-funded"
-                               {% if 'Internal/Self-funded' in current_cap_list %}checked{% endif %}
-                               style="margin-right: 5px; width: 14px; height: 14px;">
-                        Internal/Self-funded
-                    </label>
-                    <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
-                        <input type="checkbox" name="capital_source" value="Fund Raise"
-                               {% if 'Fund Raise' in current_cap_list %}checked{% endif %}
-                               style="margin-right: 5px; width: 14px; height: 14px;">
-                        Fund Raise
-                    </label>
+                    {% endfor %}
                 </div>
             </div>
 
@@ -148,15 +114,30 @@
             <div style="margin-bottom: 10px;">
                 <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 3px; color: #555;">Sectors/Technology (select all that apply)</label>
                 <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px 8px; padding: 6px 10px; background: #f9f9f9; border-radius: 4px;">
-                    {% set current_sectors = master.sectors.split(',') if master.sectors else [] %}
-                    {% set sector_options = ['Autonomous Systems/Drones', 'AI/ML', 'Quantum', 'Software/IT', 'Cybersecurity', 'Communications', 'Sensors/ISR', 'Electronic Warfare', 'Space/Satellites', 'Aerospace', 'Propulsion/Engines', 'Maritime/Naval', 'Ground Vehicles', 'Munitions/Weapons', 'Semiconductors/Electronics', 'Advanced Materials', 'Critical Minerals', 'Energy/Power', 'Manufacturing/Production', 'Logistics/Sustainment', 'Biotech/Medical', 'Other'] %}
-                    {% set sector_labels = ['Autonomous/Drones', 'AI/ML', 'Space/Satellites', 'Aerospace', 'Cybersecurity', 'Advanced Materials', 'Semiconductors', 'Manufacturing', 'Software/IT', 'Munitions/Weapons', 'Communications', 'Electronic Warfare', 'Other'] %}
-                    {% for i in range(sector_options|length) %}
+                    {% set current_sectors = master.sectors.split(',') | map('trim') | list if master.sectors else [] %}
+                    {# (value, label) pairs, same as triage. The labels used to be a separate,
+                       older 13-item list beside 22 values, so from 2026-07-04 most
+                       boxes were labelled with the wrong sector (the third box read
+                       "Space/Satellites" but saved "Quantum"). #}
+                    {% set sector_choices = [
+                        ('Autonomous Systems/Drones', 'Autonomous/Drones'), ('AI/ML', 'AI/ML'),
+                        ('Space/Satellites', 'Space/Satellites'), ('Aerospace', 'Aerospace'),
+                        ('Cybersecurity', 'Cybersecurity'), ('Advanced Materials', 'Advanced Materials'),
+                        ('Semiconductors/Electronics', 'Semiconductors'), ('Manufacturing/Production', 'Manufacturing'),
+                        ('Software/IT', 'Software/IT'), ('Munitions/Weapons', 'Munitions/Weapons'),
+                        ('Communications', 'Communications'), ('Electronic Warfare', 'Electronic Warfare'),
+                        ('Quantum', 'Quantum'), ('Sensors/ISR', 'Sensors/ISR'),
+                        ('Propulsion/Engines', 'Propulsion/Engines'), ('Maritime/Naval', 'Maritime/Naval'),
+                        ('Ground Vehicles', 'Ground Vehicles'), ('Critical Minerals', 'Critical Minerals'),
+                        ('Energy/Power', 'Energy/Power'), ('Logistics/Sustainment', 'Logistics/Sustainment'),
+                        ('Biotech/Medical', 'Biotech/Medical'), ('Other', 'Other'),
+                    ] %}
+                    {% for value, label in sector_choices %}
                     <label style="display: flex; align-items: center; font-size: 12px; cursor: pointer;">
-                        <input type="checkbox" name="sectors" value="{{ sector_options[i] }}"
-                               {% if sector_options[i] in current_sectors %}checked{% endif %}
+                        <input type="checkbox" name="sectors" value="{{ value }}"
+                               {% if value in current_sectors %}checked{% endif %}
                                style="margin-right: 5px; width: 14px; height: 14px;">
-                        {{ sector_labels[i] }}
+                        {{ label }}
                     </label>
                     {% endfor %}
                 </div>

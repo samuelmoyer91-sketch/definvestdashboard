@@ -3,6 +3,13 @@
 {% block title %}Costs - Defense Capital Tracker{% endblock %}
 
 {% block content %}
+<style>
+/* Phones: wide tables scroll sideways inside their card instead of
+   stretching the whole page. */
+@media (max-width: 640px) {
+    .card table { display: block; overflow-x: auto; }
+}
+</style>
 <h2 style="margin-bottom: 20px;">Cost Tracker</h2>
 
 <!-- Top stat cards -->
@@ -42,14 +49,14 @@
             {% set screener = mtd_by_type.get('title_screen', {}) %}
             {% set summarizer = mtd_by_type.get('summarizer', {}) %}
             <tr style="border-bottom: 1px solid #eee;">
-                <td style="padding: 10px;">Title Screener <span style="font-size: 12px; color: #888;">(Haiku)</span></td>
+                <td style="padding: 10px;">Title Screener <span style="font-size: 12px; color: #888;">(Sonnet 5)</span></td>
                 <td style="padding: 10px; text-align: right;">{{ screener.get('items', 0) }}</td>
                 <td style="padding: 10px; text-align: right;">{{ "{:,}".format(screener.get('input', 0)|int) }}</td>
                 <td style="padding: 10px; text-align: right;">{{ "{:,}".format(screener.get('output', 0)|int) }}</td>
                 <td style="padding: 10px; text-align: right; font-weight: 600;">${{ "%.4f"|format(screener.get('cost', 0)) }}</td>
             </tr>
             <tr style="border-bottom: 1px solid #eee;">
-                <td style="padding: 10px;">AI Summarizer <span style="font-size: 12px; color: #888;">(Sonnet)</span></td>
+                <td style="padding: 10px;">AI Summarizer <span style="font-size: 12px; color: #888;">(Sonnet 5)</span></td>
                 <td style="padding: 10px; text-align: right;">{{ summarizer.get('items', 0) }}</td>
                 <td style="padding: 10px; text-align: right;">{{ "{:,}".format(summarizer.get('input', 0)|int) }}</td>
                 <td style="padding: 10px; text-align: right;">{{ "{:,}".format(summarizer.get('output', 0)|int) }}</td>
@@ -144,14 +151,9 @@
         </thead>
         <tbody>
             <tr>
-                <td style="padding: 6px;">Claude Haiku 4.5 (title screener)</td>
-                <td style="padding: 6px; text-align: right;">$0.80 / MTok</td>
-                <td style="padding: 6px; text-align: right;">$4.00 / MTok</td>
-            </tr>
-            <tr>
-                <td style="padding: 6px;">Claude Sonnet 4 (AI summarizer)</td>
-                <td style="padding: 6px; text-align: right;">$3.00 / MTok</td>
-                <td style="padding: 6px; text-align: right;">$15.00 / MTok</td>
+                <td style="padding: 6px;">Claude Sonnet 5 (title screener and AI summarizer)</td>
+                <td style="padding: 6px; text-align: right;">$2.00 / MTok</td>
+                <td style="padding: 6px; text-align: right;">$10.00 / MTok</td>
             </tr>
         </tbody>
     </table>
