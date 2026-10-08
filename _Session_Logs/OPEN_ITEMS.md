@@ -369,6 +369,16 @@ longer overflowing (16/20 already seen) but PR Newswire still 20/20 new, which i
 why the schedule went hourly rather than every 4h. **Verify in a few days:** those three feeds should start showing
 duplicates in their "Saved N new items, skipped D duplicates" log lines. If they
 still come back all-new, read more often or page deeper (WordPress `?paged=2`).
+
+### 20. Triage app usability review — verified 2026-10-07, awaiting Sam's pick
+Measured locally at 375px on the July replica + a fresh deals export (1,029 deals).
+Full write-up: `_Session_Logs/2026-10-07_triage-app-ux-review.md`. Broken/bugs:
+- 13 of 22 sector pages 404 — names contain "/" ([sectors.html:31](src/web/templates/sectors.html:31), route `/sectors/{sector_name}` at app.py:2174 needs `:path`).
+- `GET /edit/{id}` redirects to the top of `/master` (app.py:1979); linked from Possible Dups "view" ([possible_duplicates.html:115](src/web/templates/possible_duplicates.html:115)) and sector Edit buttons. `edit.html` is unused.
+- Accept/Reject from an open card, scrolled into the form, leaves the screen ~4 cards further down (`takeCard`, triage.html:636).
+- Investor parser splits "Woodward, Inc." → "Inc." (10 deals) and keeps "Unknown" (13) as an investor (`src/utils/investor_parser.py`).
+- Costs page labels Haiku / Sonnet 4; pipeline runs claude-sonnet-5 for both steps. `pricing.py` comment says the Sonnet 5 intro price ended 2026-08-31 — verify the rate.
+Weight: `/master` 25 MB / ~1M px tall on a phone, no search, a hidden edit form per deal; `/rejected` unbounded (every rejection, with article text) and has no undo.
 ---
 
 ## EXTERNAL — real, but not verifiable from the repo
