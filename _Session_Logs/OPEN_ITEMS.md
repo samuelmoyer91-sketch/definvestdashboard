@@ -370,7 +370,7 @@ why the schedule went hourly rather than every 4h. **Verify in a few days:** tho
 duplicates in their "Saved N new items, skipped D duplicates" log lines. If they
 still come back all-new, read more often or page deeper (WordPress `?paged=2`).
 
-### 20. Triage app usability review — verified 2026-10-07, awaiting Sam's pick
+### 20. Triage app usability review — verified 2026-10-07; A+B built same day, C and D next
 Measured locally at 375px on the July replica + a fresh deals export (1,029 deals).
 Full write-up: `_Session_Logs/2026-10-07_triage-app-ux-review.md`. Broken/bugs:
 - 13 of 22 sector pages 404 — names contain "/" ([sectors.html:31](src/web/templates/sectors.html:31), route `/sectors/{sector_name}` at app.py:2174 needs `:path`).
@@ -378,6 +378,7 @@ Full write-up: `_Session_Logs/2026-10-07_triage-app-ux-review.md`. Broken/bugs:
 - Accept/Reject from an open card, scrolled into the form, leaves the screen ~4 cards further down (`takeCard`, triage.html:636).
 - Investor parser splits "Woodward, Inc." → "Inc." (10 deals) and keeps "Unknown" (13) as an investor (`src/utils/investor_parser.py`).
 - Costs page labels Haiku / Sonnet 4; pipeline runs claude-sonnet-5 for both steps. `pricing.py` comment says the Sonnet 5 intro price ended 2026-08-31 — verify the rate.
+**Built 2026-10-07 (A+B, Sam's cut):** screen jump after a decision fixed; count moved into the heading (master-list box dropped); reject allowed with no reason; sector `:path` route; `GET /edit/{id}` renders `edit.html` and returns to the page you came from; dup pages renamed "Dups: In Queue" / "Dups: Published". Sam declined A2 (summary on closed card), kept A4 (raw headline in open card is useful), declined one-tap reasons, and parked D11 (investor junk). **Still to do today: C (Accepted Items list/search/paging; Rejected restore + limit) and D12 (costs labels/rate), D13 (phone polish — Sam: "definitely needs review").**
 Weight: `/master` 25 MB / ~1M px tall on a phone, no search, a hidden edit form per deal; `/rejected` unbounded (every rejection, with article text) and has no undo.
 ---
 

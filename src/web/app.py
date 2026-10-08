@@ -1097,7 +1097,6 @@ async def home(request: Request, session=Depends(get_db)):
     items = [i for i in all_items if i.id not in flagged]
 
     total_items = len(items)
-    master_count = active_master(session).count()
 
     # Render only the top of the queue. Every accept/reject redirects back
     # here, so the whole page is rebuilt on each click — and each card carries
@@ -1114,7 +1113,6 @@ async def home(request: Request, session=Depends(get_db)):
         "items": visible,
         "total_items": total_items,
         "showing_count": len(visible),
-        "master_count": master_count,
         "dup_count": len(flagged),
     })
 
@@ -1976,10 +1974,41 @@ def _sync_investor_links(session, master):
     _update_investor_deal_counts(session, affected_investor_ids)
 
 
+def _local_path(url):
+    """The path part of a same-site URL, or None. Keeps a "back to" link
+    from being pointed at another site."""
+    from urllib.parse import urlparse
+    if not url:
+        return None
+    u = urlparse(url)
+    if u.netloc and u.netloc.split(':')[0] not in ('localhost', '127.0.0.1') \
+            and u.netloc != os.environ.get('RAILWAY_PUBLIC_DOMAIN', ''):
+        return None
+    path = u.path or '/'
+    if not path.startswith('/') or path.startswith('//') or path.startswith('/edit/'):
+        return None
+    return path + (('?' + u.query) if u.query else '')
+
+
 @app.get("/edit/{master_id}", response_class=HTMLResponse)
-async def edit_item(master_id: int):
-    """Redirect to master list — inline edit is now on /master."""
-    return RedirectResponse(url="/master", status_code=303)
+async def edit_item(request: Request, master_id: int, session=Depends(get_db)):
+    """Edit one accepted deal.
+
+    This used to redirect to the top of /master, which now holds 1,000+ deals
+    (~25 MB), so "view" on Possible Duplicates and Edit on a sector page
+    dropped Sam at the top of that page instead of on the deal. After saving,
+    he goes back to the page he came from.
+    """
+    master = session.query(MasterItem).filter_by(id=master_id).first()
+    if not master:
+        return HTMLResponse(content="<h1>Not Found</h1>", status_code=404)
+    raw_item = session.query(RawItem).filter_by(id=master.item_id).first()
+    return templates.TemplateResponse("edit.html", {
+        "request": request,
+        "master": master,
+        "raw_item": raw_item,
+        "back": _local_path(request.headers.get('referer')) or '/master',
+    })
 
 
 @app.post("/edit/{master_id}")
@@ -1996,6 +2025,7 @@ async def save_edit(
     notes: str = Form(""),
     source_url: str = Form(""),
     additional_source_url: str = Form(""),
+    next: str = Form(""),
     session=Depends(get_db),
 ):
     """Save edits to an accepted deal."""
@@ -2028,7 +2058,7 @@ async def save_edit(
     session.commit()
     mark_dirty()   # next page render syncs; see mark_dirty()
 
-    return RedirectResponse(url="/master", status_code=303)
+    return RedirectResponse(url=_local_path(next) or "/master", status_code=303)
 
 
 @app.get("/investors", response_class=HTMLResponse)
@@ -2171,7 +2201,9 @@ async def sectors_list(request: Request, session=Depends(get_db)):
     })
 
 
-@app.get("/sectors/{sector_name}", response_class=HTMLResponse)
+# ":path" because 13 of the 22 sector names contain "/" (e.g. "AI/ML"); a
+# plain parameter stops at the slash, so those pages were 404s.
+@app.get("/sectors/{sector_name:path}", response_class=HTMLResponse)
 async def sector_deals(request: Request, sector_name: str, session=Depends(get_db)):
     """View all deals in a specific sector."""
     from urllib.parse import unquote

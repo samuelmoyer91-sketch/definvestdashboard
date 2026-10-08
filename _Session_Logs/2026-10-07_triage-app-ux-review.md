@@ -57,3 +57,22 @@ overflow; item-detail and map inputs <16px (iOS focus zoom); Menu button 30px;
 
 Recommendations given to Sam in chat, grouped A–D; awaiting choice. Logged as
 OPEN_ITEMS #20.
+
+## Sam's cut, and what was built (A + B)
+Sam: A2 wrong (opening a card is easy), keep A4 (the raw headline in an open
+card gives a second view of the deal), drop A5 except "reject without a
+reason", skip D11 for now, D13 "definitely needs review", C and D later today.
+
+Built and tested locally (scratch DB, 375px):
+- **Screen jump:** `takeCard` scrolls by the hidden card's offset when its top
+  was above the screen. Accepting card 3 from the bottom of its form now leaves
+  card 4 at the top (was card 8).
+- **Count in the heading:** "Triage Queue · N to review"; master-list box and its
+  per-load count query removed. First card 380px → 295px down.
+- **Reject with no reason:** popup says "Optional"; nothing ticked posts no reason.
+- **Sectors:** `/sectors/{sector_name:path}`; AI/ML, Space/Satellites etc. 200.
+- **Edit page:** `GET /edit/{id}` renders the existing `edit.html` (it had been a
+  redirect to the top of /master). Save and Cancel return to the referring page;
+  `_local_path` refuses off-site referers and `//host` tricks (tested).
+  16px fields on phones so iOS doesn't zoom.
+- **Names:** "Dups: In Queue" / "Dups: Published" in the nav and page headings.

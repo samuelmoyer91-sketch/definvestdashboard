@@ -89,6 +89,7 @@
     position: sticky; bottom: -24px; background: #fff; padding: 8px 0;
 }
 .queue-note { font-size: 14px; font-weight: 400; color: #666; }
+.queue-count { font-weight: 400; color: #5e81ac; }
 .refused-note {
     margin-top: 10px; padding: 8px 10px; font-size: 13px; color: #7a4b00;
     background: #fff4e0; border-left: 3px solid #e0a030; border-radius: 4px;
@@ -128,19 +129,11 @@
 }
 </style>
 
-<div class="stats">
-    <div class="stat-card">
-        <div class="stat-number" id="triage-count">{{ total_items }}</div>
-        <div class="stat-label">Items to Review</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-number">{{ master_count }}</div>
-        <div class="stat-label">Items in Master List</div>
-    </div>
-</div>
-
+{# The count sits in the heading. Two big count boxes (one of them the size
+   of the master list, which is no use while triaging) pushed the first card
+   halfway down a phone screen. #}
 <h2 style="margin-bottom: 20px;">
-    Triage Queue
+    Triage Queue <span class="queue-count">· <span id="triage-count">{{ total_items }}</span> to review</span>
     {% if showing_count and total_items > showing_count %}
     <span class="queue-note">
         — showing the {{ showing_count }} most recent of {{ total_items }}; the next ones load as you clear these
@@ -635,7 +628,14 @@ function updateTriageCount(delta) {
 // so nothing disappears without being saved.
 function takeCard(id) {
     const card = document.getElementById('item-' + id);
-    if (card) card.style.display = 'none';
+    if (card) {
+        // If Sam has scrolled down into an open card, hiding it pulls everything
+        // below up past the screen and he lands several cards further on. Put
+        // the next card where this one started.
+        const top = card.getBoundingClientRect().top;
+        card.style.display = 'none';
+        if (top < 0) window.scrollBy(0, top - 12);
+    }
     updateTriageCount(-1);
     return card;
 }
@@ -682,15 +682,12 @@ function submitReject() {
         document.querySelectorAll('#reject-modal input[name="reject-reason"]:checked')
     ).map(cb => cb.value);
     if (custom) reasons.push(custom);
-    if (reasons.length === 0) {
-        alert('Pick at least one reason (or type one).');
-        return;
-    }
+    // A reason is optional: Reject with nothing ticked saves no reason.
     const finalReason = reasons.join('; ');
     document.getElementById('reject-modal').style.display = 'none';
 
     const body = new URLSearchParams();
-    body.append('rejection_reason', finalReason);
+    if (finalReason) body.append('rejection_reason', finalReason);
     saveDecision(id, '/reject/' + id, {
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
         body: body.toString()
@@ -703,7 +700,7 @@ function submitReject() {
 <div id="reject-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:1000; align-items:center; justify-content:center;">
     <div class="reject-dialog">
         <h3 style="margin:0 0 4px; font-size:16px;">Why are you rejecting this?</h3>
-        <p style="margin:0 0 14px; font-size:12px; color:#888;">Check all that apply.</p>
+        <p style="margin:0 0 14px; font-size:12px; color:#888;">Optional — check any that apply.</p>
         <input type="hidden" id="reject-modal-item-id">
         <div style="display:flex; flex-direction:column; gap:9px;">
             {# Ordered for a thumb: the most-used reason sits last, nearest the

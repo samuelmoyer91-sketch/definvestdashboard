@@ -3,6 +3,13 @@
 {% block title %}Edit Deal - Defense Capital Tracker{% endblock %}
 
 {% block content %}
+<style>
+/* Phones: the fields carry inline 12-13px fonts, and iOS zooms the page on
+   focus for anything under 16px. !important is needed to beat inline styles. */
+@media (max-width: 640px) {
+    .edit-form input:not([type=checkbox]), .edit-form textarea { font-size: 16px !important; }
+}
+</style>
 <h2 style="margin-bottom: 20px;">Edit Deal</h2>
 
 <div class="card" style="border-left: 4px solid #5e81ac;">
@@ -20,7 +27,8 @@
         </div>
     </div>
 
-    <form method="post" action="/edit/{{ master.id }}">
+    <form method="post" action="/edit/{{ master.id }}" class="edit-form">
+        <input type="hidden" name="next" value="{{ back }}">
         <div style="background: #f8f9fa; padding: 14px; border-radius: 6px; margin-bottom: 10px;">
 
             <!-- Title -->
@@ -192,7 +200,7 @@
 
         <div style="display: flex; gap: 8px; align-items: center;">
             <button type="submit" class="btn btn-primary">Save Changes</button>
-            <a href="/master" class="btn btn-secondary">Cancel</a>
+            <a href="{{ back }}" class="btn btn-secondary">Cancel</a>
         </div>
     </form>
 </div>
