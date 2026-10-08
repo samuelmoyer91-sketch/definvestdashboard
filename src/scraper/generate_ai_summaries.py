@@ -17,6 +17,7 @@ from src.database import RawItem, ArticleContent, AIExtraction, ApiUsageLog, get
 from src.database.models import _reset_turso_connection, EXTRACTION_REFUSED
 from src.utils.ai_summarizer import summarize_deal_article, format_summary_for_display
 from src.utils.pricing import calculate_cost
+from src.utils.field_hygiene import clean_value, clean_investor_text, strip_source_notes
 
 SONNET_MODEL = "claude-sonnet-5"
 
@@ -157,6 +158,14 @@ def generate_summaries(limit=5, force_regenerate=False, item_ids=None):
                 if i < len(items):
                     time.sleep(1)
                 continue
+
+            # Placeholders ("Unknown") and notes about what the article lacks
+            # are dropped here, so an empty field reaches triage empty rather
+            # than looking filled in — and can't be published by an accept.
+            for key in ('company_name', 'deal_amount', 'location'):
+                summary[key] = clean_value(summary.get(key))
+            summary['investors'] = clean_investor_text(summary.get('investors'))
+            summary['strategic_significance'] = strip_source_notes(summary.get('strategic_significance'))
 
             if extraction:
                 # Update existing

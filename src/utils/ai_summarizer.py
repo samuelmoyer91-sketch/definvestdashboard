@@ -95,7 +95,7 @@ def summarize_deal_article(article_text, article_title, article_url, focus=None)
             "mentioned in the article. Every field below must describe only the "
             "deal named above — its company, its amount, its location. If the "
             "article states a figure that belongs to a DIFFERENT deal, do not "
-            'use it: return "Unknown" for the amount rather than borrowing '
+            'use it: return null for the amount rather than borrowing '
             "another deal's number."
         )
 
@@ -108,7 +108,7 @@ Article URL: {article_url}
 Article Text:
 {article_text[:25000]}
 
-Extract the following information (use "Unknown" if not found):
+Extract the following information. If the article does not give a field, return null for it. Never write "Unknown" or a placeholder, and never put a note about what the article is missing into any field.
 
 1. TITLE: {TITLE_RULES}
 2. COMPANY NAME: The company being invested in or acquired
@@ -127,9 +127,9 @@ Extract the following information (use "Unknown" if not found):
    - Biotech/Medical: biomanufacturing, pharma, medical/life-support systems for defense.
    - Semiconductors/Electronics covers both true chips/fabs AND board-level electronics (PCBs, wiring, RF/EW electronics).
 6. DEAL AMOUNT: The amount if mentioned, in the currency the article states it in, with that currency's symbol or code (e.g., "$300M", "€45M", "£1.2B", "C$20M"). Never convert it to dollars yourself: the dashboard converts at display time, so a converted figure would be converted twice. If the article gives both (e.g., "€35M ($40M)"), use the original-currency figure.
-7. INVESTORS/ACQUIRERS: Key firms or companies involved. Return as a clean comma-separated list of names only — no descriptions, no parentheticals, no "led by", "backed by", "with participation from", or other connective language. Example: "8VC, Lux Capital, Founders Fund". For self-funded/internal deals, return the company name.
+7. INVESTORS/ACQUIRERS: Key firms or companies involved. Return as a clean comma-separated list of names only — no descriptions, no parentheticals, no "led by", "backed by", "with participation from", or other connective language. Example: "8VC, Lux Capital, Founders Fund". For self-funded/internal deals, return the company name. List only parties the article names. Leave out unnamed groups ("existing investors", "angel investors", "institutional investors", "family offices", "other undisclosed investors") but keep any names given inside them ("existing investors including SoftBank" -> "SoftBank"). If no investor, lender or acquirer is named, return null.
 8. LOCATION: Where the company is headquartered or where the deal/project is located. Format as "City, State, Country" for US locations (e.g., "San Diego, CA, USA") or "City, Country" for international (e.g., "London, UK"). Never use county names — if only a county is mentioned, use the state abbreviation only (e.g., "AL, USA"). If the article does not say where the company or deal is, give the company's headquarters city if you know it with confidence (e.g., Anduril → "Costa Mesa, CA, USA"); use null only when you do not know. Never invent a location.
-9. STRATEGIC SIGNIFICANCE: In 1-2 sentences, describe specifically what the company will do with this capital — which products, programs, facilities, or capabilities it will fund or develop. Name them explicitly; do not generalize. Be factual and specific. Do not restate the deal structure, explain who the investor is, or add context about market trends. Write in third person present tense. Example style: "AeroVironment is expanding domestic manufacturing capacity for directed energy laser systems, anti-drone systems, and laser communications, with $6 million in state and local co-investment." For ACQUISITIONS and PRIVATE EQUITY deals, always write from the perspective of the acquired/target company — what the target will now be able to build, expand, or develop with this backing. Never frame the commentary around the acquirer's or PE firm's strategy (do NOT write "this helps [firm] build out its platform for..." or "expands [acquirer]'s portfolio in..."). The question is always: how does this capital help the TARGET company grow or do something it could not before? Name the target's products, programs, or capabilities, not the buyer's.
+9. STRATEGIC SIGNIFICANCE: In 1-2 sentences, describe specifically what the company will do with this capital — which products, programs, facilities, or capabilities it will fund or develop. Name them explicitly; do not generalize. Be factual and specific. Do not restate the deal structure, explain who the investor is, or add context about market trends. Write in third person present tense. Example style: "AeroVironment is expanding domestic manufacturing capacity for directed energy laser systems, anti-drone systems, and laser communications, with $6 million in state and local co-investment." For ACQUISITIONS and PRIVATE EQUITY deals, always write from the perspective of the acquired/target company — what the target will now be able to build, expand, or develop with this backing. Never frame the commentary around the acquirer's or PE firm's strategy (do NOT write "this helps [firm] build out its platform for..." or "expands [acquirer]'s portfolio in..."). The question is always: how does this capital help the TARGET company grow or do something it could not before? Name the target's products, programs, or capabilities, not the buyer's. State only what is known. Never comment on the article or on what it leaves out: no "the article does not specify...", "details are not disclosed in available reporting", "content not accessible". If the article gives few specifics, write one plain sentence with what it does say.
 
 10. DEAL STATUS: Classify the certainty of this deal as exactly one of:
 - "announced": The deal has been formally announced, signed, or closed. Money is committed. A press release, SEC filing, or direct company statement confirms it. Pending regulatory/shareholder approval is fine — what matters is that the parties have agreed and publicly committed.
@@ -161,7 +161,7 @@ Notes:
 - capital_source is an array — include all that apply, but don't over-select; most deals have one type
 - transaction_type is a single string — pick the single best-fit category
 - For sectors: include all relevant technology areas the company operates in
-- Be professional and analytical (intelligence briefing tone). If information is missing or unclear, use "Unknown" rather than guessing.
+- Be professional and analytical (intelligence briefing tone). If information is missing or unclear, return null for that field rather than guessing.
 
 Special handling for EARNINGS CALLS, ANNUAL REPORTS, and INVESTOR PRESENTATIONS:
 - These are about a company's own spending, not an external deal. Use capital_source "Internal/Self-funded".

@@ -3,6 +3,8 @@
 import re
 import unicodedata
 
+from src.utils.field_hygiene import is_placeholder, is_unnamed_group
+
 
 def slugify(name):
     """Convert investor name to URL-safe slug.
@@ -58,6 +60,21 @@ def parse_investors(text):
         re.IGNORECASE
     )
 
+    # "angel investors including Micky Malka", "existing investors such as
+    # SoftBank": the group description goes, the names after it stay.
+    _GROUP_INTRO = re.compile(
+        r'^(?:[A-Za-z][\w.\'’-]*\s+){0,4}?(?:investors|backers|shareholders|lenders)'
+        r'\s+(?:including|include|includes|such\s+as|like)\s+',
+        re.IGNORECASE
+    )
+
+    # "Valor Equity Partners and other undisclosed investors": the tail goes.
+    _GROUP_TAIL = re.compile(
+        r'\s+(?:and|&|plus|with|alongside)\s+(?:[\w.\'’-]+\s+){0,4}?'
+        r'(?:investors|backers|shareholders|lenders|family\s+offices)\b.*$',
+        re.IGNORECASE
+    )
+
     # Trailing annotations to strip (e.g. "as acquirer", "as seller")
     _TRAILING_JUNK = re.compile(
         r'\s+(?:as\s+acquirer|as\s+seller|as\s+lead\s+investor|private\s+equity\s+firm.*)',
@@ -76,10 +93,11 @@ def parse_investors(text):
         # Strip leading prose phrases — apply repeatedly to handle stacked phrases
         # e.g. "with previous backers including Foo" → "including Foo" → "Foo"
         while True:
-            stripped = _PROSE_PREFIXES.sub('', part).strip()
+            stripped = _GROUP_INTRO.sub('', _PROSE_PREFIXES.sub('', part)).strip()
             if stripped == part:
                 break
             part = stripped
+        part = _GROUP_TAIL.sub('', part).strip()
         if not part:
             continue
 
@@ -97,7 +115,10 @@ def parse_investors(text):
         # Strip trailing prose annotations (e.g. "as acquirer", "as seller")
         part = _TRAILING_JUNK.sub('', part).strip()
 
-        if not part:
+        # "Unknown", "N/A", "institutional investors": no one is named, so
+        # there is no investor to record. These used to become investor
+        # records ("Unknown" was credited with 13 deals).
+        if not part or is_placeholder(part) or is_unnamed_group(part):
             continue
 
         slug = slugify(part)

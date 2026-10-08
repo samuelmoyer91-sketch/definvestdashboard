@@ -90,6 +90,17 @@
 }
 .queue-note { font-size: 14px; font-weight: 400; color: #666; }
 .queue-count { font-weight: 400; color: #5e81ac; }
+/* Missing location: Sam doesn't accept without one, so make the gap
+   impossible to miss. The old grey example text ("e.g., Austin, TX, USA")
+   read like a filled-in value on a phone. */
+.no-loc { display: inline-block; margin-left: 8px; padding: 1px 7px; border-radius: 3px;
+          background: #fbeaec; color: #a3434d; font-size: 12px; font-weight: 600; }
+.loc-row { display: flex; gap: 6px; align-items: stretch; }
+.loc-row .field { flex: 1; min-width: 0; }
+.loc-field:placeholder-shown { border-color: #bf616a; background: #fdf3f4; }
+.loc-field::placeholder { color: #bf616a; opacity: 1; }
+.lookup-btn { flex-shrink: 0; background: #fff; color: #5e81ac; border: 1px solid #aab2bf;
+              border-radius: 4px; padding: 0 10px; font-size: 13px; cursor: pointer; }
 .refused-note {
     margin-top: 10px; padding: 8px 10px; font-size: 13px; color: #7a4b00;
     background: #fff4e0; border-left: 3px solid #e0a030; border-radius: 4px;
@@ -172,6 +183,7 @@
             {% if item.published_date %}
             <span style="margin-left: 10px; color: #666;">{{ item.published_date.strftime('%Y-%m-%d') }}</span>
             {% endif %}
+            {% if not (item.ai_extraction.location if item.ai_extraction else '') | no_placeholder %}<span class="no-loc">No location</span>{% endif %}
         </div>
 
         {% if item.status == 'extraction_refused' %}
@@ -184,7 +196,7 @@
         <!-- AI One-liner Summary -->
         {% if item.ai_extraction %}
         <div style="margin-top: 10px; font-size: 14px; color: #333; font-weight: 500;">
-            {% if item.ai_extraction.deal_amount %}<strong>{{ item.ai_extraction.deal_amount }}</strong>{% endif %}
+            {% if item.ai_extraction.deal_amount | no_placeholder %}<strong>{{ item.ai_extraction.deal_amount }}</strong>{% endif %}
             {% if item.ai_extraction.sectors %} • {{ item.ai_extraction.sectors.split(',')[0].strip() }}{% endif %}
         </div>
         {% endif %}
@@ -248,19 +260,16 @@
                     <div>
                         <label class="field-label">
                             Company
-                            {% if item.ai_extraction and item.ai_extraction.company %}<span class="ai-badge">AI</span>{% endif %}
+                            {% set ai_company = (item.ai_extraction.company if item.ai_extraction else '') | no_placeholder %}
+                            {% if ai_company %}<span class="ai-badge">AI</span>{% endif %}
                         </label>
                         <input type="text" name="company"
-                               value="{{ item.ai_extraction.company if item.ai_extraction and item.ai_extraction.company else '' }}"
-                               class="field{% if item.ai_extraction and item.ai_extraction.company %} ai-populated{% endif %}"
+                               value="{{ ai_company }}"
+                               class="field{% if ai_company %} ai-populated{% endif %}"
                                placeholder="e.g., Anduril, Shield AI">
                     </div>
 
                     <div>
-                        <label class="field-label">
-                            Investors / Acquirer
-                            {% if item.ai_extraction and item.ai_extraction.investors %}<span class="ai-badge">AI</span>{% endif %}
-                        </label>
                         {# Sam's convention: a self-funded deal names the company itself
                            as the investor. The AI writes "Self-funded" instead, and he
                            replaced it by hand on 20 of 21 accepts (Apr-Jul 2026). #}
@@ -269,10 +278,17 @@
                               and item.ai_extraction.company and item.ai_extraction.company | lower not in ['unknown', 'none'] %}
                             {% set ai_investors = item.ai_extraction.company %}
                         {% endif %}
+                        {# "Unknown" and unnamed groups ("angel investors") are dropped:
+                           an empty box is better than a vague one. #}
+                        {% set ai_investors = ai_investors | clean_investors %}
+                        <label class="field-label">
+                            Investors / Acquirer
+                            {% if ai_investors %}<span class="ai-badge">AI</span>{% endif %}
+                        </label>
                         <input type="text" name="investors"
                                value="{{ ai_investors }}"
-                               class="field{% if item.ai_extraction and item.ai_extraction.investors %} ai-populated{% endif %}"
-                               placeholder="e.g., McNally Capital, Andreessen Horowitz">
+                               class="field{% if ai_investors %} ai-populated{% endif %}"
+                               placeholder="None named">
                     </div>
                 </div>
 
@@ -281,13 +297,14 @@
                     <div>
                         <label class="field-label">
                             Deal Amount
-                            {% if item.ai_extraction and item.ai_extraction.deal_amount %}<span class="ai-badge">AI</span>{% endif %}
+                            {% set ai_amount = (item.ai_extraction.deal_amount if item.ai_extraction else '') | no_placeholder %}
+                            {% if ai_amount %}<span class="ai-badge">AI</span>{% endif %}
                         </label>
                         <div style="display: flex; align-items: center;">
                             <span class="currency-prefix">$</span>
                             <input type="text" name="investment_amount" inputmode="decimal"
-                                   value="{{ item.ai_extraction.deal_amount if item.ai_extraction and item.ai_extraction.deal_amount else '' }}"
-                                   class="field{% if item.ai_extraction and item.ai_extraction.deal_amount %} ai-populated{% endif %}"
+                                   value="{{ ai_amount }}"
+                                   class="field{% if ai_amount %} ai-populated{% endif %}"
                                    placeholder="e.g., 100,000,000"
                                    oninput="formatCurrencyInput(this)"
                                    onfocus="formatCurrencyInput(this)">
@@ -297,12 +314,17 @@
                     <div>
                         <label class="field-label">
                             Location
-                            {% if item.ai_extraction and item.ai_extraction.location %}<span class="ai-badge">AI</span>{% endif %}
+                            {% set ai_location = (item.ai_extraction.location if item.ai_extraction else '') | no_placeholder %}
+                            {% if ai_location %}<span class="ai-badge">AI</span>{% endif %}
                         </label>
-                        <input type="text" name="location"
-                               value="{{ item.ai_extraction.location if item.ai_extraction and item.ai_extraction.location else '' }}"
-                               class="field{% if item.ai_extraction and item.ai_extraction.location %} ai-populated{% endif %}"
-                               placeholder="e.g., Austin, TX, USA">
+                        <div class="loc-row">
+                            <input type="text" name="location"
+                                   value="{{ ai_location }}"
+                                   class="field loc-field{% if ai_location %} ai-populated{% endif %}"
+                                   placeholder="Location needed">
+                            <button type="button" class="lookup-btn" onclick="lookupLocation(this)"
+                                    title="Search the web for where this company is">Look up</button>
+                        </div>
                     </div>
                 </div>
 
@@ -504,9 +526,10 @@
                         Summary
                         {% if item.ai_extraction and item.ai_extraction.strategic_significance %}<span class="ai-badge">AI</span>{% endif %}
                     </label>
+                    {# Notes about what the article lacks are removed. #}
                     <textarea name="summary" rows="2"
                               class="field field-lg summary-field{% if item.ai_extraction and item.ai_extraction.strategic_significance %} ai-populated{% endif %}"
-                              placeholder="Brief summary of the deal...">{{ item.ai_extraction.strategic_significance if item.ai_extraction and item.ai_extraction.strategic_significance else '' }}</textarea>
+                              placeholder="Brief summary of the deal...">{{ (item.ai_extraction.strategic_significance if item.ai_extraction else '') | strip_notes }}</textarea>
                 </div>
 
                 <!-- Row 7: Internal Notes -->
@@ -663,7 +686,24 @@ function saveDecision(id, url, options, what) {
 }
 
 function acceptItem(id, formEl) {
+    // Sam's rule: no location, no accept. Ask rather than block, for the
+    // odd deal where no place applies.
+    const loc = (formEl.elements.location.value || '').trim();
+    if ((!loc || /^(unknown|n\/?a|none|tbd)$/i.test(loc)) &&
+            !confirm('No location — accept anyway?')) {
+        formEl.elements.location.focus();
+        return;
+    }
     saveDecision(id, '/accept/' + id, {body: new FormData(formEl)}, 'Accept');
+}
+
+// Opens a web search for where the company is, in a new tab.
+function lookupLocation(btn) {
+    const form = btn.closest('form');
+    const company = (form.elements.company.value || '').trim();
+    const title = (form.elements.title.value || '').trim();
+    const q = company ? '"' + company + '" headquarters location' : title + ' location';
+    window.open('https://www.google.com/search?q=' + encodeURIComponent(q), '_blank', 'noopener');
 }
 
 function rejectItem(id) {

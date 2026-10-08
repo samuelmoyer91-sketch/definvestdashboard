@@ -59,6 +59,8 @@ from src.database.models import (_reset_turso_connection, set_interactive_mode,
                                  EXTRACTION_REFUSED)
 from src.utils.text_quality import readable_part
 from src.utils.investor_parser import parse_investors, slugify
+from src.utils.field_hygiene import (clean_value, clean_investor_text,
+                                     strip_source_notes, has_source_note)
 
 _TOKEN_EXPIRY = 24 * 60 * 60  # 24 hours
 
@@ -873,6 +875,11 @@ templates_dir.mkdir(exist_ok=True)
 templates = Jinja2Templates(directory=str(templates_dir))
 # Article previews drop paywall-scrambled text, same as the summarizer does.
 templates.env.filters['readable'] = readable_part
+# Cards extracted before 2026-10-07 can still hold "Unknown" or a note about
+# the article; show them empty/clean (new extractions are cleaned when saved).
+templates.env.filters['no_placeholder'] = lambda v: clean_value(v) or ''
+templates.env.filters['clean_investors'] = lambda v: clean_investor_text(v) or ''
+templates.env.filters['strip_notes'] = lambda v: strip_source_notes(v) or ''
 
 
 # Marker appended to RawItem.relevance_flags when Sam confirms a flagged item
@@ -1421,13 +1428,16 @@ async def accept_item(
             item_id=item_id,
             title=title if title else None,
             company=company if company else None,
-            investors=investors if investors else None,
+            # Accept and Save clean the same way the pipeline does, so
+            # "Unknown", unnamed investor groups or a note about the article
+            # can't be published even if one is typed or left in a box.
+            investors=clean_investor_text(investors),
             investment_amount=formatted_amount,
             # Capital source (multi-select, stored as comma-separated in capital_sources column)
             capital_sources=",".join(capital_source) if capital_source else None,
             sectors=",".join(sectors) if sectors else None,
-            location=location if location else None,
-            summary=summary if summary else None,
+            location=clean_value(location),
+            summary=strip_source_notes(summary),
             human_notes=notes if notes else None,
             source_url=_safe_url(source_url),
             additional_source_url=_safe_url(additional_source_url),
@@ -2086,12 +2096,12 @@ async def save_edit(
 
     master.title = title if title else None
     master.company = company if company else None
-    master.investors = investors if investors else None
+    master.investors = clean_investor_text(investors)
     master.investment_amount = formatted_amount
     master.capital_sources = ",".join(capital_source) if capital_source else None
     master.sectors = ",".join(sectors) if sectors else None
-    master.location = location if location else None
-    master.summary = summary if summary else None
+    master.location = clean_value(location)
+    master.summary = strip_source_notes(summary)
     master.human_notes = notes if notes else None
     master.source_url = _safe_url(source_url)
     master.additional_source_url = _safe_url(additional_source_url)
