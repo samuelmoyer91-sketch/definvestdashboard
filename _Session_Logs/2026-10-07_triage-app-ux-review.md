@@ -76,3 +76,18 @@ Built and tested locally (scratch DB, 375px):
   `_local_path` refuses off-site referers and `//host` tricks (tested).
   16px fields on phones so iOS doesn't zoom.
 - **Names:** "Dups: In Queue" / "Dups: Published" in the nav and page headings.
+
+## A+B pushed (`6a56938`); C built
+- **Accepted Items** (`/master`): compact rows (title / amount · company · place ·
+  accepted date), each opening `/edit/{id}`; search across title, company,
+  investors, location, sectors, capital type, amount; 50 per page. One query
+  plus a joined load instead of 3 lookups per deal. Locally: 25 MB → 26 KB,
+  ~960,000px → ~3,800px tall. The inline edit forms are gone; `edit.html` is the
+  one edit form now (master.html no longer posts to /edit).
+- **Rejected Items**: search headline or reason, 50 per page, "Restore to queue"
+  (`POST /rejected/{id}/restore` deletes the rejected_items row). Article text
+  no longer embedded; the headline opens `/item/{id}`. Tested: a restored item
+  reappears in the triage queue and leaves the list.
+- Old headlines with `<b>` tags / `&amp;` (pre-cleaning feed titles) now go
+  through `striptags`; the old page rendered them as HTML with `| safe`.
+- Saving an edit returns to the list page you came from, search included.

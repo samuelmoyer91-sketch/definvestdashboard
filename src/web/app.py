@@ -1525,25 +1525,50 @@ async def reject_item(item_id: int, request: Request, background_tasks: Backgrou
 
 @app.get("/master", response_class=HTMLResponse)
 async def master_list(request: Request, session=Depends(get_db)):
-    """View master list of accepted items."""
+    """Accepted deals: a compact, searchable list, LIST_PAGE_SIZE at a time.
+
+    It used to render every deal in full, each with a hidden edit form and
+    three lookups apiece: with 1,000+ deals that was ~25 MB of HTML and about
+    a million pixels of scrolling on a phone, with no way to find a deal.
+    Editing is on /edit/{id}.
+    """
+    from sqlalchemy import or_
+    from sqlalchemy.orm import joinedload
     sync_if_stale()
 
-    master_items = active_master(session).join(
-        RawItem, MasterItem.item_id == RawItem.id
-    ).order_by(
+    q = (request.query_params.get('q') or '').strip()
+    query = active_master(session).join(RawItem, MasterItem.item_id == RawItem.id)
+    if q:
+        like = f"%{q}%"
+        query = query.filter(or_(
+            MasterItem.title.ilike(like), MasterItem.company.ilike(like),
+            MasterItem.investors.ilike(like), MasterItem.location.ilike(like),
+            MasterItem.sectors.ilike(like), MasterItem.capital_sources.ilike(like),
+            MasterItem.investment_amount.ilike(like), RawItem.title.ilike(like),
+        ))
+    total = query.count()
+    page, pages = _page_number(request, total)
+    items = query.options(joinedload(MasterItem.raw_item)).order_by(
         MasterItem.curated_at.desc()
-    ).all()
-
-    # Add raw item data and pipeline status
-    for master in master_items:
-        master.raw_item = session.query(RawItem).filter_by(id=master.item_id).first()
-        master.article_content = session.query(ArticleContent).filter_by(item_id=master.item_id).first()
-        master.ai_extraction = session.query(AIExtraction).filter_by(item_id=master.item_id).first()
+    ).offset((page - 1) * LIST_PAGE_SIZE).limit(LIST_PAGE_SIZE).all()
 
     return templates.TemplateResponse("master.html", {
-        "request": request,
-        "items": master_items
+        "request": request, "items": items, "q": q,
+        "total": total, "page": page, "pages": pages,
     })
+
+
+LIST_PAGE_SIZE = 50
+
+
+def _page_number(request, total):
+    """(page, page_count) from ?page=, clamped to what exists."""
+    pages = max(1, -(-total // LIST_PAGE_SIZE))
+    try:
+        page = int(request.query_params.get('page', 1))
+    except ValueError:
+        page = 1
+    return min(max(page, 1), pages), pages
 
 
 @app.get("/duplicates", response_class=HTMLResponse)
@@ -1704,24 +1729,41 @@ async def removed_list(request: Request, session=Depends(get_db)):
 
 @app.get("/rejected", response_class=HTMLResponse)
 async def rejected_list(request: Request, session=Depends(get_db)):
-    """View rejected items."""
+    """Rejected items, newest first, searchable, LIST_PAGE_SIZE at a time.
+
+    Used to render every rejection ever, each with its article text. The
+    article is one tap away on /item/{id}.
+    """
+    from sqlalchemy import or_
     sync_if_stale()
 
-    rejected_items = session.query(RejectedItem).join(
-        RawItem, RejectedItem.item_id == RawItem.id
-    ).order_by(
-        RejectedItem.rejected_at.desc()
-    ).all()
-
-    # Add raw item data and pipeline status
-    for rejected in rejected_items:
-        rejected.raw_item = session.query(RawItem).filter_by(id=rejected.item_id).first()
-        rejected.article_content = session.query(ArticleContent).filter_by(item_id=rejected.item_id).first()
+    q = (request.query_params.get('q') or '').strip()
+    query = session.query(RejectedItem, RawItem).join(
+        RawItem, RejectedItem.item_id == RawItem.id)
+    if q:
+        like = f"%{q}%"
+        query = query.filter(or_(RawItem.title.ilike(like),
+                                 RejectedItem.rejection_reason.ilike(like)))
+    total = query.count()
+    page, pages = _page_number(request, total)
+    rows = query.order_by(RejectedItem.rejected_at.desc()).offset(
+        (page - 1) * LIST_PAGE_SIZE).limit(LIST_PAGE_SIZE).all()
 
     return templates.TemplateResponse("rejected.html", {
-        "request": request,
-        "items": rejected_items
+        "request": request, "rows": rows, "q": q,
+        "total": total, "page": page, "pages": pages,
     })
+
+
+@app.post("/rejected/{item_id}/restore")
+async def restore_rejected(item_id: int, request: Request, session=Depends(get_db)):
+    """Undo a rejection: the item goes back into the triage queue."""
+    session.query(RejectedItem).filter_by(item_id=item_id).delete()
+    session.commit()
+    mark_dirty()
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return Response(status_code=204)
+    return RedirectResponse(url="/rejected", status_code=303)
 
 
 @app.get("/stats", response_class=HTMLResponse)
